@@ -3,25 +3,36 @@ import { Navbar } from "@/components/navbar";
 import { getLowStockItems } from "@/modules/inventory/actions";
 
 import { PlanProvider } from "@/components/billing/PlanProvider";
+import { auth } from "@/lib/auth";
 import { getCurrentTenantContext } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Info } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/signin?callbackUrl=/");
+  }
+
   const lowStockItems = await getLowStockItems();
   
-  // Safe fetch - will return null if unauthenticated, allowing middleware to handle redirect
   let isDemoWorkspace = false;
   let subscriptionStatus = "active";
   let trialDaysRemaining = 0;
   
   try {
     const ctx = await getCurrentTenantContext();
-    isDemoWorkspace = ctx.organization.isDemoTenant;
+    const organization = await prisma.organization.findUnique({
+      where: { id: ctx.organizationId },
+      select: { isDemoTenant: true },
+    });
+    isDemoWorkspace = organization?.isDemoTenant ?? false;
     
     // Fetch monetization state
     const { getSubscriptionContext } = await import("@/lib/billing/enforcement");
@@ -29,7 +40,7 @@ export default async function DashboardLayout({
     subscriptionStatus = subCtx.status;
     trialDaysRemaining = subCtx.daysRemaining;
   } catch (error) {
-    // If not authenticated or tenant not found, proceed without error
+    // Fall back to a minimal dashboard shell if tenant-scoped extras fail.
   }
 
   return (
