@@ -24,7 +24,7 @@ export const createSalesReturnAction = createServerAction({
       context.db, 
       context.ctx.branchId, 
       input, 
-      context.ctx.user.id
+      context.ctx.userId
     );
   },
 });
@@ -48,7 +48,7 @@ export const createPurchaseReturnAction = createServerAction({
       context.db, 
       context.ctx.branchId, 
       input, 
-      context.ctx.user.id
+      context.ctx.userId
     );
   },
 });

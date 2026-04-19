@@ -31,7 +31,7 @@ export async function trackEvent(data: {
             category: data.category,
             userId: data.userId,
             organizationId: data.organizationId,
-            properties: data.properties as any,
+            properties: data.properties ? JSON.stringify(data.properties) : null,
         }
     }).catch(err => console.error("[Analytics Error] Failed to log event:", err));
 }
@@ -64,7 +64,7 @@ export async function getFeatureUsage() {
         by: ['category'],
         _count: { _all: true },
         where: { category: { not: "AUTH" } },
-        orderBy: { _count: { _all: true }: 'desc' }
+        orderBy: { _count: { _all: 'desc' } }
     });
 
     return raw.map(item => ({

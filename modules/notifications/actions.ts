@@ -15,14 +15,14 @@ export async function getNotifications(filters?: {
 }) {
   const ctx = await getCurrentTenantContext();
   const db = getTenantStore(ctx);
-  return service.getNotifications(db, ctx.user.id, filters);
+  return service.getNotifications(db, ctx.userId, filters);
 }
 
 export async function getUnreadCount(): Promise<number> {
   try {
     const ctx = await getCurrentTenantContext();
     const db = getTenantStore(ctx);
-    return service.getUnreadCount(db, ctx.user.id);
+    return service.getUnreadCount(db, ctx.userId);
   } catch {
     return 0;
   }
@@ -50,7 +50,7 @@ export const markAllNotificationsRead = createServerAction({
   schema: z.object({}),
   revalidatePaths: ["/", "/notifications"],
   handler: async ({ input, context }) => {
-    return service.markAllAsRead(context.db, context.ctx.user.id);
+    return service.markAllAsRead(context.db, context.ctx.userId);
   },
 });
 

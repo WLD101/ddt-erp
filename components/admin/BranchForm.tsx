@@ -2,7 +2,9 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { branchSchema, createBranch } from "@/modules/admin/branch-actions";
+import { createBranch } from "@/modules/admin/branch-actions";
+import { branchSchema } from "@/modules/admin/branch-schemas";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";

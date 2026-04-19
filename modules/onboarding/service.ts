@@ -73,13 +73,18 @@ export async function getOnboardingState(organizationId: string) {
       data: {
         organizationId,
         currentStep: 0,
-        completedSteps: [],
-        skippedSteps: [],
+        completedSteps: "",
+        skippedSteps: "",
       },
     });
   }
 
-  return state;
+  // Cast for code compatibility elsewhere
+  return {
+    ...state,
+    completedSteps: state.completedSteps ? state.completedSteps.split(",") : [],
+    skippedSteps: state.skippedSteps ? state.skippedSteps.split(",") : [],
+  } as any;
 }
 
 export async function markStepDone(organizationId: string, stepId: StepId) {
@@ -89,7 +94,10 @@ export async function markStepDone(organizationId: string, stepId: StepId) {
 
   return prisma.onboardingState.update({
     where: { organizationId },
-    data: { completedSteps, currentStep: nextIndex },
+    data: { 
+      completedSteps: completedSteps.join(","), 
+      currentStep: nextIndex 
+    },
   });
 }
 
@@ -100,7 +108,10 @@ export async function skipStep(organizationId: string, stepId: StepId) {
 
   return prisma.onboardingState.update({
     where: { organizationId },
-    data: { skippedSteps, currentStep: nextIndex },
+    data: { 
+      skippedSteps: skippedSteps.join(","), 
+      currentStep: nextIndex 
+    },
   });
 }
 

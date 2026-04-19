@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -43,12 +43,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -396,7 +396,7 @@ model SalesInvoice {
   discount    Float      @default(0)
   taxAmount   Float      @default(0)
   totalAmount Float
-  notes       String?    @db.Text
+  notes       String?
   quotationId String?
   quotation   Quotation? @relation(fields: [quotationId], references: [id])
 
@@ -436,7 +436,7 @@ model Notification {
   expiresAt DateTime? // Optional TTL for auto-cleanup
 
   // Future-proofing for Email/WhatsApp channels
-  metadata Json?
+  metadata String?
 
   createdAt DateTime @default(now())
 
@@ -730,7 +730,7 @@ model AuditLog {
   action     String // e.g. "create_invoice", "delete_product"
   entityType String // e.g. "SalesInvoice"
   entityId   String
-  details    String? @db.Text
+  details    String?
 
   createdAt DateTime @default(now())
 
@@ -799,8 +799,8 @@ model OnboardingState {
 
   // Step tracking
   currentStep    Int      @default(0)
-  completedSteps String[] // e.g. ["welcome", "profile", "branch"]
-  skippedSteps   String[] // steps explicitly skipped
+  completedSteps String   @default("") // e.g. ["welcome", "profile", "branch"]
+  skippedSteps   String   @default("") // steps explicitly skipped
 
   // Completion state
   isCompleted Boolean   @default(false)
@@ -860,7 +860,7 @@ model Lead {
   businessType String?
   companySize  String?
   source       String  @default("CONTACT") // CONTACT, DEMO, QUOTE, PARTNER
-  message      String? @db.Text
+  message      String?
   status       String  @default("NEW") // NEW, CONTACTED, BOOKED, QUALIFIED, LOST, WON
 
   preferredDemoTime String?
@@ -905,7 +905,7 @@ model Changelog {
   id          String   @id @default(cuid())
   version     String?  // e.g. "v1.2.0" or "Major Update"
   title       String
-  content     String   @db.Text
+  content     String   
   category    String   @default("FEATURE") // FEATURE, IMPROVEMENT, FIX, SECURITY
   status      String   @default("DRAFT")   // DRAFT, PUBLISHED
   publishedAt DateTime?
@@ -928,7 +928,7 @@ model AnalyticsEvent {
   
   name           String   // e.g. "SIGNUP_COMPLETED", "PRODUCT_CREATED"
   category       String   // e.g. "AUTH", "INVENTORY", "SALES"
-  properties     Json?    // Metadata: { amount: 500, source: "promo" }
+  properties     String?    // Metadata: { amount: 500, source: "promo" }
 
   timestamp      DateTime @default(now())
 

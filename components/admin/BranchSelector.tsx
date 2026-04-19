@@ -46,22 +46,24 @@ export function BranchSelector({ branches, activeBranchId }: BranchSelectorProps
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          disabled={isPending}
-          className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl px-4 flex items-center gap-3 transition-all duration-300 group"
-        >
-          <div className="p-1 bg-primary/20 rounded-lg group-hover:scale-110 transition-transform">
-            <MapPin className="w-3.5 h-3.5 text-primary" />
-          </div>
-          <div className="flex flex-col items-start leading-none h-full justify-center">
-            <span className="text-[10px] uppercase font-black tracking-widest text-primary/70">Operational Site</span>
-            <span className="font-bold text-sm tracking-tight">{activeBranch?.name || "Global"}</span>
-          </div>
-          <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button 
+            variant="outline" 
+            size="sm" 
+            disabled={isPending}
+            className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl px-4 flex items-center gap-3 transition-all duration-300 group"
+          />
+        }
+      >
+        <div className="p-1 bg-primary/20 rounded-lg group-hover:scale-110 transition-transform">
+          <MapPin className="w-3.5 h-3.5 text-primary" />
+        </div>
+        <div className="flex flex-col items-start leading-none h-full justify-center">
+          <span className="text-[10px] uppercase font-black tracking-widest text-primary/70">Operational Site</span>
+          <span className="font-bold text-sm tracking-tight">{activeBranch?.name || "Global"}</span>
+        </div>
+        <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64 bg-slate-900/95 backdrop-blur-xl border-white/5 rounded-2xl shadow-2xl p-2">
         <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">

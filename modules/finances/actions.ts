@@ -20,7 +20,7 @@ export const createAccountAction = createServerAction({
     getDetails: (input) => `Account ${input.name} created with balance ${input.initialBalance}`,
   },
   handler: async ({ input, context }) => {
-    return service.createAccount(context.db, context.ctx.branchId, input, context.ctx.user.id);
+    return service.createAccount(context.db, context.ctx.branchId, input, context.ctx.userId);
   },
 });
 
@@ -38,7 +38,7 @@ export const executeTransferAction = createServerAction({
     getDetails: (input) => `Transfer ${input.amount} from ${input.fromAccountId} to ${input.toAccountId}`,
   },
   handler: async ({ input, context }) => {
-    return service.executeTransfer(context.db, context.ctx.branchId, input, context.ctx.user.id);
+    return service.executeTransfer(context.db, context.ctx.branchId, input, context.ctx.userId);
   },
 });
 
@@ -61,4 +61,10 @@ export async function getAccountLedger(id: string) {
   const ctx = await getCurrentTenantContext();
   const db = getTenantStore(ctx);
   return service.getAccountLedger(db, id);
+}
+
+export async function getUnifiedLedger() {
+  const ctx = await getCurrentTenantContext();
+  const db = getTenantStore(ctx);
+  return service.getUnifiedLedger(db);
 }

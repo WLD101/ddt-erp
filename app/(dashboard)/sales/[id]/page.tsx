@@ -7,10 +7,12 @@ import {
   User,
   Hash,
   ShoppingBag,
-  DollarSign
+  DollarSign,
+  Info as BadgeInfo
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { 
   Dialog, 
@@ -43,11 +45,13 @@ export default async function SalesInvoiceDetailPage({ params }: { params: { id:
         </div>
 
         <Dialog>
-          <DialogTrigger asChild>
-            <Button className="h-14 px-8 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/50 text-white font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group">
-              <RotateCcw className="w-5 h-5 text-primary group-hover:rotate-180 transition-transform duration-500" />
-              Process Return
-            </Button>
+          <DialogTrigger
+            render={
+              <Button className="h-14 px-8 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/50 text-white font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group" />
+            }
+          >
+            <RotateCcw className="w-5 h-5 text-primary group-hover:rotate-180 transition-transform duration-500" />
+            Process Return
           </DialogTrigger>
           <DialogContent className="sm:max-w-[700px] bg-slate-950/95 backdrop-blur-3xl border-white/5 rounded-[32px] p-10 overflow-auto max-h-[90vh]">
             <DialogHeader className="mb-8">

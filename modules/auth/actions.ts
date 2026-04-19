@@ -18,7 +18,7 @@ export async function signUpAction(data: unknown) {
   try {
     await service.bootstrapOrganization(result.data);
     return { success: "Account and Organization created successfully. You can now sign in." };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Signup error:", error);
     return { error: error.message || "Something went wrong during registration." };
   }
@@ -27,7 +27,7 @@ export async function signUpAction(data: unknown) {
 /**
  * SIGN IN
  */
-export async function signInAction(prevState: any, formData: FormData) {
+export async function signInAction(_prevState: unknown, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -72,8 +72,32 @@ export async function joinOrganizationAction(data: unknown) {
     await service.joinByInvitation(result.data);
     revalidatePath("/(dashboard)", "layout");
     return { success: "Joined organization successfully. Please sign in." };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Join error:", error);
     return { error: error.message || "Failed to join organization." };
+  }
+}
+
+/**
+ * FORGOT PASSWORD
+ */
+export async function forgotPasswordAction(email: string) {
+  try {
+    await service.requestPasswordReset(email);
+    return { success: true };
+  } catch (error) {
+    return { error: (error as any).message };
+  }
+}
+
+/**
+ * RESET PASSWORD
+ */
+export async function resetPasswordAction(data: { token: string; password: string }) {
+  try {
+    await service.resetPassword(data.token, data.password);
+    return { success: true };
+  } catch (error) {
+    return { error: (error as any).message };
   }
 }

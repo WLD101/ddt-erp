@@ -2,7 +2,7 @@
 
 import { createServerAction } from "@/lib/actions/builder";
 import * as service from "./service";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, requirePermission } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 import { z } from "zod";
 import { AnalyticCategory } from "../analytics/service";

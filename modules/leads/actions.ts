@@ -47,7 +47,7 @@ export async function submitLeadAction(data: {
     // Future: Trigger internal notification or autoresponder here
 
     return { success: true, message: "Thank you! Our team will reach out shortly." };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Lead Capture Error]", error);
     return { error: "Failed to submit request. Please try again later." };
   }

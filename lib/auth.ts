@@ -11,6 +11,15 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
+
+const DEBUG_LOG = path.join(process.cwd(), "auth-debug.log");
+
+function logAuth(message: string) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(DEBUG_LOG, `[${timestamp}] ${message}\n`);
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -23,12 +32,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+        
+        const email = (credentials.email as string).toLowerCase();
+        logAuth(`Login attempt for: ${email}`);
+        logAuth(`Using DB URL: ${process.env.DATABASE_URL}`);
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        const user = await prisma.user.findFirst({
+          where: { email },
         });
 
-        if (!user || !user.password) {
+        if (!user) {
+          logAuth(`User not found: ${email}`);
+          return null;
+        }
+
+        if (!user.password) {
+          logAuth(`User has no password: ${email}`);
           return null;
         }
 
@@ -38,9 +57,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!isValid) {
+          logAuth(`Invalid password for: ${email}`);
           return null;
         }
 
+        logAuth(`Success for: ${email}`);
         return user;
       },
     }),

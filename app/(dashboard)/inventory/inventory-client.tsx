@@ -178,10 +178,12 @@ export function InventoryClient({ items, categories }: { items: InventoryItem[],
                   </TableCell>
                   <TableCell className="text-right pr-8">
                      <DropdownMenu>
-                       <DropdownMenuTrigger asChild>
-                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all">
-                           <MoreHorizontal className="w-4 h-4" />
-                         </Button>
+                       <DropdownMenuTrigger
+                         render={
+                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all" />
+                         }
+                       >
+                         <MoreHorizontal className="w-4 h-4" />
                        </DropdownMenuTrigger>
                        <DropdownMenuContent align="end" className="bg-slate-900 border-white/10">
                          <DropdownMenuItem onClick={() => handleEdit(item.product)} className="gap-2 cursor-pointer font-bold">
@@ -233,6 +235,4 @@ export function InventoryClient({ items, categories }: { items: InventoryItem[],
     </div>
   );
 }
-    </div>
-  );
-}
+

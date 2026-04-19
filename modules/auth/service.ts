@@ -166,6 +166,7 @@ export async function joinByInvitation(data: JoinInput) {
   }
 
   // ENFORCE USER LIMITS
+  const { assertPlanLimit } = await import("@/lib/billing/enforcement");
   await assertPlanLimit(invite.organizationId, "maxUsers");
 
   const hashedPassword = await bcrypt.hash(password, 12);
@@ -216,4 +217,47 @@ export async function joinByInvitation(data: JoinInput) {
 
     return { user, organizationId: invite.organizationId };
   });
+}
+
+/**
+ * SERVICE: PASSWORD RESET REQUEST
+ */
+export async function requestPasswordReset(email: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new Error("If an account exists with that email, a reset link has been sent.");
+
+  const { v4: uuidv4 } = await import("uuid");
+  const token = uuidv4();
+  const expires = new Date(Date.now() + 3600000); // 1 hour
+
+  await prisma.passwordResetToken.create({
+    data: { email, token, expires }
+  });
+
+  // Trigger Email (Simulation/Placeholder logic)
+  await triggerLifecycleEmail(user.id, "", "PASSWORD_RESET", { token }).catch(console.error);
+
+  return true;
+}
+
+/**
+ * SERVICE: RESET PASSWORD EXECUTION
+ */
+export async function resetPassword(token: string, password: string) {
+  const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } });
+  if (!resetToken || resetToken.expires < new Date()) {
+    throw new Error("Invalid or expired reset token.");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { email: resetToken.email },
+      data: { password: hashedPassword }
+    }),
+    prisma.passwordResetToken.delete({ where: { id: resetToken.id } })
+  ]);
+
+  return true;
 }

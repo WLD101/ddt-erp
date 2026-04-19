@@ -79,6 +79,7 @@ export async function initializeTenantBranches(organizationId: string) {
       name: "Main Branch",
       code: "MAIN",
       isMain: true,
+    },
   });
 }
 

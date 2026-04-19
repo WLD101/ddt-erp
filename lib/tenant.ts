@@ -9,6 +9,21 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // ---------------------------------------------------------------------------
+// Super Admin / Platform Oversight logic
+// ---------------------------------------------------------------------------
+
+const SUPER_ADMINS = process.env.SUPER_ADMIN_EMAILS || "";
+
+/**
+ * Checks if a user email belongs to the predefined list of platform operators.
+ */
+export function isSuperAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  const allowedEmails = SUPER_ADMINS.toLowerCase().split(",").map(e => e.trim());
+  return allowedEmails.includes(email.toLowerCase());
+}
+
+// ---------------------------------------------------------------------------
 // Error type — use this to distinguish auth failures from runtime errors
 // ---------------------------------------------------------------------------
 
@@ -63,7 +78,7 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
 
   const userId = session.user.id;
   const jwtOrgId = session.user.organizationId;
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const activeBranchId = cookieStore.get("x-active-branch")?.value;
 
   // Find membership with roles, permissions, and assigned branch

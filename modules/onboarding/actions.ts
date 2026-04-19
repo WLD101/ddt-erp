@@ -28,8 +28,8 @@ export async function saveBusinessProfile(data: z.infer<typeof service.profileSc
     await service.markStepDone(ctx.organizationId, "profile");
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -40,8 +40,8 @@ export async function saveWelcomeStep(data: z.infer<typeof service.businessTypeS
     await service.markStepDone(ctx.organizationId, "welcome");
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -72,8 +72,8 @@ export async function saveOnboardingBranch(data: z.infer<typeof service.branchSc
     await service.markStepDone(ctx.organizationId, "branch");
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -129,8 +129,8 @@ export async function saveOnboardingProduct(data: z.infer<typeof service.onboard
 
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -164,8 +164,8 @@ export async function saveOnboardingCustomer(data: z.infer<typeof service.onboar
 
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -176,8 +176,8 @@ export async function skipOnboardingStep(stepId: service.StepId) {
     await service.skipStep(ctx.organizationId, stepId);
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -196,8 +196,8 @@ export async function completeOnboarding() {
 
     revalidatePath("/");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 
@@ -209,8 +209,8 @@ export async function seedDemoData() {
     const result = await service.seedDemoData(ctx.organizationId, ctx.branchId);
     revalidatePath("/");
     return { success: true, ...result };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
   }
 }
 

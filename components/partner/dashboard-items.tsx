@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Share2, Linkedin, Twitter, Users, TrendingUp, DollarSign, Target, Award } from "lucide-react";
+import { Copy, Check, Share2, Link, X, Users, TrendingUp, DollarSign, Target, Award } from "lucide-react";
 import { toast } from "sonner";
 import {
   AreaChart,
@@ -60,10 +60,10 @@ export function PartnerHero({ partnerCode }: { partnerCode: string }) {
             </Button>
             <div className="w-[1px] h-6 bg-white/10 mx-1" />
             <Button onClick={shareX} size="icon" variant="ghost" className="h-10 w-10 hover:bg-white/5 text-muted-foreground hover:text-white">
-                <Twitter className="w-4 h-4" />
+                <X className="w-4 h-4" />
             </Button>
             <Button onClick={shareLinkedIn} size="icon" variant="ghost" className="h-10 w-10 hover:bg-white/5 text-muted-foreground hover:text-white">
-                <Linkedin className="w-4 h-4" />
+                <Link className="w-4 h-4" />
             </Button>
         </div>
       </div>

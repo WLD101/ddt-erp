@@ -77,9 +77,20 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
     });
   }
 
-  const watchedItems = form.watch("items");
-  const subtotal = watchedItems.reduce((acc, item) => acc + (item.quantity * (item.unitPrice || 0)), 0);
-  const discount = Number(form.watch("discount")) || 0;
+  const watchedItems = React.useWatch({
+    control: form.control,
+    name: "items",
+    defaultValue: form.getValues("items"),
+  });
+
+  const watchedDiscount = React.useWatch({
+    control: form.control,
+    name: "discount",
+    defaultValue: form.getValues("discount"),
+  });
+
+  const subtotal = (watchedItems || []).reduce((acc, item) => acc + (item.quantity * (item.unitPrice || 0)), 0);
+  const discount = Number(watchedDiscount) || 0;
   const total = Math.max(0, subtotal - discount);
 
   return (

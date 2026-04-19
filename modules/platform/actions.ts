@@ -65,6 +65,7 @@ export async function getPlatformOverview() {
   };
 }
 
+
 /**
  * Retrieves specific multi-tenant global directory.
  */
@@ -74,10 +75,51 @@ export async function getPlatformTenants() {
     include: {
       subscription: true,
       _count: {
-        select: { memberships: true, branches: true }
+        select: { memberships: true, branches: true, products: true, salesInvoices: true }
       }
     }
   });
 
   return tenants;
+}
+
+/**
+ * Retrieves recent audit logs across all organizations.
+ */
+export async function getGlobalAuditLogs() {
+  const logs = await prisma.auditLog.findMany({
+    take: 20,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      user: { select: { name: true, email: true } },
+      organization: { select: { name: true } }
+    }
+  });
+
+  return logs;
+}
+
+/**
+ * Retrieves system health metrics based on database record counts.
+ */
+export async function getSystemHealth() {
+  const [
+    invoices,
+    products,
+    movements,
+    notifications
+  ] = await Promise.all([
+    prisma.salesInvoice.count(),
+    prisma.product.count(),
+    prisma.stockMovement.count(),
+    prisma.notification.count()
+  ]);
+
+  return {
+    invoices,
+    products,
+    movements,
+    notifications,
+    status: "HEALTHY" // Placeholder for real health checks
+  };
 }

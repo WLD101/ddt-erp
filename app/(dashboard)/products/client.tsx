@@ -145,10 +145,12 @@ export function ProductClient({ initialProducts, categories }: ProductClientProp
                 </TableCell>
                 <TableCell className="text-right pr-8">
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100" />
+                      }
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-white/10">
                       <DropdownMenuItem onClick={() => handleEdit(p)} className="gap-2 cursor-pointer font-bold">

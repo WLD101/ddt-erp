@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { LifecycleTemplates, StandardLifecycleTemplate } from "./templates";
 import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+
 
 /**
  * MOCK EMAIL PROVIDER INTERFACE
@@ -44,6 +44,9 @@ export async function triggerLifecycleEmail(userId: string, organizationId: stri
   if (!templateFn) throw new Error(`Template for event ${event} not found.`);
   
   const templateData = templateFn(user.name || "User", customParams);
+  
+  // Dynamic import react-dom/server to stay within server-only bounds of the component graph
+  const { renderToStaticMarkup } = await import("react-dom/server");
   const html = renderToStaticMarkup(<StandardLifecycleTemplate {...templateData} />);
 
   // 4. Send

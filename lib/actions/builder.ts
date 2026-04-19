@@ -1,4 +1,4 @@
-import { getCurrentTenantContext, TenantContext, requireRole } from "@/lib/tenant";
+import { getCurrentTenantContext, TenantContext, requireRole, requirePermission } from "@/lib/tenant";
 import { getTenantStore, ScopedPrisma } from "@/lib/db/client";
 import { writeAuditLog } from "@/lib/audit";
 import { z } from "zod";

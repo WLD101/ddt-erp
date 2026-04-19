@@ -6,8 +6,9 @@ import { generateInvoicePDF } from "@/lib/pdf/invoice-generator";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // 1. Resolve Auth & Tenant Context
     let ctx;

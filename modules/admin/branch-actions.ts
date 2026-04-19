@@ -6,20 +6,10 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-/**
- * SCHEMA: BRANCH CRUD
- */
-export const branchSchema = z.object({
-  name: z.string().min(2, "Branch name is required"),
-  code: z.string().optional(),
-  address: z.string().optional(),
-  isMain: z.boolean().default(false),
-});
+import { branchSchema, userBranchAssignmentSchema } from "./branch-schemas";
+// branchSchema is imported from branch-schemas.ts and should be used locally or re-exported from a non-"use server" file if needed.
+// Next.js "use server" files can only export async functions.
 
-export const userBranchAssignmentSchema = z.object({
-  membershipId: z.string(),
-  branchId: z.string().nullable(),
-});
 
 /**
  * ACTION: CREATE BRANCH
@@ -34,7 +24,7 @@ export const createBranch = createServerAction({
     entityType: "Branch",
     getEntityId: (res) => res.id,
   },
-  handler: async (data, ctx) => {
+  handler: async ({ input: data, context: ctx }) => {
     // If setting as main, unset other main branches for this org
     if (data.isMain) {
       await prisma.branch.updateMany({
@@ -56,7 +46,7 @@ export const createBranch = createServerAction({
  * ACTION: SET ACTIVE BRANCH (CLIENT PREFERENCE)
  */
 export async function setActiveBranch(branchId: string) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set("x-active-branch", branchId, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365, // 1 year
@@ -93,7 +83,7 @@ export const deleteBranch = createServerAction({
     entityType: "Branch",
     getEntityId: (id) => id,
   },
-  handler: async (id, ctx) => {
+  handler: async ({ input: id, context: ctx }) => {
     // Cannot delete the last branch or the current active main branch if needed
     const branch = await prisma.branch.findUnique({
       where: { id_organizationId: { id, organizationId: ctx.organizationId } },
@@ -122,7 +112,7 @@ export const assignUserToBranch = createServerAction({
     entityType: "OrganizationUser",
     getEntityId: (data) => data.membershipId,
   },
-  handler: async (data, ctx) => {
+  handler: async ({ input: data, context: ctx }) => {
     return prisma.organizationUser.update({
       where: { 
         id: data.membershipId,

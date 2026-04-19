@@ -35,11 +35,13 @@ export default async function BranchesPage() {
         </div>
 
         <Dialog>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-white font-bold h-12 px-6 rounded-xl shadow-lg shadow-primary/20 flex items-center gap-3 group">
-              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-              Establish New Site
-            </Button>
+          <DialogTrigger
+            render={
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold h-12 px-6 rounded-xl shadow-lg shadow-primary/20 flex items-center gap-3 group" />
+            }
+          >
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            Establish New Site
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] bg-slate-900/95 backdrop-blur-2xl border-white/5 rounded-3xl p-8">
             <DialogHeader className="mb-6">
@@ -110,16 +112,18 @@ export default async function BranchesPage() {
         
         {/* Placeholder for "Add Branch" visual cue */}
         <Dialog>
-          <DialogTrigger asChild>
-            <button className="h-full min-h-[280px] border-2 border-dashed border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center gap-4 hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 group">
-              <div className="p-4 bg-white/5 rounded-2xl group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500">
-                <Plus className="w-8 h-8 text-muted-foreground group-hover:text-primary" />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-white tracking-tight">Expand Operations</p>
-                <p className="text-xs text-muted-foreground mt-1">Add another physical location</p>
-              </div>
-            </button>
+          <DialogTrigger
+            render={
+              <button className="h-full min-h-[280px] border-2 border-dashed border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center gap-4 hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 group" />
+            }
+          >
+            <div className="p-4 bg-white/5 rounded-2xl group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500">
+              <Plus className="w-8 h-8 text-muted-foreground group-hover:text-primary" />
+            </div>
+            <div className="text-center">
+              <p className="font-bold text-white tracking-tight">Expand Operations</p>
+              <p className="text-xs text-muted-foreground mt-1">Add another physical location</p>
+            </div>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] bg-slate-900/95 backdrop-blur-2xl border-white/5 rounded-3xl p-8">
             <DialogHeader className="mb-6">

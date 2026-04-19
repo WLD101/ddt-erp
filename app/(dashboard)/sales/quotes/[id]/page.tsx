@@ -12,7 +12,9 @@ import {
   Clock,
   Printer,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  ArrowRight,
+  AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

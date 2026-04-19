@@ -73,7 +73,7 @@ export async function createNotification(db: ScopedPrisma, data: {
       actionUrl: data.actionUrl,
       entityType: data.entityType,
       entityId: data.entityId ?? data.deduplicateKey,
-      metadata: data.metadata,
+      metadata: data.metadata ? JSON.stringify(data.metadata) : null,
       isRead: false,
     },
   });

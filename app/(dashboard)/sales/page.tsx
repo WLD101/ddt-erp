@@ -23,12 +23,14 @@ export default async function SalesPage() {
           <p className="text-muted-foreground">Manage your customer sales and revenue.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" asChild>
-            <a href="/api/export/sales" download>
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </a>
-          </Button>
+          <a 
+            href="/api/export/sales" 
+            download 
+            className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted transition-colors"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </a>
           <Link href="/sales/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />

@@ -9,8 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, LineChart, PackageSearch, AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { triggerNotificationPulse } from "@/modules/notifications/actions";
+import { isSuperAdmin } from "@/lib/tenant";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
+  const session = await auth();
+  
+  // If Super Admin, automatically redirect to Platform Ops Command Center
+  if (isSuperAdmin(session?.user?.email)) {
+    redirect("/platform");
+  }
+
   // Sync operational health in background
   triggerNotificationPulse().catch(console.error);
 
@@ -31,7 +41,7 @@ export default async function DashboardPage() {
           Your active metrics and financials for the last 30 days.
         </p>
       </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 border-white/5 bg-gradient-to-br from-card to-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-foreground/80">Net Treasury</CardTitle>

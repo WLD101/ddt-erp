@@ -35,23 +35,25 @@ interface UserButtonProps {
 export function UserButton({ user }: UserButtonProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full bg-primary/10 hover:bg-primary/20 hover:-translate-y-0.5 transition-all duration-300 ring-2 ring-transparent hover:ring-primary/50 relative group"
-        >
-          {user.image ? (
-            <img 
-              src={user.image} 
-              alt={user.name || "User"} 
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
-            <UserCircle className="w-6 h-6 text-primary" />
-          )}
-          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full group-hover:scale-110 transition-transform" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-primary/10 hover:bg-primary/20 hover:-translate-y-0.5 transition-all duration-300 ring-2 ring-transparent hover:ring-primary/50 relative group"
+          />
+        }
+      >
+        {user.image ? (
+          <img 
+            src={user.image} 
+            alt={user.name || "User"} 
+            className="w-full h-full rounded-full object-cover"
+          />
+        ) : (
+          <UserCircle className="w-6 h-6 text-primary" />
+        )}
+        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full group-hover:scale-110 transition-transform" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 mt-2 border-white/10 bg-[#121212]/95 backdrop-blur-xl shadow-2xl" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">

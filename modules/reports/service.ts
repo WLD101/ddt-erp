@@ -111,8 +111,8 @@ export async function getFinancialTrends(
       select: { date: true, totalAmount: true }
     }),
     db.purchaseInvoice.findMany({
-      where: { branchId, date: { gte: start, lte: end } },
-      select: { date: true, totalAmount: true }
+      where: { branchId, issueDate: { gte: start, lte: end } },
+      select: { issueDate: true, totalAmount: true }
     }),
     db.expense.findMany({
       where: { branchId, date: { gte: start, lte: end } },
@@ -135,7 +135,7 @@ export async function getFinancialTrends(
   });
 
   purchases.forEach(p => {
-    const key = getGroupKey(p.date);
+    const key = getGroupKey(p.issueDate);
     if (!trends[key]) trends[key] = { revenue: 0, purchases: 0, expenses: 0 };
     trends[key].purchases += p.totalAmount;
   });
@@ -196,4 +196,73 @@ export async function getRecentTransactions(db: ScopedPrisma, branchId: string, 
   ]
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   .slice(0, limit);
+}
+
+/**
+ * SERVICE: TOP SELLING PRODUCTS
+ */
+export async function getTopProducts(db: ScopedPrisma, limit = 5) {
+  const topProducts = await db.salesInvoiceItem.groupBy({
+    by: ['productId'],
+    _sum: {
+      total: true,
+      quantity: true,
+    },
+    orderBy: {
+      _sum: {
+        total: 'desc',
+      },
+    },
+    take: limit,
+  });
+
+  const productDetails = await db.product.findMany({
+    where: {
+      id: { in: topProducts.map(p => p.productId) },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  return topProducts.map(tp => ({
+    ...tp,
+    name: productDetails.find(p => p.id === tp.productId)?.name || "Unknown Product",
+  }));
+}
+
+/**
+ * SERVICE: OUTSTANDING BALANCES
+ */
+export async function getOutstandingBalances(db: ScopedPrisma) {
+  const [customers, suppliers] = await Promise.all([
+    db.customer.findMany({
+      include: {
+        salesInvoices: {
+          where: { status: { notIn: ["PAID", "VOID"] } },
+          select: { totalAmount: true }
+        }
+      }
+    }),
+    db.supplier.findMany({
+      include: {
+        purchaseInvoices: {
+          where: { status: { notIn: ["PAID", "VOID"] } },
+          select: { totalAmount: true }
+        }
+      }
+    })
+  ]);
+
+  return {
+    customerBalances: customers.map(c => ({
+      name: c.name,
+      balance: c.salesInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0)
+    })).filter(c => c.balance > 0).sort((a,b) => b.balance - a.balance).slice(0, 5),
+    supplierBalances: suppliers.map(s => ({
+      name: s.name,
+      balance: s.purchaseInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0)
+    })).filter(s => s.balance > 0).sort((a,b) => b.balance - a.balance).slice(0, 5)
+  };
 }

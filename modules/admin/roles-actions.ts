@@ -23,7 +23,7 @@ export const updateRolePermissions = createServerAction({
   permissions: ["rbac.manage"],
   schema: updateRolePermissionsSchema,
   revalidatePaths: ["/settings/roles"],
-  handler: async (data, ctx) => {
+  handler: async ({ input: data, context: ctx }) => {
     // 1. Verify the role belongs to this organization (or is a system role being overridden)
     const role = await prisma.role.findUnique({
       where: { id: data.roleId },

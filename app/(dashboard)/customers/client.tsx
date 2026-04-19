@@ -83,12 +83,14 @@ export function CustomerClient({ initialCustomers }: { initialCustomers: Custome
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-white/5 bg-white/5 hover:bg-white/10" asChild>
-            <a href="/api/export/customers" download>
-              <Download className="w-4 h-4 mr-2" />
-              Manifest CSV
-            </a>
-          </Button>
+          <a 
+             href="/api/export/customers" 
+             download 
+             className="inline-flex items-center justify-center rounded-lg border border-white/5 bg-white/5 px-2.5 h-8 text-sm font-medium text-white hover:bg-white/10 transition-colors"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Manifest CSV
+          </a>
           <Button onClick={handleCreate} className="shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)]">
             <Plus className="w-4 h-4 mr-2" />
             Onboard New
@@ -121,10 +123,12 @@ export function CustomerClient({ initialCustomers }: { initialCustomers: Custome
                 </TableCell>
                 <TableCell className="text-right pr-8">
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100" />
+                      }
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-white/10">
                       <DropdownMenuItem onClick={() => handleEdit(customer)} className="gap-2 cursor-pointer font-bold">

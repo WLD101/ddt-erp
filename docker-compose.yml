@@ -1,5 +1,6 @@
 services:
-  db:
+  ddt-erp-db:
+    container_name: ddt-erp-postgres
     image: postgres:15
     restart: always
     environment:
@@ -7,9 +8,9 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: erp
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ddt_erp_postgres_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  ddt_erp_postgres_data:

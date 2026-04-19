@@ -106,20 +106,22 @@ export function NotificationBell() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-10 w-10 hover:bg-white/10 rounded-xl transition-all group"
-          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
-        >
-          <Bell className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 rounded-full bg-rose-500 text-[10px] font-black text-white border-2 border-slate-950 animate-in zoom-in duration-200">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-10 w-10 hover:bg-white/10 rounded-xl transition-all group"
+            aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+          />
+        }
+      >
+        <Bell className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 rounded-full bg-rose-500 text-[10px] font-black text-white border-2 border-slate-950 animate-in zoom-in duration-200">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </PopoverTrigger>
 
       <PopoverContent

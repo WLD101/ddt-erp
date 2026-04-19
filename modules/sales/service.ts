@@ -39,7 +39,7 @@ export async function getSalesInvoiceById(db: ScopedPrisma, branchId: string, id
 }
 
 export async function createSalesInvoice(db: ScopedPrisma, branchId: string, data: SalesInvoiceInput) {
-  return db.$transaction(async (tx: any) => {
+  return db.$transaction(async (tx) => {
     let subtotal = 0;
 
     const itemsToCreate = data.items.map((item) => {

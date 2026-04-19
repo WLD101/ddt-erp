@@ -16,10 +16,10 @@ export const metadata: Metadata = {
 
 const FEATURES = [
   { title: "Rapid Generation", description: "Spin up complex quotations using your live inventory pricing in seconds.", icon: FastForward },
-  { title: "One-Click Conversion", description: "Convert an accepted quote directly into a live Sales Invoice without manual re-entry.", icon: RefreshCcw: false ? null : FastForward }, // Note: Swapping missing icon below
+  { title: "One-Click Conversion", description: "Convert an accepted quote directly into a live Sales Invoice without manual re-entry.", icon: FastForward }, 
   { title: "Expiry Tracking", description: "Assign validity periods to your quotes so you're never held to outdated pricing agreements.", icon: Clock },
   { title: "Digital Delivery", description: "Export quotes directly to PDF formats suitable for instant email dispatch to clients.", icon: MailPlus },
-  { title: "Cost Estimates", description: "View your true internal COGS alongside the quoted retail price to ensure the deal remains profitable.", icon: Calculator: false ? null : Settings2 },
+  { title: "Cost Estimates", description: "View your true internal COGS alongside the quoted retail price to ensure the deal remains profitable.", icon: Settings2 },
   { title: "Approval Workflows", description: "Track the lifecycle of a quote from 'Draft' to 'Sent' to 'Accepted' securely.", icon: Stamp },
 ];
 

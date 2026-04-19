@@ -16,8 +16,9 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
 
-export default async function AccountDetailPage({ params }: { params: { id: string } }) {
-  const account = await getAccountById(params.id);
+export default async function AccountDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const account = await getAccountById(id);
 
   if (!account) return notFound();
 

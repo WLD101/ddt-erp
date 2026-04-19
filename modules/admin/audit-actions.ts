@@ -2,7 +2,7 @@
 "use server";
 
 import * as service from "./audit-service";
-import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
+import { getCurrentTenantContext, requireRole, requirePermission } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 
 import { canUseFeature } from "@/lib/billing/enforcement";

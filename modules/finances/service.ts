@@ -198,3 +198,28 @@ export async function getAccountById(db: ScopedPrisma, id: string) {
     }
   });
 }
+
+/**
+ * SERVICE: UNIFIED LEDGER
+ * Consolidated stream of all accounting entries.
+ */
+export async function getUnifiedLedger(db: ScopedPrisma) {
+  const entries = await db.ledgerEntry.findMany({
+    include: {
+      account: { select: { name: true } }
+    },
+    orderBy: { createdAt: "desc" },
+    take: 1000,
+  });
+
+  return entries.map(e => ({
+    id: e.id,
+    date: e.createdAt,
+    type: e.amount > 0 ? "INFLOW" : "OUTFLOW",
+    description: e.description,
+    category: e.referenceType,
+    party: "Internal",
+    account: e.account.name,
+    amount: Math.abs(e.amount),
+  }));
+}
