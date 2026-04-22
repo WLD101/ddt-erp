@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { getPostSignInRedirect } from "@/lib/security/access";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -46,7 +45,15 @@ function SignInForm() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Welcome back!");
-        router.push(getPostSignInRedirect({ email: data.email, callbackUrl }));
+        const sessionResponse = await fetch("/api/auth/session", { cache: "no-store" });
+        const session = await sessionResponse.json();
+        if (session?.user?.isSuperAdmin) {
+          router.push("/platform");
+        } else if (!session?.user?.organizationId && callbackUrl === "/") {
+          router.push("/onboarding");
+        } else {
+          router.push(callbackUrl);
+        }
         router.refresh();
       }
     } catch (error) {

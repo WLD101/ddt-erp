@@ -4,6 +4,7 @@ import {
   getAuthenticatedRouteRedirect,
   getPostSignInRedirect,
   getUnauthenticatedRedirect,
+  isPlatformAdminEmail,
   isSafeRelativePath,
   shouldResolveTenantContext,
   stripSensitiveSearchParams,
@@ -36,6 +37,13 @@ test("super-admins do not resolve tenant context", () => {
 
   assert.equal(shouldResolveTenantContext("admin@example.com"), false);
   assert.equal(shouldResolveTenantContext("tenant@example.com"), true);
+});
+
+test("local development admin is not exposed in production", () => {
+  process.env.SUPER_ADMIN_EMAILS = "";
+
+  assert.equal(isPlatformAdminEmail("admin@ddterp.local", "development"), true);
+  assert.equal(isPlatformAdminEmail("admin@ddterp.local", "production"), false);
 });
 
 test("unauthenticated protected pages redirect to signin with a safe callback", () => {
