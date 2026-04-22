@@ -3,12 +3,16 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { triggerLifecycleEmail } from "../emails/service";
 import { trackEvent, AnalyticCategory } from "../analytics/service";
+import { createOpaqueToken, hashToken } from "@/lib/security/tokens";
 
 export const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
+  phone: z.string().min(5, "Phone number is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   organizationName: z.string().min(2, "Organization name must be at least 2 characters"),
+  city: z.string().min(2, "City is required"),
+  country: z.string().min(2, "Country is required"),
   referralCode: z.string().optional(),
 });
 
@@ -26,7 +30,8 @@ export type JoinInput = z.infer<typeof joinSchema>;
  * Note: Uses raw prisma as organization context does not exist yet.
  */
 export async function bootstrapOrganization(data: SignUpInput) {
-  const { name, email, password, organizationName, referralCode } = data;
+  const { name, phone, password, organizationName, city, country, referralCode } = data;
+  const email = data.email.toLowerCase();
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -65,25 +70,35 @@ export async function bootstrapOrganization(data: SignUpInput) {
       data: {
         name,
         email,
+        phone,
         password: hashedPassword,
+        authStatus: "verified",
+        verifiedAt: new Date(),
+        emailVerified: new Date(),
       },
     });
 
-    // 2. Create Organization with 14-Day Free Trial
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14);
+    const now = new Date();
 
     const org = await tx.organization.create({
       data: {
         name: organizationName,
         slug: organizationSlug,
+        phone,
+        email,
+        city,
+        country,
+        lifecycleStatus: "onboarding",
+        accessStatus: "onboarding",
         referralId,
         subscription: {
           create: {
-            planId: "pro",
-            status: "trialing",
-            currentPeriodStart: new Date(),
-            currentPeriodEnd: trialEnd,
+            planId: "unassigned",
+            status: "payment_pending",
+            paymentStatus: "payment_pending",
+            accessStatus: "payment_pending",
+            currentPeriodStart: now,
+            currentPeriodEnd: now,
           }
         }
       },
@@ -223,19 +238,20 @@ export async function joinByInvitation(data: JoinInput) {
  * SERVICE: PASSWORD RESET REQUEST
  */
 export async function requestPasswordReset(email: string) {
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new Error("If an account exists with that email, a reset link has been sent.");
+  const normalizedEmail = email.toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  if (!user) return true;
 
-  const { v4: uuidv4 } = await import("uuid");
-  const token = uuidv4();
+  const { token, tokenHash } = createOpaqueToken();
   const expires = new Date(Date.now() + 3600000); // 1 hour
 
   await prisma.passwordResetToken.create({
-    data: { email, token, expires }
+    data: { email: normalizedEmail, token: tokenHash, expires }
   });
 
-  // Trigger Email (Simulation/Placeholder logic)
-  await triggerLifecycleEmail(user.id, "", "PASSWORD_RESET", { token }).catch(console.error);
+  await triggerLifecycleEmail(user.id, null, "PASSWORD_RESET", { token }).catch((error) => {
+    console.error("[PasswordReset] Email dispatch failed:", error);
+  });
 
   return true;
 }
@@ -244,7 +260,8 @@ export async function requestPasswordReset(email: string) {
  * SERVICE: RESET PASSWORD EXECUTION
  */
 export async function resetPassword(token: string, password: string) {
-  const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } });
+  const tokenHash = hashToken(token);
+  const resetToken = await prisma.passwordResetToken.findUnique({ where: { token: tokenHash } });
   if (!resetToken || resetToken.expires < new Date()) {
     throw new Error("Invalid or expired reset token.");
   }

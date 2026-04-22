@@ -11,15 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Mail, Lock, Building, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Building, Loader2, AlertCircle, CheckCircle2, Phone, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { signUpAction } from "@/modules/auth/actions";
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(5, "Phone number is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   organizationName: z.string().min(2, "Organization name must be at least 2 characters"),
+  city: z.string().min(2, "City is required"),
+  country: z.string().min(2, "Country is required"),
   referralCode: z.string().optional(),
 });
 
@@ -50,12 +53,11 @@ export default function SignUpPage() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Account and organization created!");
+        toast.success("Verification code sent to your email.");
         setIsSuccess(true);
-        // Delay redirect to show success state
         setTimeout(() => {
-          router.push("/auth/signin");
-        }, 3000);
+          router.push(result.next || `/auth/verify-otp?email=${encodeURIComponent(data.email)}`);
+        }, 1500);
       }
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -70,10 +72,10 @@ export default function SignUpPage() {
         <div className="mx-auto bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-2 ring-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
           <CheckCircle2 className="w-8 h-8 text-green-500" />
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight text-white mb-2">Organization Bootstrapped!</CardTitle>
+        <CardTitle className="text-2xl font-bold tracking-tight text-white mb-2">Check Your Email</CardTitle>
         <CardDescription className="text-muted-foreground text-lg">
-          Your professional environment is ready.<br />
-          Redirecting you to sign in...
+          Enter the OTP to unlock onboarding.<br />
+          Redirecting you to verification...
         </CardDescription>
       </Card>
     );
@@ -144,6 +146,48 @@ export default function SignUpPage() {
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.email.message}
               </p>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2 group">
+              <Label htmlFor="phone" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Phone</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                <Input
+                  id="phone"
+                  placeholder="+1 555 0100"
+                  className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                  {...register("phone")}
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.phone && <p className="text-[10px] text-red-400 mt-1">{errors.phone.message}</p>}
+            </div>
+            <div className="space-y-2 group">
+              <Label htmlFor="city" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">City</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                <Input
+                  id="city"
+                  placeholder="Lahore"
+                  className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                  {...register("city")}
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.city && <p className="text-[10px] text-red-400 mt-1">{errors.city.message}</p>}
+            </div>
+            <div className="space-y-2 group">
+              <Label htmlFor="country" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Country</Label>
+              <Input
+                id="country"
+                placeholder="Pakistan"
+                className="bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                {...register("country")}
+                disabled={isLoading}
+              />
+              {errors.country && <p className="text-[10px] text-red-400 mt-1">{errors.country.message}</p>}
+            </div>
           </div>
           
           <div className="space-y-2 group">

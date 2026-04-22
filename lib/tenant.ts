@@ -7,20 +7,17 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isPlatformAdminEmail, shouldResolveTenantContext } from "@/lib/security/access";
 
 // ---------------------------------------------------------------------------
 // Super Admin / Platform Oversight logic
 // ---------------------------------------------------------------------------
 
-const SUPER_ADMINS = process.env.SUPER_ADMIN_EMAILS || "";
-
 /**
  * Checks if a user email belongs to the predefined list of platform operators.
  */
 export function isSuperAdmin(email?: string | null): boolean {
-  if (!email) return false;
-  const allowedEmails = SUPER_ADMINS.toLowerCase().split(",").map(e => e.trim());
-  return allowedEmails.includes(email.toLowerCase());
+  return isPlatformAdminEmail(email);
 }
 
 // ---------------------------------------------------------------------------
@@ -74,6 +71,10 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
 
   if (!session?.user?.id) {
     throw new TenantForbiddenError("No authenticated session found.");
+  }
+
+  if (!shouldResolveTenantContext(session.user.email)) {
+    throw new TenantForbiddenError("Platform administrators do not have tenant context.");
   }
 
   const userId = session.user.id;

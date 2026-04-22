@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { getPostSignInRedirect } from "@/lib/security/access";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -45,7 +46,7 @@ function SignInForm() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Welcome back!");
-        router.push(callbackUrl);
+        router.push(getPostSignInRedirect({ email: data.email, callbackUrl }));
         router.refresh();
       }
     } catch (error) {

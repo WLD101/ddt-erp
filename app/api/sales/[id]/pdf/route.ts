@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenantContext, TenantForbiddenError, tenantForbiddenResponse } from "@/lib/tenant";
 import { generateInvoicePDF } from "@/lib/pdf/invoice-generator";
+import { assertBranchAccess, assertOrganizationAccess } from "@/lib/security/scope";
 
 export async function GET(
   req: Request,
@@ -24,7 +25,7 @@ export async function GET(
     // 2. Fetch Invoice Data with Security Check
     const invoice = await prisma.salesInvoice.findUnique({
       where: { 
-        id_organizationId: { id: params.id, organizationId: ctx.organizationId } // Critical security boundary
+        id_organizationId: { id, organizationId: ctx.organizationId } // Critical security boundary
       },
       include: {
         customer: true,
@@ -44,10 +45,17 @@ export async function GET(
       );
     }
 
+    assertOrganizationAccess(invoice.organizationId, ctx.organizationId);
+    assertBranchAccess({
+      recordBranchId: invoice.branchId,
+      activeBranchId: ctx.branchId,
+      role: ctx.role,
+    });
+
     // 3. Generate PDF Buffer
     const pdfBuffer = generateInvoicePDF({
       ...invoice,
-      issueDate: invoice.issueDate.toISOString(),
+      issueDate: invoice.date.toISOString(),
       items: invoice.items.map(item => ({
         ...item,
         product: { name: item.product.name }
@@ -57,7 +65,7 @@ export async function GET(
     // 4. Return as Streamed Download
     const fileName = `invoice-${invoice.invoiceNumber || invoice.id}.pdf`;
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

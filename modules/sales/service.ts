@@ -40,6 +40,21 @@ export async function getSalesInvoiceById(db: ScopedPrisma, branchId: string, id
 
 export async function createSalesInvoice(db: ScopedPrisma, branchId: string, data: SalesInvoiceInput) {
   return db.$transaction(async (tx) => {
+    const customer = await tx.customer.findUnique({
+      where: { id_organizationId: { id: data.customerId, organizationId: db.organizationId } },
+      select: { id: true },
+    });
+    if (!customer) throw new Error("Customer not found or access denied.");
+
+    const productIds = Array.from(new Set(data.items.map((item) => item.productId)));
+    const products = await tx.product.findMany({
+      where: { organizationId: db.organizationId, id: { in: productIds } },
+      select: { id: true },
+    });
+    if (products.length !== productIds.length) {
+      throw new Error("One or more products were not found in this organization.");
+    }
+
     let subtotal = 0;
 
     const itemsToCreate = data.items.map((item) => {
@@ -79,7 +94,7 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
     // 1.1 If converted from quotation, update quotation status
     if (data.quotationId) {
       await tx.quotation.update({
-        where: { id: data.quotationId },
+        where: { id_organizationId: { id: data.quotationId, organizationId: db.organizationId } },
         data: { status: "CONVERTED" },
       });
     }
@@ -89,13 +104,13 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
       const inventoryItem = await tx.inventoryItem.upsert({
         where: {
           organizationId_branchId_productId: {
-            organizationId: tx.organizationId,
+            organizationId: db.organizationId,
             branchId,
             productId: item.productId,
           },
         },
         create: {
-          organizationId: tx.organizationId,
+          organizationId: db.organizationId,
           branchId,
           productId: item.productId,
           quantity: -item.quantity,
@@ -106,7 +121,7 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
 
       await tx.stockMovement.create({
         data: {
-          organizationId: tx.organizationId,
+          organizationId: db.organizationId,
           branchId,
           inventoryItemId: inventoryItem.id,
           type: "OUT",

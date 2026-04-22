@@ -11,15 +11,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import fs from "fs";
-import path from "path";
-
-const DEBUG_LOG = path.join(process.cwd(), "auth-debug.log");
-
-function logAuth(message: string) {
-  const timestamp = new Date().toISOString();
-  fs.appendFileSync(DEBUG_LOG, `[${timestamp}] ${message}\n`);
-}
+import { isPlatformAdminEmail } from "@/lib/security/access";
+import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -34,20 +27,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
         
         const email = (credentials.email as string).toLowerCase();
-        logAuth(`Login attempt for: ${email}`);
-        logAuth(`Using DB URL: ${process.env.DATABASE_URL}`);
+        const limit = checkRateLimit(rateLimitKey("login", email), {
+          limit: 10,
+          windowMs: 15 * 60 * 1000,
+        });
+        if (!limit.allowed) return null;
 
         const user = await prisma.user.findFirst({
           where: { email },
         });
 
         if (!user) {
-          logAuth(`User not found: ${email}`);
           return null;
         }
 
         if (!user.password) {
-          logAuth(`User has no password: ${email}`);
           return null;
         }
 
@@ -57,11 +51,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!isValid) {
-          logAuth(`Invalid password for: ${email}`);
           return null;
         }
 
-        logAuth(`Success for: ${email}`);
         return user;
       },
     }),
@@ -79,17 +71,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // `user` is only populated on the initial sign-in event
       if (user?.id) {
         token.sub = user.id;
+        token.isSuperAdmin = isPlatformAdminEmail(user.email);
 
         // Resolve the user's primary org membership at login time
         // and cache it in the JWT to avoid per-request DB lookups.
-        const membership = await prisma.organizationUser.findFirst({
-          where: { userId: user.id },
-          select: { organizationId: true },
-          orderBy: { createdAt: "asc" }, // earliest = primary org
-        });
+        const membership = token.isSuperAdmin
+          ? null
+          : await prisma.organizationUser.findFirst({
+              where: { userId: user.id },
+              select: { organizationId: true },
+              orderBy: { createdAt: "asc" }, // earliest = primary org
+            });
 
         if (membership) {
           token.organizationId = membership.organizationId;
+        } else {
+          delete token.organizationId;
         }
       }
       return token;
@@ -105,6 +102,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (token.organizationId && session.user) {
         session.user.organizationId = token.organizationId;
+      }
+      if (session.user) {
+        session.user.isSuperAdmin = token.isSuperAdmin === true;
       }
       return session;
     },

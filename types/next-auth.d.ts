@@ -12,6 +12,8 @@ declare module "next-auth" {
       id: string;
       /** The resolved primary organization for this session */
       organizationId?: string;
+      /** True for platform operators configured through SUPER_ADMIN_EMAILS */
+      isSuperAdmin?: boolean;
       // Standard fields
       name?: string | null;
       email?: string | null;
@@ -24,6 +26,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     organizationId?: string;
+    isSuperAdmin?: boolean;
   }
 }
 

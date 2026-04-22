@@ -4,23 +4,77 @@ import { signIn, signOut } from "@/lib/auth";
 import * as service from "./service";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
+import { requestOtp, verifyOtp } from "@/modules/otp/service";
+import { writePlatformAuditLog } from "@/lib/platform-audit";
 
 /**
  * SIGN UP / ORG BOOTSTRAP
  */
 export async function signUpAction(data: unknown) {
+  return requestPaidSignupOtpAction(data);
+}
+
+export async function requestPaidSignupOtpAction(data: unknown) {
   const result = service.signUpSchema.safeParse(data);
 
   if (!result.success) {
     return { error: result.error.errors[0].message };
   }
 
+  const limit = checkRateLimit(rateLimitKey("signup", result.data.email), {
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!limit.allowed) {
+    return { error: "Too many signup attempts. Please try again later." };
+  }
+
   try {
-    await service.bootstrapOrganization(result.data);
-    return { success: "Account and Organization created successfully. You can now sign in." };
-  } catch (error) {
+    await requestOtp({
+      email: result.data.email,
+      purpose: "PAID_SIGNUP",
+      payload: result.data,
+    });
+    await writePlatformAuditLog({
+      action: "OTP_SENT",
+      entityType: "PaidSignup",
+      entityId: result.data.email.toLowerCase(),
+      details: "Paid signup OTP sent.",
+    });
+    return { success: "Verification code sent. Please verify your email.", next: `/auth/verify-otp?flow=paid&email=${encodeURIComponent(result.data.email)}` };
+  } catch (error: any) {
     console.error("Signup error:", error);
     return { error: error.message || "Something went wrong during registration." };
+  }
+}
+
+export async function verifyPaidSignupOtpAction(data: unknown) {
+  const input = data as any;
+  if (!input?.email || !input?.code) return { error: "Email and OTP are required." };
+
+  const verified = await verifyOtp({
+    email: input.email,
+    purpose: "PAID_SIGNUP",
+    code: input.code,
+  });
+  if (!verified.ok) return { error: verified.error };
+
+  const payload = verified.payload;
+  const parsed = service.signUpSchema.safeParse(payload);
+  if (!parsed.success) return { error: "Signup payload expired. Please sign up again." };
+
+  try {
+    await service.bootstrapOrganization(parsed.data);
+    await writePlatformAuditLog({
+      action: "OTP_VERIFIED",
+      entityType: "PaidSignup",
+      entityId: parsed.data.email.toLowerCase(),
+      details: "Paid signup OTP verified and organization provisioned.",
+    });
+    return { success: "Email verified. Please sign in to continue onboarding.", next: "/auth/signin?callbackUrl=/onboarding/packages" };
+  } catch (error: any) {
+    return { error: error.message || "Failed to complete signup." };
   }
 }
 
@@ -81,12 +135,20 @@ export async function joinOrganizationAction(data: unknown) {
 /**
  * FORGOT PASSWORD
  */
-export async function forgotPasswordAction(email: string) {
+export async function forgotPasswordAction(email: string): Promise<{ success?: boolean; error?: string }> {
+  const limit = checkRateLimit(rateLimitKey("password-reset", email), {
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!limit.allowed) {
+    return { success: true };
+  }
+
   try {
     await service.requestPasswordReset(email);
     return { success: true };
-  } catch (error) {
-    return { error: (error as any).message };
+  } catch {
+    return { success: true };
   }
 }
 

@@ -9,6 +9,9 @@ const TENANT_MODELS = [
   "Invitation",
   "OrganizationUser",
   "Subscription",
+  "OrganizationPackage",
+  "ExportRequest",
+  "Branch",
   "Customer",
   "Supplier",
   "Category",
@@ -16,10 +19,17 @@ const TENANT_MODELS = [
   "InventoryItem",
   "StockMovement",
   "SalesInvoice",
+  "SalesReturn",
   "PurchaseInvoice",
+  "PurchaseReturn",
+  "Quotation",
   "Expense",
   "Payment",
+  "FinancialAccount",
+  "LedgerEntry",
+  "AccountTransfer",
   "AuditLog",
+  "Notification",
 ];
 
 /**

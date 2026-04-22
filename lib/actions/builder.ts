@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { PlanConfig } from "@/lib/billing/plans";
 import { canUseFeature, assertPlanLimit } from "@/lib/billing/enforcement";
 import { trackEvent, AnalyticCategory } from "@/modules/analytics/service";
+import { assertErpAccess } from "@/lib/billing/access";
 
 export type ActionContext = {
   ctx: TenantContext;
@@ -68,6 +69,9 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
     try {
       // 1. Authentication & Context Resolution
       const ctx = await getCurrentTenantContext();
+      if (config.enforceBilling !== false) {
+        await assertErpAccess(ctx);
+      }
       
       // 2. Role Authorization
       if (config.roles && config.roles.length > 0) {
@@ -80,15 +84,6 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
       if (config.permissions) {
         for (const permission of config.permissions) {
           requirePermission(ctx, permission);
-        }
-      }
-
-      // 3. Subscription Expiration Gating
-      if (config.enforceBilling !== false) {
-        const { getSubscriptionContext } = await import("@/lib/billing/enforcement");
-        const subCtx = await getSubscriptionContext(ctx.organizationId);
-        if (subCtx.status === "expired") {
-          return { success: false, error: "Your subscription has expired. Please upgrade your plan to perform this action." };
         }
       }
 
@@ -170,6 +165,9 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
     } catch (err: any) {
       // Standardize Forbidden errors from tenant.ts
       if (err.name === "TenantForbiddenError") {
+        return { success: false, error: err.message };
+      }
+      if (err.name === "ErpAccessError") {
         return { success: false, error: err.message };
       }
 

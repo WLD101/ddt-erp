@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
+import { requirePlatformAdmin, authorizationErrorResponse } from "@/lib/security/guards";
 
 export async function GET() {
-  return NextResponse.json({
-    DATABASE_URL: process.env.DATABASE_URL,
-    SUPER_ADMIN_EMAILS: process.env.SUPER_ADMIN_EMAILS,
-    NODE_ENV: process.env.NODE_ENV,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  });
+  try {
+    await requirePlatformAdmin();
+    return NextResponse.json({
+      NODE_ENV: process.env.NODE_ENV,
+      hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+      hasSuperAdminEmails: Boolean(process.env.SUPER_ADMIN_EMAILS),
+      hasNextAuthUrl: Boolean(process.env.NEXTAUTH_URL),
+    });
+  } catch (error) {
+    return authorizationErrorResponse(error);
+  }
 }

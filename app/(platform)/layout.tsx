@@ -1,22 +1,17 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Server, Users, Activity, BarChart3, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-// To grant yourself access to this dashboard, your active session email MUST exist in this env string
-const SUPER_ADMINS = process.env.SUPER_ADMIN_EMAILS || "";
+import { Server, Users, Activity, BarChart3, Settings, PackageOpen, FileDown, Target } from "lucide-react";
+import { isPlatformAdminEmail } from "@/lib/security/access";
 
 async function requireSuperAdmin() {
   const session = await auth();
   const userEmail = session?.user?.email?.toLowerCase();
 
   // If unauthenticated or email doesn't strictly match the comma-separated env list, reject.
-  if (!userEmail) redirect("/auth/signin");
-
-  const allowedEmails = SUPER_ADMINS.toLowerCase().split(",").map(e => e.trim());
+  if (!userEmail) redirect("/auth/signin?callbackUrl=/platform");
   
-  if (!allowedEmails.includes(userEmail)) {
+  if (!isPlatformAdminEmail(userEmail)) {
     // Alternatively, we could throw a generic 403. Redirecting to standard dashboard is safest.
     redirect("/");
   }
@@ -44,6 +39,15 @@ export default async function PlatformLayout({ children }: { children: React.Rea
           </Link>
           <Link href="/platform/tenants" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground">
             <Users className="w-4 h-4" /> Tenants Directory
+          </Link>
+          <Link href="/platform/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground">
+            <Target className="w-4 h-4" /> Demo Leads
+          </Link>
+          <Link href="/platform/packages" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground">
+            <PackageOpen className="w-4 h-4" /> Packages
+          </Link>
+          <Link href="/platform/exports" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground">
+            <FileDown className="w-4 h-4" /> Export Requests
           </Link>
           <Link href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground cursor-not-allowed opacity-50">
             <Activity className="w-4 h-4" /> System Health

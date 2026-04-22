@@ -1,22 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { requirePlatformAdmin, authorizationErrorResponse } from "@/lib/security/guards";
 
 export async function GET() {
-  const email = "waleed@ddterp.com";
-  const user = await prisma.user.findFirst({
-    where: { email },
-  });
-  
-  const allUsers = await prisma.user.findMany({
-    select: { email: true }
-  });
+  try {
+    await requirePlatformAdmin();
+    const [userCount, orgCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.organization.count(),
+    ]);
 
-  return NextResponse.json({
-    searchingFor: email,
-    found: !!user,
-    user: user ? { email: user.email, id: user.id } : null,
-    totalUsers: allUsers.length,
-    allUsers: allUsers,
-    DATABASE_URL: process.env.DATABASE_URL
-  });
+    return NextResponse.json({
+      ok: true,
+      userCount,
+      orgCount,
+      hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    });
+  } catch (error) {
+    return authorizationErrorResponse(error);
+  }
 }

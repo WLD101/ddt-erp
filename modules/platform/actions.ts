@@ -2,12 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { PLANS } from "@/lib/billing/plans";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 
 /**
  * Retrieves macro analytics for the entire platform.
  * Bypasses all multi-tenant constraints implicitly.
  */
 export async function getPlatformOverview() {
+  await requirePlatformAdmin();
   const [
     totalTenants,
     totalUsers,
@@ -70,6 +72,7 @@ export async function getPlatformOverview() {
  * Retrieves specific multi-tenant global directory.
  */
 export async function getPlatformTenants() {
+  await requirePlatformAdmin();
   const tenants = await prisma.organization.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
@@ -87,6 +90,7 @@ export async function getPlatformTenants() {
  * Retrieves recent audit logs across all organizations.
  */
 export async function getGlobalAuditLogs() {
+  await requirePlatformAdmin();
   const logs = await prisma.auditLog.findMany({
     take: 20,
     orderBy: { createdAt: 'desc' },
@@ -103,6 +107,7 @@ export async function getGlobalAuditLogs() {
  * Retrieves system health metrics based on database record counts.
  */
 export async function getSystemHealth() {
+  await requirePlatformAdmin();
   const [
     invoices,
     products,

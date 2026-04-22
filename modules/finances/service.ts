@@ -40,7 +40,7 @@ export async function recordLedgerEntry(
 ) {
   // 1. Update the account balance
   const account = await tx.financialAccount.update({
-    where: { id: params.accountId },
+    where: { id_organizationId: { id: params.accountId, organizationId: params.organizationId } },
     data: { currentBalance: { increment: params.amount } },
   });
 
@@ -117,7 +117,17 @@ export async function executeTransfer(
 
   return db.$transaction(async (tx: any) => {
     // 1. Validate Source Funds
-    const fromAcc = await tx.financialAccount.findUnique({ where: { id: data.fromAccountId } });
+    const [fromAcc, toAcc] = await Promise.all([
+      tx.financialAccount.findUnique({
+        where: { id_organizationId: { id: data.fromAccountId, organizationId: db.organizationId } },
+      }),
+      tx.financialAccount.findUnique({
+        where: { id_organizationId: { id: data.toAccountId, organizationId: db.organizationId } },
+      }),
+    ]);
+    if (!toAcc) {
+      throw new Error("Destination account not found.");
+    }
     if (!fromAcc || fromAcc.currentBalance < data.amount) {
       throw new Error(`Insufficient funds in ${fromAcc?.name || "Source Account"}.`);
     }

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getPlan, PlanConfig } from "./plans";
 import { getTenantUsage } from "./usage";
-import { addDays, isAfter } from "date-fns";
+import { getOrganizationAccessState } from "./access";
 
 export class PlanLimitError extends Error {
   constructor(message: string) {
@@ -19,20 +19,13 @@ export async function getSubscriptionContext(orgId: string) {
 
   const plan = getPlan(sub?.planId);
   
-  let status = sub?.status || "active";
+  const access = await getOrganizationAccessState(orgId);
+  let status = access.status === "grace_period" ? "grace_period" : sub?.status || access.status || "active";
   let daysRemaining = 0;
 
   if (sub?.currentPeriodEnd) {
     const msRemaining = sub.currentPeriodEnd.getTime() - new Date().getTime();
     daysRemaining = Math.max(0, Math.ceil(msRemaining / (1000 * 60 * 60 * 24)));
-  }
-
-  // Grace period for past due
-  if (status === "past_due" && sub?.updatedAt) {
-    const graceEnd = addDays(sub.updatedAt, 7);
-    if (isAfter(new Date(), graceEnd)) {
-      status = "expired";
-    }
   }
 
   // Trial expiry detection
@@ -57,7 +50,7 @@ export async function getSubscriptionContext(orgId: string) {
 export async function canUseFeature(orgId: string, feature: keyof PlanConfig["features"]): Promise<boolean> {
   const { plan, status } = await getSubscriptionContext(orgId);
   
-  if (status === "expired" || status === "canceled") return false;
+  if (!["active", "trialing", "grace_period"].includes(status)) return false;
   
   return plan.features[feature] === true;
 }
@@ -69,7 +62,7 @@ export async function canUseFeature(orgId: string, feature: keyof PlanConfig["fe
 export async function assertPlanLimit(orgId: string, limitType: keyof PlanConfig["limits"]) {
   const { plan, usage, status } = await getSubscriptionContext(orgId);
 
-  if (status === "expired" || status === "canceled") {
+  if (!["active", "trialing", "grace_period"].includes(status)) {
     throw new PlanLimitError("Your subscription has expired. Please upgrade to a paid plan to continue.");
   }
 

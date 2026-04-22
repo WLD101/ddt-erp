@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 
 /**
  * FETCH: Public/Published changelogs only.
@@ -17,6 +18,7 @@ export async function getPublishedChangelogs() {
  * FETCH: All entries for management (Super-Admin).
  */
 export async function getChangelogEntries() {
+  await requirePlatformAdmin();
   return prisma.changelog.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -32,6 +34,7 @@ export async function createChangelogEntry(data: {
   category: string;
   status: string;
 }) {
+  await requirePlatformAdmin();
   const publishedAt = data.status === "PUBLISHED" ? new Date() : null;
 
   const entry = await prisma.changelog.create({
@@ -56,6 +59,7 @@ export async function updateChangelogEntry(id: string, data: Partial<{
   category: string;
   status: string;
 }>) {
+  await requirePlatformAdmin();
   const existing = await prisma.changelog.findUnique({ where: { id } });
   if (!existing) throw new Error("Entry not found");
 
@@ -84,6 +88,7 @@ export async function updateChangelogEntry(id: string, data: Partial<{
  * MUTATION: Delete entry.
  */
 export async function deleteChangelogEntry(id: string) {
+  await requirePlatformAdmin();
   await prisma.changelog.delete({ where: { id } });
   revalidatePath("/changelog");
   revalidatePath("/platform/changelog");

@@ -4,11 +4,12 @@ import { getLowStockItems } from "@/modules/inventory/actions";
 
 import { PlanProvider } from "@/components/billing/PlanProvider";
 import { auth } from "@/lib/auth";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, isSuperAdmin } from "@/lib/tenant";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Info } from "lucide-react";
 import { redirect } from "next/navigation";
+import { getOrganizationAccessState } from "@/lib/billing/access";
 
 export default async function DashboardLayout({
   children,
@@ -20,14 +21,25 @@ export default async function DashboardLayout({
     redirect("/auth/signin?callbackUrl=/");
   }
 
-  const lowStockItems = await getLowStockItems();
-  
+  if (isSuperAdmin(session.user.email)) {
+    redirect("/platform");
+  }
+
+  const ctx = await getCurrentTenantContext();
+  const access = await getOrganizationAccessState(ctx.organizationId);
+  if (!["active", "grace_period"].includes(access.status)) {
+    redirect(access.redirectTo || "/settings/billing");
+  }
+
+  let lowStockItems: Awaited<ReturnType<typeof getLowStockItems>> = [];
+
   let isDemoWorkspace = false;
   let subscriptionStatus = "active";
   let trialDaysRemaining = 0;
-  
+  const accessWarning = access.warning;
+
   try {
-    const ctx = await getCurrentTenantContext();
+    lowStockItems = await getLowStockItems();
     const organization = await prisma.organization.findUnique({
       where: { id: ctx.organizationId },
       select: { isDemoTenant: true },
@@ -37,9 +49,9 @@ export default async function DashboardLayout({
     // Fetch monetization state
     const { getSubscriptionContext } = await import("@/lib/billing/enforcement");
     const subCtx = await getSubscriptionContext(ctx.organizationId);
-    subscriptionStatus = subCtx.status;
+    subscriptionStatus = access.status === "grace_period" ? "grace_period" : subCtx.status;
     trialDaysRemaining = subCtx.daysRemaining;
-  } catch (error) {
+  } catch {
     // Fall back to a minimal dashboard shell if tenant-scoped extras fail.
   }
 
@@ -60,6 +72,19 @@ export default async function DashboardLayout({
                 className="ml-3 px-3 py-1 bg-white hover:bg-indigo-50 text-indigo-900 rounded-md text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm"
               >
                 Create Real Account
+              </Link>
+            </div>
+          ) : accessWarning ? (
+            <div className="w-full bg-amber-500/10 border-b border-amber-500/20 px-6 py-2.5 flex items-center justify-center gap-3 backdrop-blur-md z-50">
+              <Info className="w-4 h-4 text-amber-400" />
+              <p className="text-[11px] font-black uppercase tracking-widest text-amber-100">
+                {accessWarning}
+              </p>
+              <Link 
+                href="/settings/billing" 
+                className="ml-3 px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 rounded-md text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm"
+              >
+                Resolve Billing
               </Link>
             </div>
           ) : subscriptionStatus === "expired" ? (

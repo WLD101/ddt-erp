@@ -1,10 +1,24 @@
 // middleware.ts
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import {
+  getAuthenticatedRouteRedirect,
+  getPostSignInRedirect,
+  getUnauthenticatedRedirect,
+  stripSensitiveSearchParams,
+} from "@/lib/security/access";
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { nextUrl } = req;
+  const userEmail = req.auth?.user?.email;
+
+  const sanitizedSearch = stripSensitiveSearchParams(nextUrl.searchParams);
+  if (sanitizedSearch.changed) {
+    const cleanUrl = nextUrl.clone();
+    cleanUrl.search = sanitizedSearch.search;
+    return NextResponse.redirect(cleanUrl);
+  }
 
   // Define paths
   const isAuthRoute = nextUrl.pathname.startsWith("/auth");
@@ -24,8 +38,16 @@ export default auth((req) => {
   // 2. If it's an Auth route (/auth/signin, etc.)
   if (isAuthRoute) {
     if (isLoggedIn) {
-      // If already logged in, go to dashboard
-      return NextResponse.redirect(new URL("/", nextUrl));
+      return NextResponse.redirect(
+        new URL(
+          getPostSignInRedirect({
+            email: userEmail,
+            callbackUrl: nextUrl.searchParams.get("callbackUrl"),
+            organizationId: req.auth?.user?.organizationId,
+          }),
+          nextUrl
+        )
+      );
     }
     // Allow access to auth pages if not logged in
     return NextResponse.next();
@@ -33,13 +55,18 @@ export default auth((req) => {
 
   // 3. If it's not an auth route and the user is NOT logged in
   if (!isLoggedIn && !isPublicRoute) {
-    let callbackUrl = nextUrl.pathname;
-    if (nextUrl.search) {
-      callbackUrl += nextUrl.search;
-    }
+    return NextResponse.redirect(new URL(getUnauthenticatedRedirect(nextUrl.pathname, nextUrl.search), nextUrl));
+  }
 
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-    return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${encodedCallbackUrl}`, nextUrl));
+  if (isLoggedIn) {
+    const redirectPath = getAuthenticatedRouteRedirect({
+      pathname: nextUrl.pathname,
+      email: userEmail,
+      organizationId: req.auth?.user?.organizationId,
+    });
+    if (redirectPath) {
+      return NextResponse.redirect(new URL(redirectPath, nextUrl));
+    }
   }
 
   // 4. If logged in but somehow missing organizationId (should be rare/impossible on fresh logic)

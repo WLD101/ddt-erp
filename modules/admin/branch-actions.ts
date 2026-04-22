@@ -46,6 +46,17 @@ export const createBranch = createServerAction({
  * ACTION: SET ACTIVE BRANCH (CLIENT PREFERENCE)
  */
 export async function setActiveBranch(branchId: string) {
+  const { getCurrentTenantContext } = await import("@/lib/tenant");
+  const ctx = await getCurrentTenantContext();
+  const branch = await prisma.branch.findUnique({
+    where: { id_organizationId: { id: branchId, organizationId: ctx.organizationId } },
+    select: { id: true },
+  });
+
+  if (!branch) {
+    throw new Error("Branch not found or access denied.");
+  }
+
   const cookieStore = await cookies();
   cookieStore.set("x-active-branch", branchId, {
     path: "/",
@@ -113,6 +124,21 @@ export const assignUserToBranch = createServerAction({
     getEntityId: (data) => data.membershipId,
   },
   handler: async ({ input: data, context: ctx }) => {
+    const [membership, branch] = await Promise.all([
+      prisma.organizationUser.findFirst({
+        where: { id: data.membershipId, organizationId: ctx.organizationId },
+        select: { id: true },
+      }),
+      prisma.branch.findUnique({
+        where: { id_organizationId: { id: data.branchId, organizationId: ctx.organizationId } },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!membership || !branch) {
+      throw new Error("Membership or branch not found.");
+    }
+
     return prisma.organizationUser.update({
       where: { 
         id: data.membershipId,
