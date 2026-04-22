@@ -16,6 +16,7 @@ import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "Credentials",

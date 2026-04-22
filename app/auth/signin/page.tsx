@@ -22,10 +22,17 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+function getSafeCallbackUrl(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\") || value.includes("\n") || value.includes("\r")) {
+    return "/";
+  }
+  return value;
+}
+
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
   const [isLoading, setIsLoading] = useState(false);
   
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
@@ -45,16 +52,7 @@ function SignInForm() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Welcome back!");
-        const sessionResponse = await fetch("/api/auth/session", { cache: "no-store" });
-        const session = await sessionResponse.json();
-        if (session?.user?.isSuperAdmin) {
-          router.push("/platform");
-        } else if (!session?.user?.organizationId && callbackUrl === "/") {
-          router.push("/onboarding");
-        } else {
-          router.push(callbackUrl);
-        }
-        router.refresh();
+        window.location.assign(callbackUrl || "/");
       }
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
