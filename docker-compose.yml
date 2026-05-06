@@ -1,16 +1,45 @@
+# Docker Compose for NexusERP VPS Deployment
+
 services:
-  ddt-erp-db:
-    container_name: ddt-erp-postgres
-    image: postgres:15
+  db:
+    image: postgres:15-alpine
+    container_name: erp-postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: erp
+      POSTGRES_USER: erp_user
+      POSTGRES_PASSWORD: erp_password
+      POSTGRES_DB: nexus_erp
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
-      - ddt_erp_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: erp-app
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://erp_user:erp_password@db:5432/nexus_erp?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      NEXTAUTH_URL: "http://your-vps-ip:3000"
+      NEXTAUTH_SECRET: "your-super-secret-key"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
 
 volumes:
-  ddt_erp_postgres_data:
+  postgres_data:
+  redis_data:

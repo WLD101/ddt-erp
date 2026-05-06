@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { requirePlatformAdmin } from "@/lib/security/guards";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
+import { PLAN_ORDER, PLANS } from "@/lib/billing/plans";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { addMonths } from "date-fns";
@@ -24,31 +25,52 @@ const assignPackageSchema = z.object({
 });
 
 export async function ensureDefaultPackages() {
-  const count = await prisma.package.count();
-  if (count > 0) return;
-  await prisma.package.createMany({
-    data: [
-      {
-        name: "Starter",
-        businessSize: "Small business",
-        userLimit: 2,
-        featureJson: JSON.stringify({ exportData: false, advancedReports: false, auditLogs: false }),
+  for (const planId of PLAN_ORDER) {
+    const plan = PLANS[planId];
+    const featureJson = JSON.stringify({
+      planId: plan.id,
+      currency: plan.price.currency,
+      monthlyPrice: plan.price.monthly,
+      displayPrice: `${plan.price.display}${plan.price.cadence}`,
+      branchLimit: plan.limits.maxBranches,
+      productLimit: plan.limits.maxProducts,
+      monthlyInvoiceLimit: plan.limits.maxMonthlyInvoices,
+      integrationsLimit: plan.limits.maxIntegrations,
+      modules: plan.includedModules,
+      features: plan.features,
+      supportLabel: plan.supportLabel,
+      tagline: plan.tagline,
+    });
+
+    const existing = await prisma.package.findFirst({
+      where: { name: plan.name },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await prisma.package.update({
+        where: { id: existing.id },
+        data: {
+          businessSize: plan.audience,
+          userLimit: plan.limits.maxUsers,
+          featureJson,
+          isCustom: plan.id === "enterprise",
+          isActive: true,
+        },
+      });
+      continue;
+    }
+
+    await prisma.package.create({
+      data: {
+        name: plan.name,
+        businessSize: plan.audience,
+        userLimit: plan.limits.maxUsers,
+        featureJson,
+        isCustom: plan.id === "enterprise",
       },
-      {
-        name: "Business",
-        businessSize: "Growing team",
-        userLimit: 10,
-        featureJson: JSON.stringify({ exportData: true, advancedReports: true, auditLogs: true }),
-      },
-      {
-        name: "Enterprise",
-        businessSize: "Custom operations",
-        userLimit: 100,
-        featureJson: JSON.stringify({ exportData: true, advancedReports: true, auditLogs: true, custom: true }),
-        isCustom: true,
-      },
-    ],
-  });
+    });
+  }
 }
 
 export async function getActivePackages() {
@@ -212,18 +234,28 @@ export async function selectPackageAction(data: unknown) {
 export async function markSubscriptionPaymentSuccessAction(orgId: string) {
   const session = await requirePlatformAdmin();
   const now = new Date();
-  const currentPeriodEnd = addMonths(now, 1);
+  const existing = await prisma.subscription.findUnique({
+    where: { organizationId: orgId },
+    select: { billingCycle: true, currentPeriodEnd: true, billingSource: true },
+  });
+  const currentPeriodEnd =
+    existing?.currentPeriodEnd && existing.currentPeriodEnd > now
+      ? existing.currentPeriodEnd
+      : existing?.billingCycle === "YEARLY"
+        ? addMonths(now, 12)
+        : addMonths(now, 1);
   await prisma.$transaction([
     prisma.organization.update({
       where: { id: orgId },
-      data: { accessStatus: "active", lifecycleStatus: "active", activatedAt: now, blockedAt: null },
+      data: { accessStatus: "active", lifecycleStatus: "active", activatedAt: now, blockedAt: null, isDemoTenant: false, demoExpiresAt: null },
     }),
     prisma.subscription.update({
       where: { organizationId: orgId },
       data: {
         status: "active",
-        paymentStatus: "active",
+        paymentStatus: "paid",
         accessStatus: "active",
+        billingSource: existing?.billingSource === "demo" ? "manual" : existing?.billingSource || "manual",
         currentPeriodStart: now,
         currentPeriodEnd,
         activatedAt: now,
@@ -253,7 +285,7 @@ export async function markSubscriptionPaymentFailedAction(orgId: string) {
     }),
     prisma.subscription.update({
       where: { organizationId: orgId },
-      data: { status: "failed", paymentStatus: "failed", accessStatus: "blocked", blockedAt: new Date() },
+      data: { status: "failed", paymentStatus: "failed", accessStatus: "blocked", billingSource: "manual", blockedAt: new Date() },
     }),
   ]);
   await writePlatformAuditLog({

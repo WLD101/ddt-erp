@@ -7,4 +7,4 @@ export const supplierSchema = z.object({
   address: z.string().optional().or(z.literal("")),
 });
 
-export type SupplierFormValues = z.infer<typeof supplierSchema>;
+export type SupplierFormValues = z.input<typeof supplierSchema>;

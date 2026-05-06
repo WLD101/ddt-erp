@@ -1,12 +1,13 @@
 // app/auth/signup/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense, useRef } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,31 +25,48 @@ const signUpSchema = z.object({
   city: z.string().min(2, "City is required"),
   country: z.string().min(2, "Country is required"),
   referralCode: z.string().optional(),
+  industry: z.string().optional(),
 });
 
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
   });
 
   React.useEffect(() => {
-    const savedRef = localStorage.getItem("nexus_ref_code");
+    const savedRef = localStorage.getItem("whatsquery_ref_code");
     if (savedRef) {
       setValue("referralCode", savedRef);
-      console.log(`[Signup] attached referral: ${savedRef}`);
     }
-  }, [setValue]);
+
+    const industryParam = searchParams.get("industry");
+    if (industryParam) {
+      setValue("industry", industryParam);
+    }
+
+    const handleTurnstile = (e: any) => setTurnstileToken(e.detail);
+    window.addEventListener('turnstile-token', handleTurnstile);
+    return () => window.removeEventListener('turnstile-token', handleTurnstile);
+  }, [setValue, searchParams]);
 
   const onSubmit = async (data: SignUpFormValues) => {
+    if (!turnstileToken) {
+      toast.error("Please complete the security check.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const result = await signUpAction(data);
+      const result = await signUpAction({ ...data, turnstileToken });
 
       if (result.error) {
         toast.error(result.error);
@@ -88,9 +106,9 @@ export default function SignUpPage() {
         <div className="mx-auto bg-primary/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 ring-1 ring-primary/30 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
           <UserPlus className="w-6 h-6 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight text-white">Create your ERP</CardTitle>
+        <CardTitle className="text-2xl font-bold tracking-tight text-white">Create your WhatsQuery account</CardTitle>
         <CardDescription className="text-muted-foreground/80">
-          Step into professional organization management
+          Start your workspace and continue to guided setup
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -169,7 +187,7 @@ export default function SignUpPage() {
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="city"
-                  placeholder="Lahore"
+                  placeholder="New York"
                   className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
                   {...register("city")}
                   disabled={isLoading}
@@ -181,7 +199,7 @@ export default function SignUpPage() {
               <Label htmlFor="country" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Country</Label>
               <Input
                 id="country"
-                placeholder="Pakistan"
+                placeholder="United States"
                 className="bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
                 {...register("country")}
                 disabled={isLoading}
@@ -209,6 +227,30 @@ export default function SignUpPage() {
               </p>
             )}
           </div>
+
+          <input type="hidden" {...register("industry")} />
+
+          <div className="flex justify-center my-4">
+            <div 
+              className="cf-turnstile" 
+              data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+              data-theme="dark"
+              data-callback="onTurnstileSuccess"
+            />
+          </div>
+
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+            strategy="afterInteractive"
+          />
+
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              function onTurnstileSuccess(token) {
+                window.dispatchEvent(new CustomEvent('turnstile-token', { detail: token }));
+              }
+            `
+          }} />
 
           <Button 
             className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-primary/20 mt-2 active:scale-[0.98]" 
@@ -238,3 +280,10 @@ export default function SignUpPage() {
   );
 }
 
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <SignUpForm />
+    </Suspense>
+  );
+}

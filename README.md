@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WhatsQuery - Multi-Tenant SaaS Platform
 
-## Getting Started
+A high-performance WhatsQuery optimized for VPS deployment.
 
-First, run the development server:
+## 🚀 Local Development (Docker)
 
+Use the optimized local environment for fast preview and hot-reloading.
+
+### Commands:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Start the stack (Fast Preview)
+docker-compose -f docker-compose.local.yml up -d --build
+
+# 2. View logs
+docker-compose -f docker-compose.local.yml logs -f app
+
+# 3. Apply migrations (if needed)
+docker-compose -f docker-compose.local.yml exec app npx prisma migrate deploy
+
+# 4. Stop containers
+docker-compose -f docker-compose.local.yml down
+
+# 5. Clean Rebuild (if context is still slow)
+docker system prune -f
+docker-compose -f docker-compose.local.yml build --no-cache
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Infrastructure Hardening
+- **Multi-Tenancy**: Strict server-side organization isolation.
+- **Dockerization**: Optimized build context (< 50MB) via `.dockerignore`.
+- **Worker**: Background processing via BullMQ.
+- **Security**: Redis rate limiting, Turnstile bot protection, and Secure Headers.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Key Folders
+- `app/`: Next.js App Router (Frontend + API)
+- `modules/`: Industry-specific logic (Textile, Manufacturing, Retail)
+- `lib/`: Core utilities (Auth, Security, Database)
+- `prisma/`: Database schema and migrations
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛡️ Security
+Check the [Security Checklist](./security_checklist.md) for VPS hardening steps.

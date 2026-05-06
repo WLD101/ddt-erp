@@ -82,7 +82,7 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
     <div className="space-y-6 flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black tracking-tighter text-white uppercase">Vault Transactions</h2>
+          <h2 className="text-3xl font-black tracking-tighter text-on-surface uppercase">Vault Transactions</h2>
           <p className="text-muted-foreground text-xs font-medium italic mt-1">
             Real-time synchronization of liquid resource movements
           </p>
@@ -95,10 +95,10 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
         </div>
       </div>
 
-      <div className="border rounded-2xl bg-white/5 backdrop-blur-sm shadow-2xl flex-1 overflow-auto border-white/10">
+      <div className="border rounded-2xl bg-surface-container-low backdrop-blur-sm shadow-2xl flex-1 overflow-auto border-outline-variant/30">
         <Table>
-          <TableHeader className="bg-white/5 sticky top-0 z-10">
-            <TableRow className="border-white/10 hover:bg-transparent uppercase text-[10px] font-black tracking-[0.2em] text-muted-foreground">
+          <TableHeader className="bg-surface-container-low sticky top-0 z-10">
+            <TableRow className="border-outline-variant/30 hover:bg-transparent uppercase text-[10px] font-black tracking-[0.2em] text-muted-foreground">
               <TableHead className="py-5 pl-8">Movement Date</TableHead>
               <TableHead>Channel / Method</TableHead>
               <TableHead>Reference ID</TableHead>
@@ -108,7 +108,7 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
           </TableHeader>
           <TableBody>
             {initialPayments.map((payment) => (
-              <TableRow key={payment.id} className="border-white/5 group hover:bg-white/5 transition-colors duration-300">
+              <TableRow key={payment.id} className="border-outline-variant/20 group hover:bg-surface-container-low transition-colors duration-300">
                 <TableCell className="text-muted-foreground font-medium pl-8 py-4">
                   {format(new Date(payment.date), "MMM dd, yyyy")}
                 </TableCell>
@@ -119,7 +119,7 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
                      ) : (
                        <ArrowDownRight className="w-3.5 h-3.5 text-amber-500" />
                      )}
-                     <span className="font-bold text-white uppercase tracking-tight text-xs">
+                     <span className="font-bold text-on-surface uppercase tracking-tight text-xs">
                         {payment.paymentMethod}
                      </span>
                    </div>
@@ -137,12 +137,12 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-surface-container transition-all opacity-0 group-hover:opacity-100" />
                       }
                     >
                       <MoreHorizontal className="w-4 h-4" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-slate-900 border-white/10">
+                    <DropdownMenuContent align="end" className="bg-slate-900 border-outline-variant/30">
                       <DropdownMenuItem onClick={() => handleEdit(payment)} className="gap-2 cursor-pointer font-bold">
                         <Pencil className="w-4 h-4 text-primary" /> Synchronize
                       </DropdownMenuItem>
@@ -166,9 +166,9 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xl bg-slate-950 border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden">
+        <DialogContent className="max-w-xl bg-slate-950 border-outline-variant/30 rounded-3xl p-8 shadow-2xl overflow-hidden">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3">
+            <DialogTitle className="text-2xl font-black text-on-surface tracking-widest uppercase flex items-center gap-3">
               <Wallet2 className="w-6 h-6 text-primary" />
               {editingPayment ? "Synchronize Vault" : "Authorize Transaction"}
             </DialogTitle>

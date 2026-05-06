@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
-  const exportRequest = await consumeApprovedExportToken(token);
+  const exportRequest = await consumeApprovedExportToken(token) as any;
   if (!exportRequest) {
     return NextResponse.json({ error: "Export link is invalid or expired." }, { status: 404 });
   }
@@ -24,13 +24,13 @@ export async function GET(
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="ddt-erp-${exportRequest.scope}-export.xlsx"`,
+      "Content-Disposition": `attachment; filename="whatsquery-${exportRequest.scope}-export.xlsx"`,
       "Cache-Control": "no-store",
     },
   });
 }
 
-async function buildRows(exportRequest: NonNullable<Awaited<ReturnType<typeof consumeApprovedExportToken>>>) {
+async function buildRows(exportRequest: any) {
   if (exportRequest.scope === "leads" || exportRequest.scope === "tenant_summary") {
     return [
       {

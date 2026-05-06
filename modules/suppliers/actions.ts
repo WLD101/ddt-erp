@@ -70,6 +70,7 @@ export const updateSupplier = createServerAction({
  */
 export const deleteSupplier = createServerAction({
   label: "DeleteSupplier",
+  blockInDemoMode: true,
   permissions: ["suppliers.delete"],
   schema: z.object({ id: z.string() }),
   revalidatePaths: ["/suppliers"],

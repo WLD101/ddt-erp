@@ -1,0 +1,113 @@
+
+> whatsquery@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.10.5:3000
+- Environments: .env
+✓ Ready in 874ms
+
+○ Compiling /auth/signin ...
+ GET /auth/signin 200 in 4.5s (next.js: 3.7s, proxy.ts: 475ms, application-code: 338ms)
+ GET /auth/signin 200 in 133ms (next.js: 11ms, proxy.ts: 15ms, application-code: 107ms)
+--> signInAction invoked for email: admin@ddterp.local and callbackUrl: /
+Authorize callback invoked for email: admin@ddterp.local
+User authorized successfully: cmoosgzlu0000weukdhlbscer
+ GET / 200 in 257ms (next.js: 76ms, proxy.ts: 41ms, application-code: 140ms)
+ POST /auth/signin 303 in 1200ms (next.js: 11ms, proxy.ts: 24ms, application-code: 1166ms)
+  └─ ƒ signInAction(null, {}) in 794ms modules/auth/actions.ts
+ GET / 200 in 33ms (next.js: 6ms, proxy.ts: 17ms, application-code: 10ms)
+ GET / 200 in 76ms (next.js: 5ms, proxy.ts: 11ms, application-code: 59ms)
+ GET /auth/signin 200 in 66ms (next.js: 4ms, proxy.ts: 7ms, application-code: 55ms)
+--> signInAction invoked for email: admin@ddterp.local and callbackUrl: /
+Authorize callback invoked for email: admin@ddterp.local
+User authorized successfully: cmoosgzlu0000weukdhlbscer
+ GET / 200 in 109ms (next.js: 9ms, proxy.ts: 18ms, application-code: 81ms)
+ POST /auth/signin 303 in 680ms (next.js: 7ms, proxy.ts: 11ms, application-code: 661ms)
+  └─ ƒ signInAction(null, {}) in 532ms modules/auth/actions.ts
+ GET / 200 in 26ms (next.js: 4ms, proxy.ts: 13ms, application-code: 9ms)
+ GET / 200 in 98ms (next.js: 7ms, proxy.ts: 20ms, application-code: 72ms)
+ GET /wq-command-center 200 in 767ms (next.js: 77ms, proxy.ts: 22ms, application-code: 668ms)
+ GET /auth/signin 200 in 64ms (next.js: 4ms, proxy.ts: 6ms, application-code: 54ms)
+--> signInAction invoked for email: admin@ddterp.local and callbackUrl: /
+Authorize callback invoked for email: admin@ddterp.local
+User authorized successfully: cmoosgzlu0000weukdhlbscer
+ GET / 200 in 224ms (next.js: 9ms, proxy.ts: 16ms, application-code: 198ms)
+ POST /auth/signin 303 in 815ms (next.js: 5ms, proxy.ts: 8ms, application-code: 803ms)
+  └─ ƒ signInAction(null, {}) in 556ms modules/auth/actions.ts
+ GET / 200 in 34ms (next.js: 6ms, proxy.ts: 17ms, application-code: 11ms)
+ GET / 200 in 106ms (next.js: 6ms, proxy.ts: 16ms, application-code: 84ms)
+ GET /wq-command-center 200 in 346ms (next.js: 6ms, proxy.ts: 9ms, application-code: 331ms)
+🌱 Seeding permissions...
+✅ Seeded 35 permissions.
+🏗️ Initializing roles for organization: cmopk1bo70001wefou05jw4wd
+🏗️ Initializing default branch for organization: cmopk1bo70001wefou05jw4wd
+🏗️ Initializing default financial account for organization: cmopk1bo70001wefou05jw4wd
+ POST /wq-command-center 200 in 821ms (next.js: 5ms, proxy.ts: 12ms, application-code: 804ms)
+  └─ ƒ createClientFromCommandCenterAction({"message":"","success":false}, {}) in 587ms modules/command-center/actions.ts
+ GET /auth/signin 200 in 213ms (next.js: 5ms, proxy.ts: 6ms, application-code: 202ms)
+--> signInAction invoked for email: admin@ddterp.local and callbackUrl: /
+Authorize callback invoked for email: admin@ddterp.local
+User authorized successfully: cmoosgzlu0000weukdhlbscer
+ GET / 200 in 275ms (next.js: 29ms, proxy.ts: 24ms, application-code: 223ms)
+ POST /auth/signin 303 in 1147ms (next.js: 6ms, proxy.ts: 11ms, application-code: 1130ms)
+  └─ ƒ signInAction(null, {}) in 829ms modules/auth/actions.ts
+ GET / 200 in 38ms (next.js: 7ms, proxy.ts: 19ms, application-code: 12ms)
+ GET / 200 in 261ms (next.js: 6ms, proxy.ts: 20ms, application-code: 235ms)
+ GET /wq-command-center 200 in 476ms (next.js: 5ms, proxy.ts: 22ms, application-code: 449ms)
+🌱 Seeding permissions...
+✅ Seeded 35 permissions.
+🏗️ Initializing roles for organization: cmopk1ur0001gwefotq21gyrt
+🏗️ Initializing default branch for organization: cmopk1ur0001gwefotq21gyrt
+🏗️ Initializing default financial account for organization: cmopk1ur0001gwefotq21gyrt
+ POST /wq-command-center 200 in 2.5s (next.js: 5ms, proxy.ts: 17ms, application-code: 2.4s)
+  └─ ƒ createClientFromCommandCenterAction({"message":"","success":false}, {}) in 2063ms modules/command-center/actions.ts
+ GET /auth/signin 200 in 153ms (next.js: 10ms, proxy.ts: 11ms, application-code: 132ms)
+--> signInAction invoked for email: playwright-client@example.com and callbackUrl: /
+Authorize callback invoked for email: playwright-client@example.com
+User authorized successfully: cmopk1bo30000wefoenmsf4uj
+ GET / 200 in 270ms (next.js: 8ms, proxy.ts: 31ms, application-code: 232ms)
+ POST /auth/signin 303 in 1450ms (next.js: 4ms, proxy.ts: 8ms, application-code: 1438ms)
+  └─ ƒ signInAction(null, {}) in 1131ms modules/auth/actions.ts
+ GET / 200 in 67ms (next.js: 8ms, proxy.ts: 43ms, application-code: 15ms)
+ GET / 200 in 212ms (next.js: 9ms, proxy.ts: 24ms, application-code: 179ms)
+ GET /onboarding 200 in 783ms (next.js: 127ms, proxy.ts: 109ms, application-code: 546ms)
+ GET /onboarding 200 in 492ms (next.js: 19ms, proxy.ts: 170ms, application-code: 303ms)
+ GET /dashboard 200 in 4.8s (next.js: 288ms, proxy.ts: 18ms, application-code: 4.5s)
+ POST /dashboard 200 in 56ms (next.js: 5ms, proxy.ts: 13ms, application-code: 38ms)
+  └─ ƒ getNotifications() in 29ms modules/notifications/actions.ts
+✓ Compiled in 360ms
+ GET /auth/signin 200 in 700ms (next.js: 202ms, proxy.ts: 168ms, application-code: 330ms)
+--> signInAction invoked for email: admin@ddterp.local and callbackUrl: /
+Authorize callback invoked for email: admin@ddterp.local
+User authorized successfully: cmoosgzlu0000weukdhlbscer
+ GET / 200 in 313ms (next.js: 34ms, proxy.ts: 42ms, application-code: 237ms)
+ POST /auth/signin 303 in 1006ms (next.js: 7ms, proxy.ts: 16ms, application-code: 983ms)
+  └─ ƒ signInAction(null, {}) in 603ms modules/auth/actions.ts
+ GET / 200 in 42ms (next.js: 9ms, proxy.ts: 18ms, application-code: 14ms)
+ GET / 200 in 119ms (next.js: 7ms, proxy.ts: 18ms, application-code: 94ms)
+ GET /wq-command-center 200 in 842ms (next.js: 201ms, proxy.ts: 10ms, application-code: 631ms)
+🌱 Seeding permissions...
+✅ Seeded 35 permissions.
+🏗️ Initializing roles for organization: cmopk41zd002yweforg4zuf5e
+🏗️ Initializing default branch for organization: cmopk41zd002yweforg4zuf5e
+🏗️ Initializing default financial account for organization: cmopk41zd002yweforg4zuf5e
+ POST /wq-command-center 200 in 1013ms (next.js: 6ms, proxy.ts: 30ms, application-code: 977ms)
+  └─ ƒ createClientFromCommandCenterAction({"message":"","success":false}, {}) in 732ms modules/command-center/actions.ts
+ GET /auth/signin 200 in 139ms (next.js: 9ms, proxy.ts: 20ms, application-code: 110ms)
+--> signInAction invoked for email: playwright-client-two@example.com and callbackUrl: /
+Authorize callback invoked for email: playwright-client-two@example.com
+User authorized successfully: cmopk41z9002xwefo60eb5j35
+ GET / 200 in 224ms (next.js: 4ms, proxy.ts: 13ms, application-code: 206ms)
+ POST /auth/signin 303 in 1592ms (next.js: 10ms, proxy.ts: 14ms, application-code: 1568ms)
+  └─ ƒ signInAction(null, {}) in 1312ms modules/auth/actions.ts
+ GET / 200 in 89ms (next.js: 6ms, proxy.ts: 73ms, application-code: 10ms)
+ GET / 200 in 121ms (next.js: 5ms, proxy.ts: 15ms, application-code: 101ms)
+ GET /dashboard 200 in 1714ms (next.js: 129ms, proxy.ts: 16ms, application-code: 1569ms)
+ GET /dashboard 200 in 1455ms (next.js: 31ms, proxy.ts: 179ms, application-code: 1244ms)
+ POST /dashboard 200 in 66ms (next.js: 4ms, proxy.ts: 11ms, application-code: 50ms)
+  └─ ƒ getNotifications() in 36ms modules/notifications/actions.ts
+ POST /dashboard 200 in 59ms (next.js: 6ms, proxy.ts: 10ms, application-code: 43ms)
+  └─ ƒ getNotifications() in 35ms modules/notifications/actions.ts
+ GET /wq-command-center 200 in 560ms (next.js: 5ms, proxy.ts: 14ms, application-code: 541ms)

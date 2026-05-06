@@ -1,6 +1,5 @@
 import { getSalesInvoices } from "@/modules/sales/actions";
 import { Button } from "@/components/ui/button";
-import { Plus, Download } from "lucide-react";
 import Link from "next/link";
 import {
   Table,
@@ -11,80 +10,85 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
+import { PageShell } from "@/components/dashboard/page-shell";
 
 export default async function SalesPage() {
   const invoices = await getSalesInvoices();
 
   return (
-    <div className="p-8 space-y-6 flex-1 h-full overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Sales Invoices</h2>
-          <p className="text-muted-foreground">Manage your customer sales and revenue.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <a 
-            href="/api/export/sales" 
-            download 
-            className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted transition-colors"
+    <PageShell
+      title="Sales"
+      description="Manage invoices, customer sales activity, and outgoing revenue records with one consistent ledger."
+      actions={
+        <>
+          <a
+            href="/api/export/sales"
+            download
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface shadow-sm transition-colors hover:bg-surface-container-low"
           >
-            <Download className="w-4 h-4 mr-2" />
+            <span className="material-symbols-outlined text-[18px] mr-2">download</span>
             Export CSV
           </a>
           <Link href="/sales/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
+            <Button className="h-10 rounded-xl px-5 font-bold shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-[18px] mr-2">add_shopping_cart</span>
               New Sale
             </Button>
           </Link>
-        </div>
-      </div>
-
-      <div className="border rounded-md bg-background flex-1 overflow-auto">
+        </>
+      }
+    >
+      <div className="flex-1 overflow-auto rounded-3xl border border-outline-variant/30 bg-surface shadow-soft">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice No.</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Customer</TableHead>
+              <TableHead className="pl-8">Invoice Ref</TableHead>
+              <TableHead>Execution Date</TableHead>
+              <TableHead>Counterparty</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Settlement (Rs.)</TableHead>
+              <TableHead className="text-right pr-8">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {invoices.map((inv) => (
-              <TableRow key={inv.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/sales/${inv.id}/print`} className="text-primary hover:underline">
+              <TableRow key={inv.id} className="group transition-all duration-200">
+                <TableCell className="font-mono text-[11px] font-black text-primary pl-8">
+                  <Link href={`/sales/${inv.id}/print`} className="hover:underline">
                     {inv.invoiceNumber}
                   </Link>
                 </TableCell>
-                <TableCell>{format(new Date(inv.issueDate), "MMM dd, yyyy")}</TableCell>
-                <TableCell>{inv.customer.name}</TableCell>
+                <TableCell className="text-on-surface-variant font-medium">{format(new Date(inv.date), "MMM dd, yyyy")}</TableCell>
+                <TableCell className="font-bold text-on-surface">{inv.customer.name}</TableCell>
                 <TableCell>
-                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-secondary/10 text-secondary border border-secondary/20">
                     {inv.status}
                   </span>
                 </TableCell>
-                <TableCell className="text-right font-bold">${inv.totalAmount.toFixed(2)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right font-black text-on-surface">
+                  {(inv.totalAmount ?? 0).toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right pr-8">
                   <a href={`/api/sales/${inv.id}/pdf`} download>
-                    <Button variant="ghost" size="sm">Export PDF</Button>
+                    <Button variant="ghost" size="sm" className="h-8 text-[11px] font-black uppercase tracking-widest hover:bg-surface-container-low">
+                      <span className="material-symbols-outlined text-[16px] mr-1">picture_as_pdf</span>
+                      PDF
+                    </Button>
                   </a>
                 </TableCell>
               </TableRow>
             ))}
             {invoices.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                  No sales found. Go close some deals!
+                <TableCell colSpan={6} className="text-center py-20 text-on-surface-variant font-medium italic">
+                  No transaction records found in the ledger.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-    </div>
+    </PageShell>
   );
 }
+

@@ -19,7 +19,7 @@ interface FormFieldWrapperProps<TFieldValues extends FieldValues> {
   label?: string;
   description?: string;
   placeholder?: string;
-  children: React.ReactElement;
+  children: React.ReactElement<any>;
   className?: string;
 }
 
@@ -43,7 +43,7 @@ export function FormFieldWrapper<TFieldValues extends FieldValues>({
             </FormLabel>
           )}
           <FormControl>
-            {React.cloneElement(children, { ...field })}
+            {React.cloneElement(children, field as Record<string, unknown>)}
           </FormControl>
           {description && (
             <FormDescription className="text-[10px] text-muted-foreground/60 italic ml-1 leading-tight">

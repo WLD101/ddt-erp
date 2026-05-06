@@ -1,4 +1,5 @@
 import { ScopedPrisma } from "@/lib/db/client";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { contactSchema } from "@/lib/validations/common";
 
@@ -35,25 +36,30 @@ export async function getSupplierById(db: ScopedPrisma, id: string) {
 }
 
 export async function createSupplier(db: ScopedPrisma, data: SupplierInput) {
+  const payload: Prisma.SupplierUncheckedCreateInput = {
+    organizationId: db.organizationId,
+    name: data.name,
+    email: data.email || null,
+    phone: data.phone || null,
+    address: data.address || null,
+  };
+
   return db.supplier.create({
-    data: {
-      name: data.name,
-      email: data.email || null,
-      phone: data.phone || null,
-      address: data.address || null,
-    },
+    data: payload,
   });
 }
 
 export async function updateSupplier(db: ScopedPrisma, id: string, data: SupplierInput) {
+  const payload: Prisma.SupplierUncheckedUpdateInput = {
+    name: data.name,
+    email: data.email || null,
+    phone: data.phone || null,
+    address: data.address || null,
+  };
+
   return db.supplier.update({
     where: { id },
-    data: {
-      name: data.name,
-      email: data.email || null,
-      phone: data.phone || null,
-      address: data.address || null,
-    },
+    data: payload,
   });
 }
 

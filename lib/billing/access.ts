@@ -38,7 +38,7 @@ export async function getOrganizationAccessState(orgId: string): Promise<{
   if (!organization) return { status: "blocked", redirectTo: "/auth/signin" };
 
   const now = new Date();
-  if (organization.accessStatus === "blocked" || organization.blockedAt) {
+  if (["blocked", "suspended"].includes(organization.accessStatus) || organization.blockedAt) {
     return { status: "blocked", redirectTo: "/settings/billing" };
   }
 
@@ -57,9 +57,16 @@ export async function getOrganizationAccessState(orgId: string): Promise<{
   if (!sub) return { status: organization.accessStatus as OrganizationAccessStatus, redirectTo: "/onboarding/packages" };
 
   if (sub.paymentStatus === "payment_pending" || sub.status === "payment_pending") {
-    return { status: "payment_pending", redirectTo: "/onboarding/packages" };
+    if (sub.planId === "unassigned") {
+      return { status: "payment_pending", redirectTo: "/onboarding/packages" };
+    } else {
+      return { status: "payment_pending", redirectTo: "/settings/billing" };
+    }
   }
   if (sub.paymentStatus === "failed" || sub.status === "failed") {
+    return { status: "blocked", redirectTo: "/settings/billing" };
+  }
+  if (sub.status === "cancelled") {
     return { status: "blocked", redirectTo: "/settings/billing" };
   }
 

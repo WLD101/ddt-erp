@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { ClipboardCheck, FastForward, Clock, MailPlus, Settings2, Stamp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Quotation & Proforma Software | NexusERP",
+  title: "Quotation & Proforma Software | WhatsQuery",
   description: "Create professional quotes, estimate costs, and convert estimates into live sales invoices in a single click.",
   alternates: {
-    canonical: "https://nexuserp.com/features/quotations",
+    canonical: "https://whatsquery.example.com/features/quotations",
   }
 };
 

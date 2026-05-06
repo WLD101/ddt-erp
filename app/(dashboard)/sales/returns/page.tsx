@@ -1,14 +1,4 @@
 import { getSalesReturns } from "@/modules/returns/actions";
-import { 
-  RotateCcw, 
-  Calendar, 
-  User, 
-  Hash, 
-  ChevronRight,
-  TrendingDown,
-  ShoppingBag,
-  BadgeAlert
-} from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -18,108 +8,103 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export default async function SalesReturnsPage() {
   const returns = await getSalesReturns();
 
   return (
-    <div className="p-8 space-y-10 max-w-7xl mx-auto h-full overflow-auto">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-             <div className="p-2 bg-primary/20 rounded-xl">
-               <RotateCcw className="w-5 h-5 text-primary" />
-             </div>
-             <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">
-               Client <span className="text-primary">Returns</span>
-             </h2>
-          </div>
-          <p className="text-muted-foreground text-sm font-medium">Reversing sales, restoring stock, and reconciling credits.</p>
+          <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline-md uppercase">
+            Credit <span className="text-primary">Reversals</span>
+          </h2>
+          <p className="text-on-surface-variant text-sm font-medium font-body-md">Reversing sales, restoring stock, and reconciling financial credit nodes.</p>
         </div>
       </div>
 
       {/* Grid Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <Card className="bg-white/5 border-white/5 shadow-xl glass-morphism rounded-3xl overflow-hidden relative group">
-           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-           <CardHeader className="pb-2">
-             <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-               <ShoppingBag className="w-3 h-3 text-primary" /> Total Reversed
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+         <Card className="rounded-[32px] border border-outline-variant/30 shadow-soft overflow-hidden bg-surface group">
+           <CardHeader className="pb-4 bg-surface-container-lowest border-b border-outline-variant/10">
+             <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
+               <span className="material-symbols-outlined text-primary text-[18px]">keyboard_return</span> 
+               Reversed Valuation
              </CardTitle>
            </CardHeader>
-           <CardContent>
-             <div className="text-3xl font-black text-white italic tracking-tighter">
-               ${returns.reduce((sum, r) => sum + r.totalAmount, 0).toLocaleString()}
+           <CardContent className="pt-8">
+             <div className="text-3xl font-black text-on-surface tracking-tighter">
+               Rs. {returns.reduce((sum, r) => sum + r.totalAmount, 0).toLocaleString()}
              </div>
-             <p className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-widest">Total value of all restocked goods</p>
+             <p className="text-[10px] text-on-surface-variant/60 font-bold mt-1 uppercase tracking-widest italic">Total value of all restocked assets</p>
            </CardContent>
          </Card>
 
-         <Card className="bg-white/5 border-white/5 shadow-xl glass-morphism rounded-3xl overflow-hidden relative group">
-           <CardHeader className="pb-2">
-             <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-               <TrendingDown className="w-3 h-3 text-orange-500" /> Return Events
+         <Card className="rounded-[32px] border border-outline-variant/30 shadow-soft overflow-hidden bg-surface group">
+           <CardHeader className="pb-4 bg-surface-container-lowest border-b border-outline-variant/10">
+             <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
+               <span className="material-symbols-outlined text-secondary text-[18px]">history</span> 
+               Return Instances
              </CardTitle>
            </CardHeader>
-           <CardContent>
-             <div className="text-3xl font-black text-white italic tracking-tighter">
+           <CardContent className="pt-8">
+             <div className="text-3xl font-black text-on-surface tracking-tighter">
                {returns.length}
              </div>
-             <p className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-widest">Historical return transactions</p>
+             <p className="text-[10px] text-on-surface-variant/60 font-bold mt-1 uppercase tracking-widest italic">Historical reversal transactions</p>
            </CardContent>
          </Card>
       </div>
 
       {/* Returns List */}
-      <div className="space-y-4">
+      <div className="grid gap-6">
         {returns.length > 0 ? (
           returns.map((ret: any) => (
              <Link 
               href={`/sales/${ret.salesInvoiceId}`} 
               key={ret.id}
-              className="group block bg-white/[0.03] border border-white/5 hover:border-primary/30 rounded-3xl p-6 transition-all duration-300 relative overflow-hidden"
+              className="group block bg-surface border border-outline-variant/30 hover:border-primary/50 rounded-3xl p-6 transition-all duration-300 relative overflow-hidden shadow-sm hover:shadow-md"
              >
-               <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary/30 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
-               
-               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                 <div className="flex items-center gap-6">
-                    <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <Hash className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                    </div>
-                    <div>
-                      <h4 className="font-black text-white text-lg tracking-tight group-hover:text-primary transition-colors">{ret.returnNumber}</h4>
-                      <div className="flex items-center gap-4 mt-1">
-                        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                          <User className="w-3 h-3" /> {ret.salesInvoice.customer.name}
-                        </span>
-                        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                          <Calendar className="w-3 h-3" /> {format(new Date(ret.createdAt), "MMM dd, yyyy")}
-                        </span>
-                      </div>
-                    </div>
-                 </div>
+               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                     <div className="h-14 w-14 rounded-2xl bg-surface-container border border-outline-variant/10 flex items-center justify-center group-hover:bg-primary/5 transition-colors shadow-sm">
+                       <span className="material-symbols-outlined text-primary text-[28px] group-hover:scale-110 transition-transform">receipt_long</span>
+                     </div>
+                     <div>
+                       <h4 className="font-black text-on-surface text-lg tracking-tight group-hover:text-primary transition-colors font-headline-sm">{ret.returnNumber}</h4>
+                       <div className="flex items-center gap-4 mt-1">
+                         <span className="flex items-center gap-1.5 text-[10px] text-on-surface-variant font-black uppercase tracking-widest opacity-60">
+                           <span className="material-symbols-outlined text-[14px]">person</span> {ret.salesInvoice.customer.name}
+                         </span>
+                         <span className="flex items-center gap-1.5 text-[10px] text-on-surface-variant font-black uppercase tracking-widest opacity-60">
+                           <span className="material-symbols-outlined text-[14px]">event</span> {format(new Date(ret.createdAt), "MMM dd, yyyy")}
+                         </span>
+                       </div>
+                     </div>
+                  </div>
 
-                 <div className="flex items-center gap-8">
-                    <div className="text-right space-y-1">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Credit Reversal</p>
-                      <p className="text-xl font-black text-primary italic">-${ret.totalAmount.toFixed(2)}</p>
-                    </div>
-                    <div className="bg-white/5 p-2 rounded-xl group-hover:bg-primary/20 transition-colors">
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-                    </div>
-                 </div>
+                  <div className="flex items-center gap-8">
+                     <div className="text-right space-y-1">
+                       <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Credit Reversal</p>
+                       <p className="text-xl font-black text-primary tracking-tighter italic">Rs. -{ret.totalAmount.toLocaleString()}</p>
+                     </div>
+                     <div className="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-primary/10 transition-colors border border-outline-variant/10">
+                       <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-[20px]">arrow_forward</span>
+                     </div>
+                  </div>
                </div>
              </Link>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 space-y-6 bg-white/5 border border-dashed border-white/10 rounded-3xl">
-            <div className="p-5 bg-white/5 rounded-full">
-              <RotateCcw className="w-10 h-10 text-muted-foreground opacity-30" />
+          <div className="flex flex-col items-center justify-center py-32 space-y-6 bg-surface border border-dashed border-outline-variant/30 rounded-[40px] shadow-sm">
+            <div className="w-20 h-20 bg-surface-container rounded-full flex items-center justify-center text-on-surface-variant/20">
+              <span className="material-symbols-outlined text-4xl">assignment_return</span>
             </div>
-            <div className="text-center space-y-1">
-              <p className="text-sm font-black text-white uppercase tracking-widest">No Returns Processed</p>
-              <p className="text-xs text-muted-foreground">All sales remain healthy and finalized.</p>
+            <div className="text-center space-y-2">
+              <p className="text-xs font-black text-on-surface uppercase tracking-widest">No Returns Identified</p>
+              <p className="text-[10px] font-medium text-on-surface-variant/60 italic">Operational sales healthy. No restock procedures required.</p>
             </div>
           </div>
         )}
@@ -127,3 +112,4 @@ export default async function SalesReturnsPage() {
     </div>
   );
 }
+

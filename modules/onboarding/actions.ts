@@ -12,7 +12,16 @@ import { trackEvent, AnalyticCategory } from "../analytics/service";
 // ─── Get current onboarding state ─────────────────────────────────────────────
 export async function getOnboardingState() {
   const ctx = await getCurrentTenantContext();
-  return service.getOnboardingState(ctx.organizationId);
+  const state = await service.getOnboardingState(ctx.organizationId);
+  const org = await prisma.organization.findUnique({
+    where: { id: ctx.organizationId },
+    select: { industry: true }
+  });
+
+  return {
+    ...state,
+    industry: org?.industry
+  };
 }
 
 // ─── Save business profile ────────────────────────────────────────────────────
@@ -38,6 +47,23 @@ export async function saveWelcomeStep(data: z.infer<typeof service.businessTypeS
   const ctx = await getCurrentTenantContext();
   try {
     await service.markStepDone(ctx.organizationId, "welcome");
+    revalidatePath("/onboarding");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
+  }
+}
+
+export async function updateIndustryAndModulesAction(data: z.infer<typeof service.industryModulesSchema>) {
+  const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
+
+  const parsed = service.industryModulesSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  try {
+    await service.updateIndustryAndModules(ctx.organizationId, parsed.data);
+    await service.markStepDone(ctx.organizationId, "industry");
     revalidatePath("/onboarding");
     return { success: true };
   } catch (e) {

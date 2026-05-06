@@ -12,7 +12,6 @@ import { useTransition } from "react";
 import { createCustomer, updateCustomer } from "../actions";
 import { Customer } from "@prisma/client";
 import { toast } from "sonner";
-import { Loader2, User, Mail, Phone, MapPin } from "lucide-react";
 import { FormFieldWrapper } from "@/components/forms/form-field-wrapper";
 import { FormSection } from "@/components/forms/form-section";
 
@@ -37,7 +36,7 @@ export function CustomerForm({ initialData, onSuccess }: CustomerFormProps) {
   function onSubmit(data: CustomerFormValues) {
     startTransition(async () => {
       const result = initialData 
-        ? await updateCustomer(initialData.id, data)
+        ? await updateCustomer({ id: initialData.id, ...data })
         : await createCustomer(data);
 
       if (result.success) {
@@ -51,7 +50,7 @@ export function CustomerForm({ initialData, onSuccess }: CustomerFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormSection 
           title="Profile Identity" 
           description="Primary contact and legal records"
@@ -64,8 +63,8 @@ export function CustomerForm({ initialData, onSuccess }: CustomerFormProps) {
             placeholder="E.g. Acme Corp or John Doe"
           >
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-              <Input className="pl-10 bg-white/5 border-white/10" />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">corporate_fare</span>
+              <Input className="pl-10" />
             </div>
           </FormFieldWrapper>
 
@@ -76,8 +75,8 @@ export function CustomerForm({ initialData, onSuccess }: CustomerFormProps) {
             placeholder="client@example.com"
           >
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-              <Input className="pl-10 bg-white/5 border-white/10" />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">mail</span>
+              <Input className="pl-10" />
             </div>
           </FormFieldWrapper>
 
@@ -88,8 +87,8 @@ export function CustomerForm({ initialData, onSuccess }: CustomerFormProps) {
             placeholder="+1 (555) 000-0000"
           >
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-              <Input className="pl-10 bg-white/5 border-white/10" />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">call</span>
+              <Input className="pl-10" />
             </div>
           </FormFieldWrapper>
         </FormSection>
@@ -105,24 +104,24 @@ export function CustomerForm({ initialData, onSuccess }: CustomerFormProps) {
             label="Street Address"
           >
             <div className="relative">
-              <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground/60" />
+              <span className="material-symbols-outlined absolute left-3 top-3 text-[18px] text-outline">location_on</span>
               <Textarea 
-                className="pl-10 bg-white/5 border-white/10 min-h-[100px] resize-none" 
+                className="pl-10 min-h-[100px] resize-none" 
                 placeholder="Suite, Street, City, ZIP..."
               />
             </div>
           </FormFieldWrapper>
         </FormSection>
 
-        <div className="pt-4">
+        <div className="pt-6 border-t border-outline-variant/30 flex justify-end gap-3">
           <Button 
             type="submit" 
             disabled={isPending} 
-            className="w-full h-12 text-md font-extrabold uppercase tracking-widest shadow-xl shadow-primary/10 transition-all active:scale-95"
+            className="px-8"
           >
             {isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : initialData ? "Synchronize Profile" : "Onboard Customer"}
+              <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+            ) : initialData ? "Update Profile" : "Onboard Customer"}
           </Button>
         </div>
       </form>

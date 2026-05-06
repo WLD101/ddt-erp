@@ -24,7 +24,7 @@ export default async function NewQuotationPage() {
           <div className="flex items-center gap-4">
             <div className="h-14 w-1 flex bg-indigo-500 rounded-full" />
             <div>
-              <h2 className="text-4xl font-black tracking-tighter text-white uppercase italic">Generate <span className="text-indigo-500">Proposal</span></h2>
+              <h2 className="text-4xl font-black tracking-tighter text-on-surface uppercase italic">Generate <span className="text-indigo-500">Proposal</span></h2>
               <p className="text-muted-foreground text-[11px] font-bold uppercase tracking-widest mt-1">
                 Drafting commercial terms for institutional engagement
               </p>
@@ -33,15 +33,16 @@ export default async function NewQuotationPage() {
         </div>
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-[3rem] p-12 backdrop-blur-2xl shadow-3xl shadow-indigo-500/5">
+      <div className="bg-surface-container-low border border-outline-variant/30 rounded-[3rem] p-12 backdrop-blur-2xl shadow-3xl shadow-indigo-500/5">
         <QuotationForm customers={customers} products={products} />
       </div>
 
       <div className="pt-10 flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 transition-all">
-         <div className="h-px w-20 bg-white/10" />
+         <div className="h-px w-20 bg-surface-container" />
          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.4em]">Quotation Engine v1.0 • Non-Binding Session</p>
-         <div className="h-px w-20 bg-white/10" />
+         <div className="h-px w-20 bg-surface-container" />
       </div>
     </div>
   );
 }
+

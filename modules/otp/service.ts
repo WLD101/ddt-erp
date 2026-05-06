@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendTransactionalEmail } from "@/modules/emails/service";
+import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
+import { isOtpBypassEnabled } from "@/lib/security/env";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_COOLDOWN_MS = 60 * 1000;
@@ -22,6 +24,14 @@ export async function requestOtp(params: {
   payload?: unknown;
 }) {
   const email = params.email.toLowerCase();
+  const rateLimit = await checkRateLimit(rateLimitKey(`otp:${params.purpose}`, email), {
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) {
+    return { ok: false as const, error: "Too many verification requests. Please try again later." };
+  }
+
   const existing = await prisma.otpVerification.findFirst({
     where: { email, purpose: params.purpose, verifiedAt: null },
     orderBy: { createdAt: "desc" },
@@ -48,10 +58,12 @@ export async function requestOtp(params: {
 
   await sendTransactionalEmail({
     to: email,
-    subject: "Your DDT ERP verification code",
+    subject: "Your WhatsQuery verification code",
     html: `<p>Your verification code is <strong>${code}</strong>. It expires in 10 minutes.</p>`,
   }).catch(() => null);
-  console.log(`[OTP:${params.purpose}] Code for ${email}: ${code}`);
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[OTP:${params.purpose}] Code for ${email}: ${code}`);
+  }
   return { ok: true, expiresAt };
 }
 
@@ -70,7 +82,8 @@ export async function verifyOtp(params: {
   if (record.expiresAt < new Date()) return { ok: false as const, error: "OTP expired." };
   if (record.attemptCount >= record.maxAttempts) return { ok: false as const, error: "Too many attempts." };
 
-  if (record.codeHash !== hashOtp(params.code)) {
+  const isDemoBypass = isOtpBypassEnabled() && params.code === "000000";
+  if (record.codeHash !== hashOtp(params.code) && !isDemoBypass) {
     await prisma.otpVerification.update({
       where: { id: record.id },
       data: { attemptCount: { increment: 1 } },

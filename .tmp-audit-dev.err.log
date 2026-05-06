@@ -1,0 +1,762 @@
+(node:5956) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[RateLimit Error]: Error: Stream isn't writeable and enableOfflineQueue options is false
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+(node:8536) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+⨯ Error [PrismaClientValidationError]: 
+Invalid `{imported module ./lib/prisma.ts}["prisma"].organization.findMany()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\_03h27bm._.js:398:160
+
+  395 }
+  396 async function getPlatformTenants() {
+  397     await (0, {imported module ./lib/security/guards.ts}["requirePlatformAdmin"])();
+→ 398     const tenants = await {imported module ./lib/prisma.ts}["prisma"].organization.findMany({
+            orderBy: {
+              createdAt: "desc"
+            },
+            include: {
+              subscription: true,
+              _count: {
+                select: {
+                  memberships: true,
+                  ~~~~~~~~~~~
+                  branches: true,
+                  products: true,
+                  salesInvoices: true,
+          ?       members?: true,
+          ?       customers?: true,
+          ?       suppliers?: true,
+          ?       categories?: true,
+          ?       inventoryItems?: true,
+          ?       stockMovements?: true,
+          ?       salesChannels?: true,
+          ?       externalProductMaps?: true,
+          ?       externalOrderMaps?: true,
+          ?       purchaseInvoices?: true,
+          ?       expenses?: true,
+          ?       payments?: true,
+          ?       auditLogs?: true,
+          ?       roles?: true,
+          ?       notifications?: true,
+          ?       ledgerEntries?: true,
+          ?       financialAccounts?: true,
+          ?       quotations?: true,
+          ?       boms?: true,
+          ?       workOrders?: true,
+          ?       workOrderMaterials?: true,
+          ?       productionLogs?: true,
+          ?       fabricLots?: true,
+          ?       yarnInventory?: true,
+          ?       textileOrders?: true,
+          ?       textileJobCards?: true,
+          ?       dyeingBatches?: true,
+          ?       stitchingBatches?: true,
+          ?       machines?: true,
+          ?       qualityChecks?: true,
+          ?       posRegisters?: true,
+          ?       posSales?: true,
+          ?       posReturns?: true,
+          ?       customerLoyalty?: true,
+          ?       Invitation?: true,
+          ?       AccountTransfer?: true,
+          ?       SalesReturn?: true,
+          ?       PurchaseReturn?: true,
+          ?       exportRequests?: true,
+          ?       importJobs?: true,
+          ?       SalesChannelSyncLog?: true
+                }
+              }
+            }
+          })
+
+Unknown field `memberships` for select statement on model `OrganizationCountOutputType`. Available options are marked with ?.
+    at <unknown> (modules\platform\actions.ts:85:45)
+    at async getPlatformTenants (modules\platform\actions.ts:85:19)
+    at async PlatformTenantsDirectory (app\(platform)\platform\tenants\page.tsx:20:19)
+  83 | export async function getPlatformTenants() {
+  84 |   await requirePlatformAdmin();
+> 85 |   const tenants = await prisma.organization.findMany({
+     |                                             ^
+  86 |     orderBy: { createdAt: 'desc' },
+  87 |     include: {
+  88 |       subscription: true, {
+  clientVersion: '6.0.0',
+  digest: '3944274666'
+}
+[browser] Uncaught PrismaClientValidationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].organization.findMany()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\_03h27bm._.js:398:160
+
+  395 }
+  396 async function getPlatformTenants() {
+  397     await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$security$2f$guards$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$locals$3e$__["requirePlatformAdmin"])();
+→ 398     const tenants = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].organization.findMany({
+            orderBy: {
+              createdAt: "desc"
+            },
+            include: {
+              subscription: true,
+              _count: {
+                select: {
+                  memberships: true,
+                  ~~~~~~~~~~~
+                  branches: true,
+                  products: true,
+                  salesInvoices: true,
+          ?       members?: true,
+          ?       customers?: true,
+          ?       suppliers?: true,
+          ?       categories?: true,
+          ?       inventoryItems?: true,
+          ?       stockMovements?: true,
+          ?       salesChannels?: true,
+          ?       externalProductMaps?: true,
+          ?       externalOrderMaps?: true,
+          ?       purchaseInvoices?: true,
+          ?       expenses?: true,
+          ?       payments?: true,
+          ?       auditLogs?: true,
+          ?       roles?: true,
+          ?       notifications?: true,
+          ?       ledgerEntries?: true,
+          ?       financialAccounts?: true,
+          ?       quotations?: true,
+          ?       boms?: true,
+          ?       workOrders?: true,
+          ?       workOrderMaterials?: true,
+          ?       productionLogs?: true,
+          ?       fabricLots?: true,
+          ?       yarnInventory?: true,
+          ?       textileOrders?: true,
+          ?       textileJobCards?: true,
+          ?       dyeingBatches?: true,
+          ?       stitchingBatches?: true,
+          ?       machines?: true,
+          ?       qualityChecks?: true,
+          ?       posRegisters?: true,
+          ?       posSales?: true,
+          ?       posReturns?: true,
+          ?       customerLoyalty?: true,
+          ?       Invitation?: true,
+          ?       AccountTransfer?: true,
+          ?       SalesReturn?: true,
+          ?       PurchaseReturn?: true,
+          ?       exportRequests?: true,
+          ?       importJobs?: true,
+          ?       SalesChannelSyncLog?: true
+                }
+              }
+            }
+          })
+
+Unknown field `memberships` for select statement on model `OrganizationCountOutputType`. Available options are marked with ?.
+    at <unknown> (modules\platform\actions.ts:85:45)
+    at  getPlatformTenants (modules\platform\actions.ts:85:19)
+    at  PlatformTenantsDirectory (app\(platform)\platform\tenants\page.tsx:20:19)
+  83 | export async function getPlatformTenants() {
+  84 |   await requirePlatformAdmin();
+> 85 |   const tenants = await prisma.organization.findMany({
+     |                                             ^
+  86 |     orderBy: { createdAt: 'desc' },
+  87 |     include: {
+  88 |       subscription: true,
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+⨯ Error [PrismaClientValidationError]: 
+Invalid `{imported module ./lib/prisma.ts}["prisma"].organization.findMany()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\_03h27bm._.js:398:160
+
+  395 }
+  396 async function getPlatformTenants() {
+  397     await (0, {imported module ./lib/security/guards.ts}["requirePlatformAdmin"])();
+→ 398     const tenants = await {imported module ./lib/prisma.ts}["prisma"].organization.findMany({
+            orderBy: {
+              createdAt: "desc"
+            },
+            include: {
+              subscription: true,
+              _count: {
+                select: {
+                  memberships: true,
+                  ~~~~~~~~~~~
+                  branches: true,
+                  products: true,
+                  salesInvoices: true,
+          ?       members?: true,
+          ?       customers?: true,
+          ?       suppliers?: true,
+          ?       categories?: true,
+          ?       inventoryItems?: true,
+          ?       stockMovements?: true,
+          ?       salesChannels?: true,
+          ?       externalProductMaps?: true,
+          ?       externalOrderMaps?: true,
+          ?       purchaseInvoices?: true,
+          ?       expenses?: true,
+          ?       payments?: true,
+          ?       auditLogs?: true,
+          ?       roles?: true,
+          ?       notifications?: true,
+          ?       ledgerEntries?: true,
+          ?       financialAccounts?: true,
+          ?       quotations?: true,
+          ?       boms?: true,
+          ?       workOrders?: true,
+          ?       workOrderMaterials?: true,
+          ?       productionLogs?: true,
+          ?       fabricLots?: true,
+          ?       yarnInventory?: true,
+          ?       textileOrders?: true,
+          ?       textileJobCards?: true,
+          ?       dyeingBatches?: true,
+          ?       stitchingBatches?: true,
+          ?       machines?: true,
+          ?       qualityChecks?: true,
+          ?       posRegisters?: true,
+          ?       posSales?: true,
+          ?       posReturns?: true,
+          ?       customerLoyalty?: true,
+          ?       Invitation?: true,
+          ?       AccountTransfer?: true,
+          ?       SalesReturn?: true,
+          ?       PurchaseReturn?: true,
+          ?       exportRequests?: true,
+          ?       importJobs?: true,
+          ?       SalesChannelSyncLog?: true
+                }
+              }
+            }
+          })
+
+Unknown field `memberships` for select statement on model `OrganizationCountOutputType`. Available options are marked with ?.
+    at <unknown> (modules\platform\actions.ts:85:45)
+    at async getPlatformTenants (modules\platform\actions.ts:85:19)
+    at async PlatformTenantsDirectory (app\(platform)\platform\tenants\page.tsx:20:19)
+  83 | export async function getPlatformTenants() {
+  84 |   await requirePlatformAdmin();
+> 85 |   const tenants = await prisma.organization.findMany({
+     |                                             ^
+  86 |     orderBy: { createdAt: 'desc' },
+  87 |     include: {
+  88 |       subscription: true, {
+  clientVersion: '6.0.0',
+  digest: '3944274666'
+}
+[browser] Uncaught PrismaClientValidationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].organization.findMany()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\_03h27bm._.js:398:160
+
+  395 }
+  396 async function getPlatformTenants() {
+  397     await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$security$2f$guards$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$locals$3e$__["requirePlatformAdmin"])();
+→ 398     const tenants = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].organization.findMany({
+            orderBy: {
+              createdAt: "desc"
+            },
+            include: {
+              subscription: true,
+              _count: {
+                select: {
+                  memberships: true,
+                  ~~~~~~~~~~~
+                  branches: true,
+                  products: true,
+                  salesInvoices: true,
+          ?       members?: true,
+          ?       customers?: true,
+          ?       suppliers?: true,
+          ?       categories?: true,
+          ?       inventoryItems?: true,
+          ?       stockMovements?: true,
+          ?       salesChannels?: true,
+          ?       externalProductMaps?: true,
+          ?       externalOrderMaps?: true,
+          ?       purchaseInvoices?: true,
+          ?       expenses?: true,
+          ?       payments?: true,
+          ?       auditLogs?: true,
+          ?       roles?: true,
+          ?       notifications?: true,
+          ?       ledgerEntries?: true,
+          ?       financialAccounts?: true,
+          ?       quotations?: true,
+          ?       boms?: true,
+          ?       workOrders?: true,
+          ?       workOrderMaterials?: true,
+          ?       productionLogs?: true,
+          ?       fabricLots?: true,
+          ?       yarnInventory?: true,
+          ?       textileOrders?: true,
+          ?       textileJobCards?: true,
+          ?       dyeingBatches?: true,
+          ?       stitchingBatches?: true,
+          ?       machines?: true,
+          ?       qualityChecks?: true,
+          ?       posRegisters?: true,
+          ?       posSales?: true,
+          ?       posReturns?: true,
+          ?       customerLoyalty?: true,
+          ?       Invitation?: true,
+          ?       AccountTransfer?: true,
+          ?       SalesReturn?: true,
+          ?       PurchaseReturn?: true,
+          ?       exportRequests?: true,
+          ?       importJobs?: true,
+          ?       SalesChannelSyncLog?: true
+                }
+              }
+            }
+          })
+
+Unknown field `memberships` for select statement on model `OrganizationCountOutputType`. Available options are marked with ?.
+    at <unknown> (modules\platform\actions.ts:85:45)
+    at  getPlatformTenants (modules\platform\actions.ts:85:19)
+    at  PlatformTenantsDirectory (app\(platform)\platform\tenants\page.tsx:20:19)
+  83 | export async function getPlatformTenants() {
+  84 |   await requirePlatformAdmin();
+> 85 |   const tenants = await prisma.organization.findMany({
+     |                                             ^
+  86 |     orderBy: { createdAt: 'desc' },
+  87 |     include: {
+  88 |       subscription: true,
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+⨯ Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components\billing\PlanProvider.tsx:40:11)
+    at SaleForm (modules\sales\components\sale-form.tsx:59:42)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | } {
+  digest: '2243729476'
+}
+[browser] Uncaught Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components/billing/PlanProvider.tsx:40:11)
+    at SaleForm (modules/sales/components/sale-form.tsx:59:42)
+    at NewSalePage (app\(dashboard)\sales\new\page.tsx:57:9)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | }
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+⨯ Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components\billing\PlanProvider.tsx:40:11)
+    at SaleForm (modules\sales\components\sale-form.tsx:59:42)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | } {
+  digest: '2243729476'
+}
+[browser] Uncaught Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components/billing/PlanProvider.tsx:40:11)
+    at SaleForm (modules/sales/components/sale-form.tsx:59:42)
+    at NewSalePage (app\(dashboard)\sales\new\page.tsx:57:9)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | }
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at requestPaidSignupOtpAction (modules\auth\actions.ts:25:37)
+    at signUpAction (modules\auth\actions.ts:15:10)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] [Cloudflare Turnstile] Cannot find Widget cf-chl-widget-3coue, consider using turnstile.remove() to clean up a widget. (https://challenges.cloudflare.com/turnstile/v0/api.js:1:10966)
+[Analytics Error] Failed to log event: Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].analyticsEvent.create()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\[root-of-the-server]__0rdru~5._.js:881:145
+
+  878 async function trackEvent(data) {
+  879     // Non-blocking fire-and-forget (handled by Vercel/Next.js after response)
+  880     // In production with high volume, this would go to a queue.
+→ 881     void __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].analyticsEvent.create({
+            data: {
+              name: "SIGNUP_COMPLETED",
+              category: "AUTH",
+              userId: "cmosptsnx0002welggeyup3l1",
+              organizationId: "cmosptso60003welgo1tsk5us",
+              properties: null,
+              ~~~~~~~~~~
+          ?   id?: String,
+          ?   timestamp?: DateTime
+            }
+          })
+
+Unknown argument `properties`. Available options are marked with ?.
+    at <unknown> (modules\analytics\service.ts:30:32)
+  28 |     // Non-blocking fire-and-forget (handled by Vercel/Next.js after response)
+  29 |     // In production with high volume, this would go to a queue.
+> 30 |     void prisma.analyticsEvent.create({
+     |                                ^
+  31 |         data: {
+  32 |             name: data.name,
+  33 |             category: data.category, {
+  clientVersion: '6.0.0'
+}
+[Lifecycle Error] Failed to send welcome email: Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].emailLog.create()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\[root-of-the-server]__0rdru~5._.js:779:141
+
+  776     subject: templateData.subject,
+  777     html
+  778 });
+→ 779 return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].emailLog.create({
+        data: {
+          userId: "cmosptsnx0002welggeyup3l1",
+          organizationId: "cmosptso60003welgo1tsk5us",
+          event: "WELCOME",
+          subject: "Welcome to WhatsQuery, Test User!",
+          providerId: "console_1777990820183",
+          emailType: "LIFECYCLE",
+          ~~~~~~~~~
+      ?   id?: String,
+      ?   sentAt?: DateTime
+        }
+      })
+
+Unknown argument `emailType`. Available options are marked with ?.
+    at <unknown> (modules\emails\service.tsx:94:26)
+    at async Module.bootstrapOrganization (modules\auth\service.ts:179:3)
+    at async verifyPaidSignupOtpAction (modules\auth\actions.ts:68:5)
+  92 |   });
+  93 |
+> 94 |   return prisma.emailLog.create({
+     |                          ^
+  95 |     data: {
+  96 |       userId,
+  97 |       organizationId, {
+  clientVersion: '6.0.0'
+}
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+(node:18388) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:14040) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] Base UI: A component is changing the uncontrolled value state of FieldControl to be controlled.
+Elements should not switch from uncontrolled to controlled (or vice versa).
+Decide between using a controlled or uncontrolled FieldControl element for the lifetime of the component.
+The nature of the state is determined during the first render. It's considered controlled if the value is not `undefined`.
+More info: https://fb.me/react-controlled-components 
+[Analytics Error] Failed to log event: Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].analyticsEvent.create()` invocation in
+C:\Users\WLD10\.gemini\antigravity\scratch\ddt-erp\.next-build\dev\server\chunks\ssr\[root-of-the-server]__0xgjbbc._.js:1650:145
+
+  1647 async function trackEvent(data) {
+  1648     // Non-blocking fire-and-forget (handled by Vercel/Next.js after response)
+  1649     // In production with high volume, this would go to a queue.
+→ 1650     void __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].analyticsEvent.create({
+             data: {
+               name: "PRODUCT_CREATED",
+               category: "INVENTORY",
+               userId: "cmosptsnx0002welggeyup3l1",
+               organizationId: "cmosptso60003welgo1tsk5us",
+               properties: "{\"source\":\"onboarding\"}",
+               ~~~~~~~~~~
+           ?   id?: String,
+           ?   timestamp?: DateTime
+             }
+           })
+
+Unknown argument `properties`. Available options are marked with ?.
+    at <unknown> (modules\analytics\service.ts:30:32)
+  28 |     // Non-blocking fire-and-forget (handled by Vercel/Next.js after response)
+  29 |     // In production with high volume, this would go to a queue.
+> 30 |     void prisma.analyticsEvent.create({
+     |                                ^
+  31 |         data: {
+  32 |             name: data.name,
+  33 |             category: data.category, {
+  clientVersion: '6.0.0'
+}
+[browser] Uncaught Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components/billing/PlanProvider.tsx:40:11)
+    at SaleForm (modules/sales/components/sale-form.tsx:59:42)
+    at NewSalePage (app\(dashboard)\sales\new\page.tsx:61:11)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | }
+⨯ Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components\billing\PlanProvider.tsx:40:11)
+    at SaleForm (modules\sales\components\sale-form.tsx:59:42)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | } {
+  digest: '4211512580'
+}
+[browser] Uncaught Error: usePlanModal must be used within a PlanProvider
+    at usePlanModal (components/billing/PlanProvider.tsx:40:11)
+    at SaleForm (modules/sales/components/sale-form.tsx:59:42)
+    at NewSalePage (app\(dashboard)\sales\new\page.tsx:61:11)
+  38 |   const context = useContext(PlanContext);
+  39 |   if (!context) {
+> 40 |     throw new Error("usePlanModal must be used within a PlanProvider");
+     |           ^
+  41 |   }
+  42 |   return context;
+  43 | }

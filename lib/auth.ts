@@ -13,10 +13,21 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { isPlatformAdminEmail } from "@/lib/security/access";
 import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
+import { getAuthSecret, isProductionEnv } from "@/lib/security/env";
+
+const authSecret = getAuthSecret();
+const isProduction = isProductionEnv();
+const devLog = (...args: unknown[]) => {
+  if (!isProduction) {
+    console.log(...args);
+  }
+};
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
+  secret: authSecret,
+  useSecureCookies: isProduction,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -25,24 +36,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          devLog("Missing email or password during authorize.");
+          return null;
+        }
         
         const email = (credentials.email as string).toLowerCase();
-        const limit = checkRateLimit(rateLimitKey("login", email), {
+        const limit = await checkRateLimit(rateLimitKey("login", email), {
           limit: 10,
           windowMs: 15 * 60 * 1000,
         });
-        if (!limit.allowed) return null;
+        if (!limit.allowed) {
+          devLog("Login rate limit exceeded for email:", email);
+          return null;
+        }
 
         const user = await prisma.user.findFirst({
           where: { email },
         });
 
         if (!user) {
+          devLog("No user found in DB for email:", email);
           return null;
         }
 
         if (!user.password) {
+          devLog("User has no password set in DB");
           return null;
         }
 
@@ -52,51 +71,47 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!isValid) {
+          devLog("Invalid password for email:", email);
           return null;
         }
 
+        devLog("User authorized successfully:", user.id);
         return user;
       },
     }),
   ],
   session: {
     strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
   callbacks: {
-    /**
-     * JWT callback — runs once at sign-in and then on every session access.
-     * We embed organizationId into the token here so downstream calls can
-     * use the fast path in getCurrentTenantContext().
-     */
     async jwt({ token, user }) {
-      // `user` is only populated on the initial sign-in event
       if (user?.id) {
         token.sub = user.id;
-        token.isSuperAdmin = isPlatformAdminEmail(user.email);
+        token.email = user.email;
+      }
+      if (token.sub) {
+        const email = token.email as string | undefined;
+        token.isSuperAdmin = isPlatformAdminEmail(email);
 
-        // Resolve the user's primary org membership at login time
-        // and cache it in the JWT to avoid per-request DB lookups.
-        const membership = token.isSuperAdmin
-          ? null
-          : await prisma.organizationUser.findFirst({
-              where: { userId: user.id },
-              select: { organizationId: true },
-              orderBy: { createdAt: "asc" }, // earliest = primary org
-            });
+        if (!token.organizationId) {
+          const membership = token.isSuperAdmin
+            ? null
+            : await prisma.organizationUser.findFirst({
+                where: { userId: token.sub },
+                select: { organizationId: true },
+                orderBy: { createdAt: "asc" },
+              });
 
-        if (membership) {
-          token.organizationId = membership.organizationId;
-        } else {
-          delete token.organizationId;
+          if (membership) {
+            token.organizationId = membership.organizationId;
+          }
         }
       }
       return token;
     },
 
-    /**
-     * Session callback — maps JWT data onto the session object exposed
-     * to client components and server actions via `auth()`.
-     */
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;

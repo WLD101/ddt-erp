@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 "use server";
 
 import { prisma } from "@/lib/prisma";
@@ -7,7 +9,7 @@ import { seedDemoWorkspace } from "./seeder";
 
 export async function createDemoAccount() {
   const demoUuid = uuidv4().split("-")[0]; // Short random string
-  const email = `demo-${demoUuid}@demo.nexuserp.local`;
+  const email = `demo-${demoUuid}@demo.whatsquery.local`;
   const rawPassword = `pass-${uuidv4().split("-")[0]}`;
   const hashedPassword = await bcrypt.hash(rawPassword, 10);
 

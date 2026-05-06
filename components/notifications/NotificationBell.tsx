@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useState, useEffect, useTransition } from "react";
 import { 
   Bell, CheckCheck, ExternalLink, AlertTriangle, 
@@ -28,7 +29,7 @@ type Notification = {
 };
 
 // ─── Severity Styles ──────────────────────────────────────────────────────────
-const SEVERITY_CONFIG: Record<string, { icon: JSX.Element; bg: string; dot: string; label: string }> = {
+const SEVERITY_CONFIG: Record<string, { icon: React.ReactElement; bg: string; dot: string; label: string }> = {
   CRITICAL: {
     icon: <ShieldAlert className="w-4 h-4 text-rose-400" />,
     bg: "bg-rose-500/10 border-rose-500/20",

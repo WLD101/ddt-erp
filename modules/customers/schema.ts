@@ -7,4 +7,4 @@ export const customerSchema = z.object({
   address: z.string().optional().or(z.literal("")),
 });
 
-export type CustomerFormValues = z.infer<typeof customerSchema>;
+export type CustomerFormValues = z.input<typeof customerSchema>;

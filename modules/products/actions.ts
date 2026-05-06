@@ -96,6 +96,7 @@ export const updateProduct = createServerAction({
  */
 export const deleteProduct = createServerAction({
   label: "DeleteProduct",
+  blockInDemoMode: true,
   permissions: ["products.delete"],
   schema: z.object({ id: z.string() }),
   revalidatePaths: ["/products", "/inventory"],

@@ -55,24 +55,24 @@ export function PlanLimitModal({
           <div className="bg-white/5 rounded-xl p-4 border border-white/10">
             <h4 className="text-sm font-bold text-slate-300 mb-3 flex items-center">
               <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" />
-              Upgrade to Pro to unlock:
+              Upgrade your package to unlock:
             </h4>
             <ul className="grid grid-cols-1 gap-2 text-sm text-slate-400">
               <li className="flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2" />
-                Unlimited Sales & Invoices
+                More branches and more staff seats
               </li>
               <li className="flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2" />
-                Up to 500 Products & Inventory items
+                Higher product and monthly sales capacity
               </li>
               <li className="flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2" />
-                Advanced Financial Reports
+                WooCommerce, Shopify, and Daraz workflows
               </li>
               <li className="flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2" />
-                Data Exports (CSV/Excel)
+                CSV imports, exports, and advanced reporting
               </li>
             </ul>
           </div>

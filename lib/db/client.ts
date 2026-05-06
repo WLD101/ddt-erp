@@ -16,6 +16,15 @@ const TENANT_MODELS = [
   "Supplier",
   "Category",
   "Product",
+  "BOM",
+  "WorkOrder",
+  "WorkOrderMaterial",
+  "ProductionLog",
+  "SalesChannel",
+  "ExternalProductMap",
+  "ExternalOrderMap",
+  "SalesChannelSyncLog",
+  "ImportJob",
   "InventoryItem",
   "StockMovement",
   "SalesInvoice",
@@ -55,6 +64,12 @@ export function getTenantStore(ctx: TenantContext) {
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
+          const mutableArgs = args as {
+            where?: Record<string, unknown>;
+            data?: any;
+            create?: any;
+          };
+
           // Only apply to models that explicitly hold a tenant reference
           if (!TENANT_MODELS.includes(model)) {
             return query(args);
@@ -75,23 +90,23 @@ export function getTenantStore(ctx: TenantContext) {
             "upsert"
           ].includes(operation)) {
             // Ensure args.where exists and contains organizationId
-            args.where = { 
-              ...(args.where || {}), 
+            mutableArgs.where = { 
+              ...(mutableArgs.where || {}), 
               organizationId: orgId 
             };
           }
 
           // ── CREATE OPERATIONS ──────────────────────────────────────────────────
           if (operation === "create") {
-            args.data = { 
-              ...(args.data || {}), 
+            mutableArgs.data = { 
+              ...(mutableArgs.data || {}), 
               organizationId: orgId 
             };
           }
 
           if (operation === "createMany") {
-            if (Array.isArray(args.data)) {
-              args.data = args.data.map((item: any) => ({
+            if (Array.isArray(mutableArgs.data)) {
+              mutableArgs.data = mutableArgs.data.map((item: any) => ({
                 ...item,
                 organizationId: orgId
               }));
@@ -100,8 +115,8 @@ export function getTenantStore(ctx: TenantContext) {
 
           // ── UPSERT SPECIFICS ──────────────────────────────────────────────────
           if (operation === "upsert") {
-            args.create = {
-              ...(args.create || {}),
+            mutableArgs.create = {
+              ...(mutableArgs.create || {}),
               organizationId: orgId
             };
           }

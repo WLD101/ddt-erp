@@ -4,8 +4,11 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'waleed@ddterp.com';
-  const password = '14789Wagus';
+  const email = process.env.SUPER_ADMIN_EMAIL || 'waleed@whatsquery.com';
+  const password = process.env.SUPER_ADMIN_BOOTSTRAP_PASSWORD;
+  if (!password) {
+    throw new Error('Missing SUPER_ADMIN_BOOTSTRAP_PASSWORD');
+  }
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.upsert({

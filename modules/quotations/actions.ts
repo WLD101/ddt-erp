@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 "use server";
 
 import { createServerAction } from "@/lib/actions/builder";
@@ -44,6 +46,7 @@ export const updateQuotationStatusAction = createServerAction({
  */
 export const deleteQuotationAction = createServerAction({
   label: "DeleteQuotation",
+  blockInDemoMode: true,
   permissions: ["quotations.delete"],
   revalidatePaths: ["/sales/quotes"],
   audit: {

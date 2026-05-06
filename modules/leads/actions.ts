@@ -61,7 +61,7 @@ export async function submitLeadAction(data: {
     return { success: true, message: "Thank you for your submission." };
   }
 
-  const limit = checkRateLimit(rateLimitKey("lead", input.email), {
+  const limit = await checkRateLimit(rateLimitKey("lead", input.email), {
     limit: 5,
     windowMs: 60 * 60 * 1000,
   });
@@ -102,7 +102,7 @@ export async function requestDemoOtpAction(data: unknown) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const input = parsed.data;
-  const limit = checkRateLimit(rateLimitKey("demo", input.email), {
+  const limit = await checkRateLimit(rateLimitKey("demo", input.email), {
     limit: 5,
     windowMs: 60 * 60 * 1000,
   });
@@ -142,11 +142,14 @@ export async function requestDemoOtpAction(data: unknown) {
         },
       });
 
-  await requestOtp({
+  const otpRequest = await requestOtp({
     email: input.email,
     purpose: "DEMO_SIGNUP",
     payload: { leadId: lead.id },
   });
+  if (!otpRequest.ok) {
+    return { error: otpRequest.error || "Unable to send verification code right now." };
+  }
   await writePlatformAuditLog({
     action: "OTP_SENT",
     entityType: "DemoRequest",

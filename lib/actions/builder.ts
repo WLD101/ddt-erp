@@ -7,10 +7,12 @@ import { PlanConfig } from "@/lib/billing/plans";
 import { canUseFeature, assertPlanLimit } from "@/lib/billing/enforcement";
 import { trackEvent, AnalyticCategory } from "@/modules/analytics/service";
 import { assertErpAccess } from "@/lib/billing/access";
+import { DemoModeBlockedError, assertDemoModeWriteAllowed } from "@/lib/demo-mode";
 
 export type ActionContext = {
   ctx: TenantContext;
   orgId: string;
+  branchId: string;
   db: ScopedPrisma;
 };
 
@@ -37,17 +39,19 @@ interface ActionConfig<TInput extends z.ZodTypeAny, TOutput> {
     action: string;
     entityType: string;
     /** Function to extract the ID of the affected entity from the result */
-    getEntityId: (result: TOutput) => string;
+    getEntityId: (result: any) => string;
     /** Optional detailed summary for the log */
-    getDetails?: (input: z.infer<TInput>, result: TOutput) => string;
+    getDetails?: (input: any, result: any) => string;
   };
   /** Optional automated analytics tracking on success */
   analytics?: {
     name: string;
     category: AnalyticCategory;
-    getProperties?: (input: z.infer<TInput>, result: TOutput) => Record<string, any>;
+    getProperties?: (input: any, result: any) => Record<string, any>;
   };
-  handler: (params: { input: z.infer<TInput>; context: ActionContext }) => Promise<TOutput>;
+  /** Optional. Prevents execution when DEMO_MODE=true. */
+  blockInDemoMode?: boolean;
+  handler: (params: { input: any; context: ActionContext }) => Promise<TOutput>;
 }
 
 /**
@@ -127,8 +131,13 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
       const context: ActionContext = {
         ctx,
         orgId: ctx.organizationId,
+        branchId: ctx.branchId,
         db: getTenantStore(ctx),
       };
+
+      if (config.blockInDemoMode) {
+        assertDemoModeWriteAllowed();
+      }
 
       // 5. Logic Execution
       const result = await config.handler({ input, context });
@@ -168,6 +177,9 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
         return { success: false, error: err.message };
       }
       if (err.name === "ErpAccessError") {
+        return { success: false, error: err.message };
+      }
+      if (err instanceof DemoModeBlockedError || err.name === "DemoModeBlockedError") {
         return { success: false, error: err.message };
       }
 

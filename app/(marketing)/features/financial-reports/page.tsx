@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { LineChart, Wallet, Vault, ArrowRightLeft, Target, ScrollText } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "ERP Financial Reports & Analytics | NexusERP",
+  title: "ERP Financial Reports & Analytics | WhatsQuery",
   description: "Gain deep insights into your business profitability. Track cash flow, product margins, and ledger balances dynamically.",
   alternates: {
-    canonical: "https://nexuserp.com/features/financial-reports",
+    canonical: "https://whatsquery.example.com/features/financial-reports",
   }
 };
 
@@ -24,7 +24,7 @@ const FEATURES = [
 ];
 
 const FAQS = [
-  { question: "Do I need to be an accountant to use this?", answer: "Not at all. NexusERP abstracts complex double-entry mechanics into easy-to-read, visually rich dashboards designed for business owners." },
+  { question: "Do I need to be an accountant to use this?", answer: "Not at all. WhatsQuery abstracts complex double-entry mechanics into easy-to-read, visually rich dashboards designed for business owners." },
   { question: "Can I manage multiple bank accounts?", answer: "Yes. You can create unlimited discrete Financial Accounts (e.g. 'Main Checking', 'Store 1 Register', 'Petty Cash') and assign payments strictly to them." },
   { question: "Is data exportable?", answer: "Absolutely. All ledger histories and profit tables can be exported cleanly to standard spreadsheet formats for your CPA." },
 ];

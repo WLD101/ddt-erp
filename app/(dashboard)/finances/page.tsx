@@ -6,7 +6,7 @@ export default async function FinancesPage() {
 
   return (
     <div className="p-8 h-full flex flex-col overflow-hidden">
-      <ExpenseClient initialExpenses={expenses} />
+      <ExpenseClient initialExpenses={expenses as any} />
     </div>
   );
 }

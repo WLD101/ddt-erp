@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
   const isEligible = await shouldShowOnboarding();
-  if (!isEligible) redirect("/");
+  if (!isEligible) redirect("/dashboard");
 
   const state = await getOnboardingState();
 
@@ -18,6 +18,7 @@ export default async function OnboardingPage() {
       completedSteps={state.completedSteps as string[]}
       skippedSteps={state.skippedSteps as string[]}
       steps={ONBOARDING_STEPS as any}
+      state={state}
     />
   );
 }

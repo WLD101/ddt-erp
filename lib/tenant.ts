@@ -40,6 +40,7 @@ export class TenantForbiddenError extends Error {
 }
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 // ---------------------------------------------------------------------------
 // Context shape returned to every caller
@@ -73,9 +74,7 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
     throw new TenantForbiddenError("No authenticated session found.");
   }
 
-  if (!shouldResolveTenantContext(session.user.email)) {
-    throw new TenantForbiddenError("Platform administrators do not have tenant context.");
-  }
+
 
   const userId = session.user.id;
   const jwtOrgId = session.user.organizationId;
@@ -83,7 +82,7 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
   const activeBranchId = cookieStore.get("x-active-branch")?.value;
 
   // Find membership with roles, permissions, and assigned branch
-  const membership = await prisma.organizationUser.findFirst({
+  let membership = await prisma.organizationUser.findFirst({
     where: { 
       userId,
       ...(jwtOrgId ? { organizationId: jwtOrgId } : {})
@@ -100,7 +99,31 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
   });
 
   if (!membership) {
-    throw new TenantForbiddenError("No organization membership found.");
+    const fallbackMembership = await prisma.organizationUser.findFirst({
+      where: { userId },
+      include: {
+        role: { include: { permissions: true } },
+        organization: {
+          include: {
+            branches: { where: { isMain: true }, take: 1 }
+          }
+        }
+      },
+      orderBy: { createdAt: "asc" }
+    });
+    if (fallbackMembership) {
+      membership = fallbackMembership;
+    } else {
+      const userExists = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!userExists) {
+        // User ID in JWT no longer exists in DB (e.g. after a reseed).
+        // Force sign-out to clear the stale cookie, breaking any redirect loop.
+        redirect("/auth/force-signout");
+      }
+      redirect("/onboarding");
+    }
   }
 
   // RESOLVE BRANCH ID
@@ -116,7 +139,7 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
     const anyBranch = await prisma.branch.findFirst({
       where: { organizationId: membership.organizationId }
     });
-    resolvedBranchId = anyBranch?.id;
+    resolvedBranchId = anyBranch?.id ?? null;
   }
 
   if (!resolvedBranchId) {
@@ -135,7 +158,7 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
   return {
     userId,
     organizationId: membership.organizationId,
-    branchId: resolvedBranchId,
+    branchId: resolvedBranchId as string,
     role: membership.role.name,
     permissions: membership.role.permissions.map((p) => p.name),
   };

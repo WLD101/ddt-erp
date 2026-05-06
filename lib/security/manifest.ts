@@ -1,6 +1,6 @@
 /**
  * SYSTEM-WIDE PERMISSION MANIFEST
- * Defines all granular access keys available in the ERP SaaS.
+ * Defines all granular access keys available in the WhatsQuery.
  */
 
 export interface PermissionDefinition {
@@ -69,7 +69,7 @@ export const DEFAULT_ROLE_MAPPINGS: Record<string, string[]> = {
   admin: [
     "customers.view", "customers.create", "customers.edit", "customers.export",
     "suppliers.view", "suppliers.create", "suppliers.edit", "suppliers.export",
-    "products.view", "products.create", "products.edit", "products.export",
+    "products.view", "products.create", "products.edit", "inventory.export",
     "sales.view", "sales.create", "sales.edit", "sales.export",
     "purchases.view", "purchases.create", "purchases.edit", "purchases.export",
     "finances.view", "payments.manage",

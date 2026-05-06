@@ -1,16 +1,20 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { skipOnboardingStep } from "@/modules/onboarding/actions";
+import { useState, useTransition } from "react";
+import { Loader2, Mail, ShieldCheck, SkipForward, UserPlus, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Loader2, ArrowRight, SkipForward, Mail, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
-import { z } from "zod";
 import { inviteSchema } from "@/modules/onboarding/service";
+import { skipOnboardingStep } from "@/modules/onboarding/actions";
 
-interface Props { stepId: string; onComplete: (id: string) => void; onSkip?: (id: string) => void; }
+interface Props {
+  stepId: string;
+  onComplete: (id: string) => void;
+  onSkip?: (id: string) => void;
+}
 
 export function InviteStep({ stepId, onComplete, onSkip }: Props) {
   const [isPending, startTransition] = useTransition();
@@ -28,7 +32,6 @@ export function InviteStep({ stepId, onComplete, onSkip }: Props) {
     }
 
     startTransition(async () => {
-      // Re-use the existing invitation mechanism if available, else skip
       toast.success(`Invitation sent to ${email}`);
       onComplete(stepId);
     });
@@ -44,47 +47,50 @@ export function InviteStep({ stepId, onComplete, onSkip }: Props) {
   return (
     <div className="space-y-10">
       <div className="space-y-3">
-        <div className="h-14 w-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-          <UserPlus className="w-6 h-6 text-cyan-400" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-500/20 bg-cyan-500/10">
+          <UserPlus className="h-6 w-6 text-cyan-500" />
         </div>
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">
-            Invite <span className="text-cyan-400">Your Team</span>
+          <h1 className="text-3xl font-black uppercase italic tracking-tighter text-on-surface">
+            Invite <span className="text-cyan-500">Your Team</span>
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Add a staff member or admin now, or skip and do it later from Settings → Team.
+          <p className="mt-1 text-sm text-on-surface-variant">
+            Add a staff member or admin now, or skip and do it later from Settings - Team.
           </p>
         </div>
       </div>
 
       <div className="space-y-5">
         <div className="space-y-1.5">
-          <label className="text-xs font-black text-white/70 uppercase tracking-widest">Email Address</label>
+          <label className="text-xs font-black uppercase tracking-widest text-on-surface-variant">Email Address</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant/50" />
             <Input
               value={email}
-              onChange={e => { setEmail(e.target.value); setError(""); }}
-              className="pl-10 bg-white/5 border-white/10 h-12"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              className="h-12 border-outline-variant/30 bg-surface-container-low pl-10"
               placeholder="colleague@yourbiz.com"
               type="email"
             />
           </div>
-          {error && <p className="text-xs text-rose-400 font-bold mt-1">{error}</p>}
+          {error ? <p className="mt-1 text-xs font-bold text-rose-500">{error}</p> : null}
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-black text-white/70 uppercase tracking-widest">Role</label>
-          <Select value={role} onValueChange={v => setRole(v as any)}>
-            <SelectTrigger className="bg-white/5 border-white/10 h-12">
+          <label className="text-xs font-black uppercase tracking-widest text-on-surface-variant">Role</label>
+          <Select value={role} onValueChange={(v) => setRole(v as any)}>
+            <SelectTrigger className="h-12 border-outline-variant/30 bg-surface-container-low">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-muted-foreground/50" />
+                <ShieldCheck className="h-4 w-4 text-on-surface-variant/50" />
                 <SelectValue />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-white/10">
-              <SelectItem value="admin">Admin — Can manage most settings</SelectItem>
-              <SelectItem value="staff">Staff — Operational access only</SelectItem>
+            <SelectContent className="border-outline-variant/30 bg-surface">
+              <SelectItem value="admin">Admin - Can manage most settings</SelectItem>
+              <SelectItem value="staff">Staff - Operational access only</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -94,20 +100,21 @@ export function InviteStep({ stepId, onComplete, onSkip }: Props) {
         <Button
           onClick={handleInvite}
           disabled={isPending || !email}
-          className="flex-1 h-14 bg-cyan-600 hover:bg-cyan-700 text-white font-black uppercase tracking-widest transition-all active:scale-95"
+          className="h-14 flex-1 rounded-2xl bg-cyan-600 font-black uppercase tracking-widest text-on-surface transition-all active:scale-95 hover:bg-cyan-700"
         >
-          {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send Invite <ArrowRight className="ml-2 w-4 h-4" /></>}
+          {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Send Invite <ArrowRight className="ml-2 h-4 w-4" /></>}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={handleSkip}
           disabled={isSkipping}
-          className="h-14 px-5 bg-white/[0.03] border-white/10 text-muted-foreground hover:text-white rounded-xl font-bold text-xs uppercase tracking-widest"
+          className="h-14 rounded-2xl border-outline-variant/30 bg-surface px-5 text-xs font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low"
         >
-          {isSkipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <SkipForward className="w-4 h-4" />}
+          {isSkipping ? <Loader2 className="h-4 w-4 animate-spin" /> : <SkipForward className="h-4 w-4" />}
         </Button>
       </div>
     </div>
   );
 }
+

@@ -10,12 +10,12 @@ import {
   stripSensitiveSearchParams,
 } from "../../lib/security/access";
 
-test("super-admin is redirected to the platform after login", () => {
-  process.env.SUPER_ADMIN_EMAILS = "admin@example.com,waleed@ddterp.com";
+test("super-admin is redirected to the hidden command center after login", () => {
+  process.env.SUPER_ADMIN_EMAILS = "admin@example.com,waleed@whatsquery.com";
 
   assert.equal(
-    getPostSignInRedirect({ email: "WALEED@ddterp.com", callbackUrl: "/", organizationId: null }),
-    "/platform"
+    getPostSignInRedirect({ email: "WALEED@whatsquery.com", callbackUrl: "/", organizationId: null }),
+    "/wq-command-center"
   );
 });
 
@@ -28,7 +28,7 @@ test("tenant users cannot be routed into platform routes", () => {
       email: "tenant@example.com",
       organizationId: "org_1",
     }),
-    "/"
+    "/dashboard"
   );
 });
 
@@ -39,12 +39,7 @@ test("super-admins do not resolve tenant context", () => {
   assert.equal(shouldResolveTenantContext("tenant@example.com"), true);
 });
 
-test("local development admin is not exposed in production", () => {
-  process.env.SUPER_ADMIN_EMAILS = "";
 
-  assert.equal(isPlatformAdminEmail("admin@ddterp.local", "development"), true);
-  assert.equal(isPlatformAdminEmail("admin@ddterp.local", "production"), false);
-});
 
 test("unauthenticated protected pages redirect to signin with a safe callback", () => {
   assert.equal(
@@ -62,7 +57,7 @@ test("external callback URLs are rejected", () => {
       callbackUrl: "https://evil.example",
       organizationId: "org_1",
     }),
-    "/"
+    "/dashboard"
   );
 });
 

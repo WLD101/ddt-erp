@@ -20,7 +20,7 @@ import {
  */
 export function PartnerHero({ partnerCode }: { partnerCode: string }) {
   const [copied, setCopied] = useState(false);
-  const referralLink = `https://nexuserp.com/?ref=${partnerCode}`;
+  const referralLink = `https://whatsquery.example.com/?ref=${partnerCode}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -30,7 +30,7 @@ export function PartnerHero({ partnerCode }: { partnerCode: string }) {
   };
 
   const shareX = () => {
-    window.open(`https://twitter.com/intent/tweet?text=Transform your business with NexusERP! Track every branch, SKU, and transaction in one place. ${referralLink}`, "_blank");
+    window.open(`https://twitter.com/intent/tweet?text=Transform your business with WhatsQuery! Track every branch, SKU, and transaction in one place. ${referralLink}`, "_blank");
   };
 
   const shareLinkedIn = () => {

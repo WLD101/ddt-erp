@@ -4,15 +4,15 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { updateOrganizationProfile, updateProfileSchema } from "@/modules/settings/actions";
+import { updateOrganizationProfile } from "@/modules/settings/actions";
+import { updateProfileSchema } from "@/modules/settings/schema";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
-type FormValues = z.infer<typeof updateProfileSchema>;
+type FormValues = z.input<typeof updateProfileSchema>;
 
 export function ProfileForm({ 
   initialData 
@@ -50,73 +50,77 @@ export function ProfileForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       
       {/* SECTION 1: BUSINESS PROFILE */}
-      <Card className="border-white/5 bg-black/20 backdrop-blur-md">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-black text-white">Business Profile</CardTitle>
-          <CardDescription>
-            This information appears on your invoices, quotations, and official documents.
+          <CardTitle className="text-lg font-black text-on-surface tracking-tight font-headline-sm">Business Identity</CardTitle>
+          <CardDescription className="text-sm text-on-surface-variant font-medium">
+            Official information for invoices, quotations, and manifests.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label className="text-white/70">Company Name</Label>
-            <Input {...register("name")} className="bg-black/20 border-white/10 text-white" disabled={isPending} />
-            {errors.name && <p className="text-[10px] text-red-400">{errors.name.message}</p>}
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Company Name</Label>
+            <Input {...register("name")} disabled={isPending} />
+            {errors.name && <p className="text-[10px] text-error font-medium">{errors.name.message}</p>}
           </div>
           
           <div className="space-y-2">
-            <Label className="text-white/70">Workspace Slug (Read Only)</Label>
-            <Input value={initialData.slug} readOnly disabled className="bg-black/40 border-white/5 text-white/50 cursor-not-allowed" />
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">System Handle</Label>
+            <Input value={initialData.slug} readOnly disabled className="bg-surface-container-low/50 font-mono text-[11px]" />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Contact Email</Label>
-            <Input {...register("email")} type="email" placeholder="billing@company.com" className="bg-black/20 border-white/10 text-white" disabled={isPending} />
-            {errors.email && <p className="text-[10px] text-red-400">{errors.email.message}</p>}
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Primary Email</Label>
+            <Input {...register("email")} type="email" placeholder="operations@company.com" disabled={isPending} />
+            {errors.email && <p className="text-[10px] text-error font-medium">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Phone Number</Label>
-            <Input {...register("phone")} placeholder="+1 (555) 000-0000" className="bg-black/20 border-white/10 text-white" disabled={isPending} />
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Support Phone</Label>
+            <Input {...register("phone")} placeholder="+1 555 0100" disabled={isPending} />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label className="text-white/70">Physical Address</Label>
-            <Input {...register("address")} placeholder="123 Commerce St, Suite 400..." className="bg-black/20 border-white/10 text-white" disabled={isPending} />
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">HQ Address</Label>
+            <Input {...register("address")} placeholder="Full physical location..." disabled={isPending} />
           </div>
         </CardContent>
       </Card>
 
       {/* SECTION 2: PREFERENCES */}
-      <Card className="border-white/5 bg-black/20 backdrop-blur-md">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-black text-white">Localization & Settings</CardTitle>
-          <CardDescription>
-            Configure default formatting for financial records and taxes.
+          <CardTitle className="text-lg font-black text-on-surface tracking-tight font-headline-sm">Localization & Policy</CardTitle>
+          <CardDescription className="text-sm text-on-surface-variant font-medium">
+            Default formatting for financial records and statutory reporting.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
-            <Label className="text-white/70">System Currency</Label>
-            <Input {...register("currency")} placeholder="USD, EUR, GBP" className="bg-black/20 border-white/10 text-white uppercase" disabled={isPending} />
-            {errors.currency && <p className="text-[10px] text-red-400">{errors.currency.message}</p>}
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Base Currency</Label>
+            <Input {...register("currency")} placeholder="PKR, USD, etc." className="uppercase font-black" disabled={isPending} />
+            {errors.currency && <p className="text-[10px] text-error font-medium">{errors.currency.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Tax/VAT Label</Label>
-            <Input {...register("taxLabel")} placeholder="e.g. VAT, GST, Sales Tax" className="bg-black/20 border-white/10 text-white" disabled={isPending} />
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Tax Identification Label</Label>
+            <Input {...register("taxLabel")} placeholder="e.g. NTN, GST, VAT" disabled={isPending} />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Country</Label>
-            <Input {...register("country")} placeholder="United States" className="bg-black/20 border-white/10 text-white" disabled={isPending} />
+            <Label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Jurisdiction</Label>
+            <Input {...register("country")} placeholder="United States" disabled={isPending} />
           </div>
         </CardContent>
-        <CardFooter className="bg-white/[0.02] border-t border-white/5 pt-6 flex justify-between items-center">
-          <p className="text-xs text-muted-foreground">Changes applied here will reflect globally across all branches.</p>
-          <Button type="submit" disabled={isPending} className="font-bold uppercase tracking-widest text-xs px-6">
-            {isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Save Settings
+        <CardFooter className="bg-surface-container-low/20 border-t border-outline-variant/30 py-6 flex justify-between items-center">
+          <p className="text-[11px] text-on-surface-variant font-medium italic">Changes propagate globally across all linked branches.</p>
+          <Button type="submit" disabled={isPending} className="px-8 h-10 font-black uppercase tracking-[0.1em] text-xs">
+            {isPending ? (
+               <span className="material-symbols-outlined animate-spin text-[18px] mr-2">progress_activity</span>
+            ) : (
+               <span className="material-symbols-outlined text-[18px] mr-2">verified_user</span>
+            )}
+            Authorize Update
           </Button>
         </CardFooter>
       </Card>

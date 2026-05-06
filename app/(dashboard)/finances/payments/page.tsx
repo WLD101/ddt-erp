@@ -6,7 +6,7 @@ export default async function PaymentsPage() {
 
   return (
     <div className="p-8 h-full flex flex-col overflow-hidden">
-      <PaymentClient initialPayments={payments} />
+      <PaymentClient initialPayments={payments as any} />
     </div>
   );
 }

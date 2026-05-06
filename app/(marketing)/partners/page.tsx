@@ -12,7 +12,7 @@ export default function PartnersLandingPage() {
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Handshake className="w-3.5 h-3.5" />
-            Nexus Partner Network
+            WhatsQuery Partner Network
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-6 uppercase italic animate-in fade-in slide-in-from-bottom-8 duration-700">
             Build Your Own <br />

@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'waleed@ddterp.com';
+  const email = 'waleed@whatsquery.com';
   const user = await prisma.user.findUnique({
     where: { email },
   });

@@ -31,7 +31,7 @@ export default async function PlatformChangelogDirectory() {
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white flex items-center gap-3">
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic text-on-surface flex items-center gap-3">
             Product <span className="text-primary italic">Manifest</span>
           </h2>
           <p className="text-muted-foreground text-sm">Orchestrate and publish product release notes across all communication channels.</p>
@@ -43,10 +43,10 @@ export default async function PlatformChangelogDirectory() {
         </form>
       </div>
 
-      <div className="border border-white/5 rounded-2xl overflow-hidden bg-black/40 backdrop-blur-xl shadow-2xl">
+      <div className="border border-outline-variant/20 rounded-2xl overflow-hidden bg-surface/40 backdrop-blur-xl shadow-2xl">
         <Table>
-          <TableHeader className="bg-white/[0.02]">
-            <TableRow className="border-white/5 hover:bg-transparent">
+          <TableHeader className="bg-surface/[0.02]">
+            <TableRow className="border-outline-variant/20 hover:bg-transparent">
               <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground h-12">Status</TableHead>
               <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground h-12">Title</TableHead>
               <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground h-12">Category</TableHead>
@@ -62,18 +62,18 @@ export default async function PlatformChangelogDirectory() {
                 </TableCell>
               </TableRow>
             ) : (
-              entries.map(entry => (
-                <TableRow key={entry.id} className="border-white/5 hover:bg-white/[0.02] transition-colors group">
+              entries.map((entry: any) => (
+                <TableRow key={entry.id} className="border-outline-variant/20 hover:bg-surface/[0.02] transition-colors group">
                   <TableCell>
                      <Badge variant="outline" className={`text-[10px] font-black uppercase tracking-widest ${
-                         entry.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-white/5 text-muted-foreground border-white/10'
+                         entry.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-surface-container-low text-muted-foreground border-outline-variant/30'
                      }`}>
                          {entry.status}
                      </Badge>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-bold text-white tracking-tight">{entry.title}</p>
+                      <p className="font-bold text-on-surface tracking-tight">{entry.title}</p>
                       <p className="text-[10px] text-muted-foreground">{entry.version || "No Version"}</p>
                     </div>
                   </TableCell>
@@ -115,6 +115,7 @@ function getCategoryStyles(category: string) {
         case 'IMPROVEMENT': return 'bg-primary/10 text-primary border-primary/20';
         case 'FIX': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
         case 'SECURITY': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-        default: return 'bg-white/5 text-muted-foreground border-white/10';
+        default: return 'bg-surface-container-low text-muted-foreground border-outline-variant/30';
     }
 }
+

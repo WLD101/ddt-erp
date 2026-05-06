@@ -7,6 +7,8 @@ export interface TenantUsage {
   users: number;
   products: number;
   monthlyInvoices: number;
+  branches: number;
+  integrations: number;
 }
 
 /**
@@ -25,7 +27,7 @@ export async function getTenantUsage(
   const start = periodStart || startOfMonth(new Date());
   const end = periodEnd || endOfMonth(new Date());
 
-  const [userCount, productCount, monthInvoiceCount] = await Promise.all([
+  const [userCount, productCount, monthInvoiceCount, branchCount, integrationCount] = await Promise.all([
     // Active team members
     prisma.organizationUser.count({ 
       where: { organizationId: orgId } 
@@ -43,11 +45,24 @@ export async function getTenantUsage(
         createdAt: { gte: start, lte: end },
       },
     }),
+    prisma.branch.count({
+      where: {
+        organizationId: orgId,
+      },
+    }),
+    prisma.salesChannel.count({
+      where: {
+        organizationId: orgId,
+        isActive: true,
+      },
+    }),
   ]);
 
   return {
     users: userCount,
     products: productCount,
     monthlyInvoices: monthInvoiceCount,
+    branches: branchCount,
+    integrations: integrationCount,
   };
 }

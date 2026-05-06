@@ -3,12 +3,14 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requirePlatformAdmin } from "@/lib/security/guards";
+import { assertDemoModeWriteAllowed } from "@/lib/demo-mode";
 
 /**
  * FETCH: Public/Published changelogs only.
  */
 export async function getPublishedChangelogs() {
-  return prisma.changelog.findMany({
+  if (!prisma || !(prisma as any).changelog) return [];
+  return (prisma as any).changelog.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { publishedAt: "desc" },
   });
@@ -19,7 +21,8 @@ export async function getPublishedChangelogs() {
  */
 export async function getChangelogEntries() {
   await requirePlatformAdmin();
-  return prisma.changelog.findMany({
+  if (!prisma || !(prisma as any).changelog) return [];
+  return (prisma as any).changelog.findMany({
     orderBy: { createdAt: "desc" },
   });
 }
@@ -37,7 +40,8 @@ export async function createChangelogEntry(data: {
   await requirePlatformAdmin();
   const publishedAt = data.status === "PUBLISHED" ? new Date() : null;
 
-  const entry = await prisma.changelog.create({
+  if (!prisma || !(prisma as any).changelog) return null;
+  const entry = await (prisma as any).changelog.create({
     data: {
       ...data,
       publishedAt,
@@ -60,7 +64,8 @@ export async function updateChangelogEntry(id: string, data: Partial<{
   status: string;
 }>) {
   await requirePlatformAdmin();
-  const existing = await prisma.changelog.findUnique({ where: { id } });
+  if (!prisma || !(prisma as any).changelog) return null;
+  const existing = await (prisma as any).changelog.findUnique({ where: { id } });
   if (!existing) throw new Error("Entry not found");
 
   // If status is moving from DRAFT to PUBLISHED, set publishedAt
@@ -71,7 +76,7 @@ export async function updateChangelogEntry(id: string, data: Partial<{
     publishedAt = null;
   }
 
-  const entry = await prisma.changelog.update({
+  const entry = await (prisma as any).changelog.update({
     where: { id },
     data: {
       ...data,
@@ -89,7 +94,9 @@ export async function updateChangelogEntry(id: string, data: Partial<{
  */
 export async function deleteChangelogEntry(id: string) {
   await requirePlatformAdmin();
-  await prisma.changelog.delete({ where: { id } });
+  assertDemoModeWriteAllowed();
+  if (!prisma || !(prisma as any).changelog) return;
+  await (prisma as any).changelog.delete({ where: { id } });
   revalidatePath("/changelog");
   revalidatePath("/platform/changelog");
 }

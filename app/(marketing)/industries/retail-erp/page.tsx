@@ -7,19 +7,19 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { MonitorPlay, Tag, Store, QrCode, Banknote, ShieldAlert } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Retail POS & Inventory Management | NexusERP",
-  description: "Equip your cashiers with a lightning fast POS while your back-office perfectly tracks store-level stock metrics using NexusERP.",
+  title: "Retail Back-Office ERP | WhatsQuery",
+  description: "Manage store inventory, purchases, customer billing, and reports with a retail back-office ERP for modern retail teams.",
   alternates: {
-    canonical: "https://nexuserp.com/industries/retail-erp",
+    canonical: "https://whatsquery.example.com/industries/retail-erp",
   }
 };
 
 const FEATURES = [
-  { title: "Rapid POS Checkout", description: "An uncluttered interface optimized exclusively for fast, across-the-counter retail transactions.", icon: MonitorPlay },
+  { title: "Fast Sales Billing", description: "Create customer invoices quickly while your back-office remains aligned with current stock and expenses.", icon: MonitorPlay },
   { title: "Store-Level Segregation", description: "Each retail storefront operates individually. Track isolated profitability and hyper-local stock limits.", icon: Store },
   { title: "Cash Drawer Tracking", description: "Assign specific cash accounts to each register so you know exactly every single penny flowing daily.", icon: Banknote },
   { title: "Variant Support", description: "Process clothing and apparel natively. Assign multiple colors and sizes under unified product families.", icon: Tag },
-  { title: "Barcode Input Support", description: "Any standard bluetooth/USB barcode scanner instantly acts as a rapid input mechanism on the POS screen.", icon: QrCode },
+  { title: "Barcode-Friendly Catalog", description: "Keep SKUs and product records organized so store teams can work faster with existing barcode processes.", icon: QrCode },
   { title: "Theft Prevention", description: "Prevent arbitrary stock adjustments through strict role-based capability boundaries and immutable audit logs.", icon: ShieldAlert },
 ];
 
@@ -33,8 +33,8 @@ export default function RetailPage() {
     <div className="flex flex-col min-h-screen">
       <SeoHero 
         badge="Retail Ecosystem"
-        headline="Move The Line. Master The Stock."
-        subheadline="An ERP that is just as fast at the front counter as it is intelligent returning data down to the back office."
+        headline="Run retail back-office operations with confidence."
+        subheadline="WhatsQuery helps retailers manage stock, supplier purchases, billing, and reporting without spreadsheet chaos."
       />
       <FeatureGrid features={FEATURES} headline="Perfected for Modern Retailers" />
       <FaqSection faqs={FAQS} />

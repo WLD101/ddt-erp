@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { Box, RefreshCw, BarChart3, AlertTriangle, Layers, GitBranch } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloud Inventory Management Software | NexusERP",
-  description: "Track stock levels in real-time across multiple branches with NexusERP. Prevent stockouts and automate reordering seamlessly.",
+  title: "Cloud Inventory Management Software | WhatsQuery",
+  description: "Track stock levels in real-time across multiple branches with WhatsQuery. Prevent stockouts and automate reordering seamlessly.",
   alternates: {
-    canonical: "https://nexuserp.com/features/inventory",
+    canonical: "https://whatsquery.example.com/features/inventory",
   }
 };
 
@@ -24,7 +24,7 @@ const FEATURES = [
 ];
 
 const FAQS = [
-  { question: "Can I manage inventory across different addresses?", answer: "Yes. NexusERP supports unlimited physical and digital Branches. Stock levels, transfers, and specific valuations are siloed per branch for accurate local reporting." },
+  { question: "Can I manage inventory across different addresses?", answer: "Yes. WhatsQuery supports unlimited physical and digital Branches. Stock levels, transfers, and specific valuations are siloed per branch for accurate local reporting." },
   { question: "How does the system track product costs?", answer: "We utilize moving average costing natively. As you intake purchase invoices at different supplier prices, the system dynamically calculates your true held cost." },
   { question: "Do you support barcode scanning?", answer: "Absolutely. All SKUs and primary barcodes are searchable in our Sales portals, turning any standard USB/Bluetooth scanner into an instant checkout engine." },
 ];

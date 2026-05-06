@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 import { requestOtp, verifyOtp } from "@/modules/otp/service";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
+import { isProductionEnv } from "@/lib/security/env";
 
 /**
  * SIGN UP / ORG BOOTSTRAP
@@ -19,10 +20,10 @@ export async function requestPaidSignupOtpAction(data: unknown) {
   const result = service.signUpSchema.safeParse(data);
 
   if (!result.success) {
-    return { error: result.error.errors[0].message };
+    return { error: result.error.issues[0]?.message ?? "Invalid signup details." };
   }
 
-  const limit = checkRateLimit(rateLimitKey("signup", result.data.email), {
+  const limit = await checkRateLimit(rateLimitKey("signup", result.data.email), {
     limit: 5,
     windowMs: 60 * 60 * 1000,
   });
@@ -31,11 +32,14 @@ export async function requestPaidSignupOtpAction(data: unknown) {
   }
 
   try {
-    await requestOtp({
+    const otpRequest = await requestOtp({
       email: result.data.email,
       purpose: "PAID_SIGNUP",
       payload: result.data,
     });
+    if (!otpRequest.ok) {
+      return { error: otpRequest.error || "Unable to send verification code right now." };
+    }
     await writePlatformAuditLog({
       action: "OTP_SENT",
       entityType: "PaidSignup",
@@ -84,6 +88,11 @@ export async function verifyPaidSignupOtpAction(data: unknown) {
 export async function signInAction(_prevState: unknown, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const callbackUrl = (formData.get("callbackUrl") as string) || "/";
+
+  if (!isProductionEnv()) {
+    console.log("--> signInAction invoked for email:", email, "and callbackUrl:", callbackUrl);
+  }
 
   if (!email || !password) {
     return { error: "Email and password are required." };
@@ -93,9 +102,9 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/",
+      redirectTo: callbackUrl,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -107,6 +116,7 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
     throw error;
   }
 }
+
 
 /**
  * SIGN OUT
@@ -120,15 +130,15 @@ export async function signOutAction() {
  */
 export async function joinOrganizationAction(data: unknown) {
   const result = service.joinSchema.safeParse(data);
-  if (!result.success) return { error: result.error.errors[0].message };
+  if (!result.success) return { error: result.error.issues[0]?.message ?? "Invalid invitation details." };
 
   try {
     await service.joinByInvitation(result.data);
     revalidatePath("/(dashboard)", "layout");
     return { success: "Joined organization successfully. Please sign in." };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Join error:", error);
-    return { error: error.message || "Failed to join organization." };
+    return { error: error instanceof Error ? error.message : "Failed to join organization." };
   }
 }
 
@@ -136,7 +146,7 @@ export async function joinOrganizationAction(data: unknown) {
  * FORGOT PASSWORD
  */
 export async function forgotPasswordAction(email: string): Promise<{ success?: boolean; error?: string }> {
-  const limit = checkRateLimit(rateLimitKey("password-reset", email), {
+  const limit = await checkRateLimit(rateLimitKey("password-reset", email), {
     limit: 5,
     windowMs: 60 * 60 * 1000,
   });

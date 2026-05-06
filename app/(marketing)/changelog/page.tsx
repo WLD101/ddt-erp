@@ -16,7 +16,7 @@ export default async function PublicChangelogPage() {
                 <Sparkles className="w-3.5 h-3.5" /> Product Evolution
             </div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-[0.9]">
-                Nexus <span className="text-primary italic">Release Notes</span>
+                WhatsQuery <span className="text-primary italic">Release Notes</span>
             </h1>
             <p className="text-muted-foreground text-xl leading-relaxed max-w-2xl mx-auto">
                 Tracking every mutation, upgrade, and security reinforcement. Our commitment to transparent engineering.
@@ -30,7 +30,7 @@ export default async function PublicChangelogPage() {
                     The intelligence stream is preparing for its first transmission. Check back soon.
                 </div>
             ) : (
-                entries.map((entry) => (
+                entries.map((entry: any) => (
                     <div key={entry.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group animate-in fade-in slide-in-from-bottom-8 duration-700">
                         {/* Dot */}
                         <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-[#020617] text-white shadow shadow-white/5 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shrink-0">
@@ -61,7 +61,7 @@ export default async function PublicChangelogPage() {
                              </p>
 
                              <div className="text-muted-foreground text-sm leading-relaxed space-y-4 prose prose-invert">
-                                {entry.content.split('\n').map((para, i) => (
+                                {entry.content.split('\n').map((para: any, i: any) => (
                                     <p key={i}>{para}</p>
                                 ))}
                              </div>

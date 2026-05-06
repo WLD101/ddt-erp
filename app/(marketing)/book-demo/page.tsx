@@ -15,7 +15,7 @@ export default function BookDemoPage() {
                     <PlayCircle className="w-3.5 h-3.5" /> Book a Personalized Walkthrough
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-[0.9]">
-                    See Nexus <br />
+                    See WhatsQuery <br />
                     <span className="text-primary">In Action</span>
                 </h1>
                 <p className="text-muted-foreground text-xl leading-relaxed max-w-lg">

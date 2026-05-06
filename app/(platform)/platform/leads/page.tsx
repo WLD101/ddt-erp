@@ -12,7 +12,7 @@ export default async function PlatformLeadsDirectory() {
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white flex items-center gap-3">
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic text-on-surface flex items-center gap-3">
             Lead <span className="text-primary">Intelligence</span>
           </h2>
           <p className="text-muted-foreground text-sm">Monitor and manage high-intent demo requests and inbound inquiries.</p>
@@ -23,10 +23,10 @@ export default async function PlatformLeadsDirectory() {
         </div>
       </div>
 
-      <div className="border border-white/5 rounded-2xl overflow-hidden bg-black/40 backdrop-blur-xl shadow-2xl">
+      <div className="border border-outline-variant/20 rounded-2xl overflow-hidden bg-surface/40 backdrop-blur-xl shadow-2xl">
         <Table>
-          <TableHeader className="bg-white/[0.02]">
-            <TableRow className="border-white/5 hover:bg-transparent">
+          <TableHeader className="bg-surface/[0.02]">
+            <TableRow className="border-outline-variant/20 hover:bg-transparent">
               <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground h-12">Source</TableHead>
               <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground h-12">Lead Info</TableHead>
               <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground h-12">Company</TableHead>
@@ -44,7 +44,7 @@ export default async function PlatformLeadsDirectory() {
               </TableRow>
             ) : (
               leads.map((lead) => (
-                <TableRow key={lead.id} className="border-white/5 hover:bg-white/[0.02] transition-colors group">
+                <TableRow key={lead.id} className="border-outline-variant/20 hover:bg-surface/[0.02] transition-colors group">
                   <TableCell>
                     <Badge variant="outline" className={`text-[10px] font-black uppercase tracking-widest ${
                       lead.source === "DEMO" ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"
@@ -54,17 +54,17 @@ export default async function PlatformLeadsDirectory() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                        <User className="w-4 h-4 text-white/50" />
+                      <div className="w-8 h-8 rounded-lg bg-surface-container-low border border-outline-variant/30 flex items-center justify-center shrink-0">
+                        <User className="w-4 h-4 text-on-surface-variant/50" />
                       </div>
                       <div>
-                        <p className="font-bold text-white tracking-tight">{lead.name}</p>
+                        <p className="font-bold text-on-surface tracking-tight">{lead.name}</p>
                         <p className="text-[10px] text-muted-foreground">{lead.email}</p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm font-medium text-white/80">{lead.organizationName || lead.businessName || "-"}</p>
+                    <p className="text-sm font-medium text-on-surface/80">{lead.organizationName || lead.businessName || "-"}</p>
                     <p className="text-[10px] text-muted-foreground">{lead.city || (lead.companySize ? `${lead.companySize} employees` : "")}</p>
                   </TableCell>
                   <TableCell>
@@ -117,6 +117,7 @@ function getStatusStyles(status: string) {
     case "QUALIFIED": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "WON": return "bg-green-500/10 text-green-400 border-green-500/20";
     case "LOST": return "bg-rose-500/10 text-rose-400 border-rose-500/20";
-    default: return "bg-white/5 text-muted-foreground border-white/10";
+    default: return "bg-surface-container-low text-muted-foreground border-outline-variant/30";
   }
 }
+

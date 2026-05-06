@@ -1,5 +1,3 @@
-// app/(dashboard)/settings/roles/page.tsx
-
 import { 
   getOrganizationRoles, 
   getAllPermissions 
@@ -11,7 +9,6 @@ import {
   TenantForbiddenError 
 } from "@/lib/tenant";
 import { redirect } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
 
 export default async function RolesPage() {
   // 1. Authorization
@@ -33,31 +30,33 @@ export default async function RolesPage() {
   ]);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
-            <ShieldCheck className="w-5 h-5 text-primary" />
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      <header className="space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-soft">
+            <span className="material-symbols-outlined text-primary text-[32px]">admin_panel_settings</span>
           </div>
-          <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">
-            Security <span className="text-primary">Governance</span>
-          </h2>
+          <div>
+            <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline-md uppercase">
+              Security <span className="text-primary">Governance</span>
+            </h2>
+            <p className="text-on-surface-variant text-sm font-medium mt-1 font-body-md italic">
+              Orchestrate organizational roles and granular capability authorization matrices.
+            </p>
+          </div>
         </div>
-        <p className="text-muted-foreground text-sm font-medium mt-1">
-          Orchestrate organizational roles and granular capability authorization.
-        </p>
       </header>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         <PermissionsMatrix 
           roles={roles} 
           allPermissions={allPermissions} 
         />
       </div>
 
-      <footer className="pt-10 border-t border-white/5 text-center">
-        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
-          End-to-End Tenant Isolation Enforced via Scoped RBAC Engine
+      <footer className="pt-12 border-t border-outline-variant/10 text-center">
+        <p className="text-[10px] text-on-surface-variant/40 font-black uppercase tracking-[0.4em]">
+          End-to-End Tenant Isolation Enforced via Scoped RBAC Node
         </p>
       </footer>
     </div>

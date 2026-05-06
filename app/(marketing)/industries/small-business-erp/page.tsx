@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { DollarSign, Shield, Smartphone, ArrowUpRight, CheckCircle2, Box } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloud ERP Software for Small Businesses | NexusERP",
+  title: "Cloud ERP Software for Small Businesses | WhatsQuery",
   description: "The perfect all-in-one inventory and sales operating system designed specifically to help small businesses scale without the enterprise price tag.",
   alternates: {
-    canonical: "https://nexuserp.com/industries/small-business-erp",
+    canonical: "https://whatsquery.example.com/industries/small-business-erp",
   }
 };
 
@@ -18,7 +18,7 @@ const FEATURES = [
   { title: "Affordable Scaling", description: "Start on our generous free tier and only upgrade your infrastructure as your headcount and catalog size demands it.", icon: DollarSign },
   { title: "Enterprise Grade Security", description: "Enjoy the exact same cryptographic tenant isolation and automated audit logging that large corporations rely on.", icon: Shield },
   { title: "Cloud Accessibility", description: "Ditch the back-office server. Access your financial metrics securely from any web-enabled device globally.", icon: Smartphone },
-  { title: "Unified Platform", description: "Stop paying for disjointed accounting, POS, and inventory apps. NexusERP houses it all natively.", icon: Box },
+  { title: "Unified Platform", description: "Stop paying for disjointed accounting, inventory, and invoicing apps. WhatsQuery brings them together in one SME-friendly system.", icon: Box },
   { title: "Intuitive Design", description: "A system built for actual humans. Get your first employee trained and selling in under 15 minutes.", icon: CheckCircle2 },
   { title: "Growth Analytics", description: "Leverage advanced margin calculators to figure out exactly which products you should be restocking.", icon: ArrowUpRight },
 ];

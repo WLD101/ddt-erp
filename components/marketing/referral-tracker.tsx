@@ -15,10 +15,10 @@ export function ReferralTracker() {
     if (refCode) {
       // Store the referral code permanently in localStorage
       // This will be picked up by the signup form later.
-      localStorage.setItem("nexus_ref_code", refCode);
+      localStorage.setItem("whatsquery_ref_code", refCode);
       
       // Also store timestamp for future attribution window logic if needed
-      localStorage.setItem("nexus_ref_timestamp", new Date().toISOString());
+      localStorage.setItem("whatsquery_ref_timestamp", new Date().toISOString());
       
       console.log(`[ReferralTracker] captured: ${refCode}`);
     }

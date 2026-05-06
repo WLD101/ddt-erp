@@ -25,7 +25,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
       
       <div className="flex items-center justify-between">
         <Link href="/platform/leads">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white group">
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-on-surface group">
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Intelligence
           </Button>
         </Link>
@@ -40,14 +40,14 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
         
         {/* Profile Card */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="bg-black/40 border-white/5 shadow-2xl relative overflow-hidden">
+          <Card className="bg-surface/40 border-outline-variant/20 shadow-2xl relative overflow-hidden">
              <div className="absolute top-0 right-0 p-8 opacity-5">
                 <User className="w-32 h-32" />
              </div>
-             <CardHeader className="pb-8 border-b border-white/5 bg-white/[0.01]">
+             <CardHeader className="pb-8 border-b border-outline-variant/20 bg-surface/[0.01]">
                 <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                        <CardTitle className="text-4xl font-black uppercase tracking-tighter italic text-white leading-none">
+                        <CardTitle className="text-4xl font-black uppercase tracking-tighter italic text-on-surface leading-none">
                             {lead.name}
                         </CardTitle>
                         <CardDescription className="text-primary font-bold uppercase tracking-widest text-[10px]">
@@ -63,21 +63,21 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                             <Mail className="w-5 h-5 text-muted-foreground mt-0.5" />
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email Address</p>
-                                <p className="text-white font-medium">{lead.email}</p>
+                                <p className="text-on-surface font-medium">{lead.email}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-4">
                             <Phone className="w-5 h-5 text-muted-foreground mt-0.5" />
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phone Number</p>
-                                <p className="text-white font-medium">{lead.phone || "Not provided"}</p>
+                                <p className="text-on-surface font-medium">{lead.phone || "Not provided"}</p>
                             </div>
                         </div>
                          <div className="flex items-start gap-4">
                             <Building className="w-5 h-5 text-muted-foreground mt-0.5" />
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Business Context</p>
-                                <p className="text-white font-medium">{lead.businessName || "Individual Inquiry"}</p>
+                                <p className="text-on-surface font-medium">{lead.businessName || "Individual Inquiry"}</p>
                                 <p className="text-xs text-muted-foreground mt-1">{lead.companySize ? `${lead.companySize} employees` : ""} {lead.businessType || ""}</p>
                             </div>
                         </div>
@@ -88,14 +88,14 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                             <Globe className="w-5 h-5 text-muted-foreground mt-0.5" />
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Location</p>
-                                <p className="text-white font-medium">{lead.country || "Unknown"}</p>
+                                <p className="text-on-surface font-medium">{lead.country || "Unknown"}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-4">
                             <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Submitted</p>
-                                <p className="text-white font-medium">{lead.createdAt.toLocaleString()}</p>
+                                <p className="text-on-surface font-medium">{lead.createdAt.toLocaleString()}</p>
                             </div>
                         </div>
                         {lead.preferredDemoTime && (
@@ -103,19 +103,19 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                                 <Calendar className="w-5 h-5 text-primary mt-0.5" />
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-primary">Preferred Demo Time</p>
-                                    <p className="text-white font-bold">{lead.preferredDemoTime}</p>
+                                    <p className="text-on-surface font-bold">{lead.preferredDemoTime}</p>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="mt-12 p-6 bg-white/[0.02] border border-white/5 rounded-2xl relative">
+                <div className="mt-12 p-6 bg-surface/[0.02] border border-outline-variant/20 rounded-2xl relative">
                      <div className="absolute top-0 right-0 p-4">
-                        <MessageSquare className="w-6 h-6 text-white/5" />
+                        <MessageSquare className="w-6 h-6 text-on-surface/5" />
                      </div>
                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Original Message</p>
-                     <p className="text-white/80 leading-relaxed italic">
+                     <p className="text-on-surface/80 leading-relaxed italic">
                         "{lead.message || "No message provided."}"
                      </p>
                 </div>
@@ -125,16 +125,16 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
 
         {/* Actions Sidebar */}
         <div className="space-y-6">
-           <Card className="bg-black/40 border-white/5 shadow-xl">
+           <Card className="bg-surface/40 border-outline-variant/20 shadow-xl">
              <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-widest text-white/70">Lead Management</CardTitle>
+                <CardTitle className="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Lead Management</CardTitle>
              </CardHeader>
              <CardContent className="space-y-6">
                 <form action={handleStatusUpdate} className="space-y-4">
                     <input type="hidden" name="id" value={lead.id} />
                     <div className="space-y-2">
                         <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Pipeline Status</p>
-                        <select name="status" defaultValue={lead.status} className="w-full bg-white/5 border-white/10 rounded-lg h-10 px-3 text-sm text-white outline-none focus:ring-1 ring-primary/50">
+                        <select name="status" defaultValue={lead.status} className="w-full bg-surface-container-low border-outline-variant/30 rounded-lg h-10 px-3 text-sm text-on-surface outline-none focus:ring-1 ring-primary/50">
                             <option value="NEW" className="bg-slate-900">NEW</option>
                             <option value="CONTACTED" className="bg-slate-900">CONTACTED</option>
                             <option value="BOOKED" className="bg-slate-900">BOOKED</option>
@@ -148,13 +148,13 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                     </Button>
                 </form>
 
-                <div className="pt-6 border-t border-white/5">
+                <div className="pt-6 border-t border-outline-variant/20">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-4">Quick Actions</p>
                     <div className="grid grid-cols-1 gap-3">
-                        <Button variant="outline" className="justify-start h-11 border-white/5 bg-white/[0.02] hover:bg-white/5 text-xs font-bold uppercase tracking-tight text-white/70">
+                        <Button variant="outline" className="justify-start h-11 border-outline-variant/20 bg-surface/[0.02] hover:bg-surface-container-low text-xs font-bold uppercase tracking-tight text-on-surface-variant">
                             <Mail className="w-4 h-4 mr-3 text-primary" /> Send Email
                         </Button>
-                        <Button variant="outline" className="justify-start h-11 border-white/5 bg-white/[0.02] hover:bg-white/5 text-xs font-bold uppercase tracking-tight text-white/70">
+                        <Button variant="outline" className="justify-start h-11 border-outline-variant/20 bg-surface/[0.02] hover:bg-surface-container-low text-xs font-bold uppercase tracking-tight text-on-surface-variant">
                             <Calendar className="w-4 h-4 mr-3 text-primary" /> Schedule Zoom
                         </Button>
                     </div>
@@ -165,7 +165,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
            <div className="p-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/10 flex items-start gap-4 shadow-[0_0_30px_rgba(16,185,129,0.05)]">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-1 shrink-0" />
                 <div className="space-y-1">
-                    <p className="text-white font-bold text-sm tracking-tight">Security Cleared</p>
+                    <p className="text-on-surface font-bold text-sm tracking-tight">Security Cleared</p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed">This lead was validated via honeypot protection and matches high-intent signals.</p>
                 </div>
            </div>
@@ -185,6 +185,6 @@ function getStatusStyles(status: string) {
         case 'QUALIFIED': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
         case 'WON': return 'bg-green-500/10 text-green-400 border-green-500/20';
         case 'LOST': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-        default: return 'bg-white/5 text-muted-foreground border-white/10';
+        default: return 'bg-surface-container-low text-muted-foreground border-outline-variant/30';
     }
 }

@@ -34,7 +34,7 @@ export function SeoHero({ headline, subheadline, badge, primaryCtaText = "Explor
         
         <div className="pt-4 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <DemoButton className="w-full sm:w-auto h-14 px-8 text-base shadow-[0_0_40px_rgba(124,58,237,0.4)] hover:shadow-[0_0_60px_rgba(124,58,237,0.6)] group" />
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold hidden sm:block">Or <a href="/signup" className="text-white hover:text-primary transition-colors hover:underline">Start From Scratch <ChevronRight className="inline w-3 h-3" /></a></p>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold hidden sm:block">Or <a href="/auth/signup" className="text-white hover:text-primary transition-colors hover:underline">Start From Scratch <ChevronRight className="inline w-3 h-3" /></a></p>
         </div>
       </div>
     </section>

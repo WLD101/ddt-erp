@@ -7,8 +7,28 @@ import { getOrganizationAccessState } from "../../lib/billing/access";
 import { verifyOtp } from "../../modules/otp/service";
 import { GET as blockedCustomerExport } from "../../app/api/export/customers/route";
 
+let dbAvailable: boolean | null = null;
+
 function hashOtp(code: string) {
   return crypto.createHash("sha256").update(code).digest("hex");
+}
+
+async function ensureDatabaseOrSkip(t: { skip: (message: string) => void }) {
+  if (dbAvailable === null) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      dbAvailable = true;
+    } catch {
+      dbAvailable = false;
+    }
+  }
+
+  if (!dbAvailable) {
+    t.skip("Database server is not available for integration-backed security checks.");
+    return false;
+  }
+
+  return true;
 }
 
 async function createOrg(prefix: string, accessStatus = "active") {
@@ -24,6 +44,8 @@ async function createOrg(prefix: string, accessStatus = "active") {
           status: accessStatus,
           paymentStatus: accessStatus === "active" ? "active" : "payment_pending",
           accessStatus,
+          billingCycle: "MONTHLY",
+          billingSource: "manual",
           currentPeriodStart: subDays(new Date(), 1),
           currentPeriodEnd: addDays(new Date(), 20),
         },
@@ -32,7 +54,30 @@ async function createOrg(prefix: string, accessStatus = "active") {
   });
 }
 
-test("paid user cannot access ERP before payment succeeds", async () => {
+test("manual paid subscription keeps ERP access active", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
+  const org = await createOrg("manual-paid", "active");
+  await prisma.subscription.update({
+    where: { organizationId: org.id },
+    data: {
+      paymentStatus: "paid",
+      billingSource: "manual",
+      manualPaymentMethod: "BANK_TRANSFER",
+      manualPaymentReference: "BANK-REF-001",
+    },
+  });
+
+  try {
+    const state = await getOrganizationAccessState(org.id);
+    assert.equal(state.status, "active");
+    assert.equal(state.redirectTo, undefined);
+  } finally {
+    await prisma.organization.delete({ where: { id: org.id } });
+  }
+});
+
+test("paid user cannot access ERP before payment succeeds", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
   const org = await createOrg("payment-pending", "payment_pending");
   try {
     const state = await getOrganizationAccessState(org.id);
@@ -43,7 +88,8 @@ test("paid user cannot access ERP before payment succeeds", async () => {
   }
 });
 
-test("expired paid subscription enters 15 day grace and keeps data", async () => {
+test("expired paid subscription enters 15 day grace and keeps data", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
   const org = await createOrg("grace", "active");
   await prisma.customer.create({
     data: { organizationId: org.id, name: "Retained Customer", email: "retained@example.com" },
@@ -63,7 +109,8 @@ test("expired paid subscription enters 15 day grace and keeps data", async () =>
   }
 });
 
-test("expired demo is blocked without deleting tenant data", async () => {
+test("expired demo is blocked without deleting tenant data", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
   const org = await createOrg("demo-expired", "active");
   await prisma.organization.update({
     where: { id: org.id },
@@ -83,7 +130,29 @@ test("expired demo is blocked without deleting tenant data", async () => {
   }
 });
 
-test("wrong OTP increments attempts and expired OTP fails", async () => {
+test("cancelled subscription is blocked and sent to billing", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
+  const org = await createOrg("cancelled", "active");
+  await prisma.subscription.update({
+    where: { organizationId: org.id },
+    data: {
+      status: "cancelled",
+      paymentStatus: "paid",
+      billingSource: "manual",
+    },
+  });
+
+  try {
+    const state = await getOrganizationAccessState(org.id);
+    assert.equal(state.status, "blocked");
+    assert.equal(state.redirectTo, "/settings/billing");
+  } finally {
+    await prisma.organization.delete({ where: { id: org.id } });
+  }
+});
+
+test("wrong OTP increments attempts and expired OTP fails", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
   const email = `otp-${Date.now()}@example.com`;
   const expiredEmail = `otp-expired-${Date.now()}@example.com`;
   await prisma.otpVerification.create({
@@ -106,7 +175,7 @@ test("wrong OTP increments attempts and expired OTP fails", async () => {
   });
 
   try {
-    const wrong = await verifyOtp({ email, purpose: "DEMO_SIGNUP", code: "000000" });
+    const wrong = await verifyOtp({ email, purpose: "DEMO_SIGNUP", code: "111111" });
     const record = await prisma.otpVerification.findFirstOrThrow({ where: { email } });
     const expired = await verifyOtp({ email: expiredEmail, purpose: "PAID_SIGNUP", code: "999999" });
     assert.equal(wrong.ok, false);

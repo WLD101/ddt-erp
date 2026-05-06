@@ -52,48 +52,46 @@ export function BranchSelector({ branches, activeBranchId }: BranchSelectorProps
             variant="outline" 
             size="sm" 
             disabled={isPending}
-            className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl px-4 flex items-center gap-3 transition-all duration-300 group"
+            className="bg-white border border-outline-variant hover:bg-surface text-on-surface rounded-lg px-4 flex items-center gap-3 transition-all shadow-sm group h-10"
           />
         }
       >
-        <div className="p-1 bg-primary/20 rounded-lg group-hover:scale-110 transition-transform">
-          <MapPin className="w-3.5 h-3.5 text-primary" />
+        <div className="flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-[20px]">store</span>
+          <div className="flex flex-col items-start leading-none">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-outline mb-0.5">Location</span>
+            <span className="font-bold text-sm text-on-surface">{activeBranch?.name || "Select Branch"}</span>
+          </div>
+          <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[18px]">expand_more</span>
         </div>
-        <div className="flex flex-col items-start leading-none h-full justify-center">
-          <span className="text-[10px] uppercase font-black tracking-widest text-primary/70">Operational Site</span>
-          <span className="font-bold text-sm tracking-tight">{activeBranch?.name || "Global"}</span>
-        </div>
-        <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 bg-slate-900/95 backdrop-blur-xl border-white/5 rounded-2xl shadow-2xl p-2">
-        <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-          Available Locations
+      <DropdownMenuContent align="start" className="w-64 bg-white border border-outline-variant rounded-xl shadow-soft p-2">
+        <DropdownMenuLabel className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-outline">
+          Switch Location
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/5" />
+        <DropdownMenuSeparator className="bg-outline-variant/30" />
         <div className="space-y-1 mt-1">
           {branches.map((branch) => (
             <DropdownMenuItem
               key={branch.id}
               onClick={() => handleSelect(branch.id)}
               className={cn(
-                "flex items-center justify-between px-3 py-2.5 rounded-xl cursor-all-scroll transition-all group",
+                "flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all group",
                 activeBranchId === branch.id 
-                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                  : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                  ? "bg-primary-container/20 text-primary" 
+                  : "text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
               )}
             >
               <div className="flex items-center gap-3">
-                {branch.isMain ? (
-                  <Building2 className={cn("w-4 h-4", activeBranchId === branch.id ? "text-white" : "text-primary")} />
-                ) : (
-                  <Warehouse className={cn("w-4 h-4", activeBranchId === branch.id ? "text-white" : "text-muted-foreground")} />
-                )}
+                <span className="material-symbols-outlined text-[20px]">
+                  {branch.isMain ? "business" : "warehouse"}
+                </span>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold tracking-tight">{branch.name}</span>
-                  {branch.code && <span className={cn("text-[9px] font-black tracking-widest uppercase opacity-70", activeBranchId === branch.id ? "text-white" : "text-primary")}>{branch.code}</span>}
+                  <span className="text-sm font-bold">{branch.name}</span>
+                  {branch.code && <span className="text-[9px] font-bold tracking-widest uppercase opacity-70">{branch.code}</span>}
                 </div>
               </div>
-              {activeBranchId === branch.id && <Check className="w-4 h-4 text-white" />}
+              {activeBranchId === branch.id && <span className="material-symbols-outlined text-primary text-[18px]">check_circle</span>}
             </DropdownMenuItem>
           ))}
         </div>

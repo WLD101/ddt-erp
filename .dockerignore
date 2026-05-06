@@ -1,0 +1,68 @@
+# --- Build & Runtime Artifacts ---
+node_modules
+.next
+.next-build
+dist
+build
+out
+.cache
+coverage
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Environment & Credentials ---
+.env
+.env.local
+.env.production
+.env.test
+.env.development
+*.pem
+*.key
+certs/
+
+# --- Version Control ---
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# --- Media & Large Assets ---
+uploads/
+public/uploads/
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.zip
+*.rar
+*.tar
+*.gz
+*.pdf
+*.csv
+*.xlsx
+*.sql
+
+# --- System & Editor Files ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.dockerignore
+Dockerfile*
+docker-compose*
+README.md
+PROJECT_REPORT.md
+CLAUDE.md
+AGENTS.md
+LICENSE
+
+# --- Temporary Files ---
+tmp/
+temp/
+.codex-temp/
+tsc-errors.txt
+tsc_output.txt
+tsconfig.tsbuildinfo

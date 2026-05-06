@@ -5,6 +5,16 @@ import { getPlan, PlanConfig } from "./plans";
 import { getTenantUsage } from "./usage";
 import { getOrganizationAccessState } from "./access";
 
+function readJsonObject(value?: string | null) {
+  if (!value) return {};
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
 export class PlanLimitError extends Error {
   constructor(message: string) {
     super(message);
@@ -13,11 +23,55 @@ export class PlanLimitError extends Error {
 }
 
 export async function getSubscriptionContext(orgId: string) {
-  const sub = await prisma.subscription.findUnique({
-    where: { organizationId: orgId },
-  });
+  const [sub, assignment] = await Promise.all([
+    prisma.subscription.findUnique({
+      where: { organizationId: orgId },
+      include: { Package: true },
+    }),
+    prisma.organizationPackage.findUnique({
+      where: { organizationId: orgId },
+      include: { package: true },
+    }),
+  ]);
 
-  const plan = getPlan(sub?.planId);
+  const packageRecord = assignment?.package ?? sub?.Package ?? null;
+  const basePlan = getPlan(packageRecord?.name ?? sub?.planId);
+  const packageMeta = readJsonObject(packageRecord?.featureJson);
+  const customMeta = readJsonObject(assignment?.customFeatureJson);
+  const monthlyPrice =
+    assignment?.customPrice ??
+    (typeof packageMeta.monthlyPrice === "number" ? packageMeta.monthlyPrice : basePlan.price.monthly);
+  const branchLimit =
+    assignment?.customBranchLimit ??
+    (typeof packageMeta.branchLimit === "number" ? packageMeta.branchLimit : basePlan.limits.maxBranches);
+  const customFeatures =
+    customMeta.features && typeof customMeta.features === "object"
+      ? (customMeta.features as Partial<PlanConfig["features"]>)
+      : {};
+  const featureList = Array.isArray(customMeta.featureList)
+    ? customMeta.featureList.filter((item): item is string => typeof item === "string")
+    : Array.isArray(packageMeta.modules)
+      ? packageMeta.modules.filter((item): item is string => typeof item === "string")
+      : basePlan.includedModules;
+  const effectivePlan: PlanConfig = {
+    ...basePlan,
+    name: assignment?.customPackageName ?? packageRecord?.name ?? basePlan.name,
+    price: {
+      ...basePlan.price,
+      monthly: monthlyPrice,
+      display: monthlyPrice === null ? "Custom" : `${monthlyPrice.toLocaleString()}`,
+    },
+    limits: {
+      ...basePlan.limits,
+      maxUsers: assignment?.customUserLimit ?? basePlan.limits.maxUsers,
+      maxBranches: branchLimit,
+    },
+    features: {
+      ...basePlan.features,
+      ...customFeatures,
+    },
+    includedModules: featureList,
+  };
   
   const access = await getOrganizationAccessState(orgId);
   let status = access.status === "grace_period" ? "grace_period" : sub?.status || access.status || "active";
@@ -40,7 +94,24 @@ export async function getSubscriptionContext(orgId: string) {
     sub?.currentPeriodEnd || undefined
   );
 
-  return { sub, plan, usage, status, daysRemaining };
+  return {
+    sub,
+    assignment,
+    plan: effectivePlan,
+    usage,
+    status,
+    daysRemaining,
+    packageName: effectivePlan.name,
+    billingCycle: sub?.billingCycle || assignment?.customBillingCycle || "MONTHLY",
+    billingSource: sub?.billingSource || (sub?.paymentStatus === "demo" ? "demo" : "manual"),
+    paymentStatus: sub?.paymentStatus || "payment_pending",
+    renewalDate: assignment?.customExpiryDate ?? sub?.currentPeriodEnd ?? null,
+    manualPaymentMethod: sub?.manualPaymentMethod ?? null,
+    manualPaymentReference: sub?.manualPaymentReference ?? null,
+    adminNotes: sub?.adminNotes ?? null,
+    isCustomPackage: assignment?.isCustomPackage ?? false,
+    featureList,
+  };
 }
 
 /**

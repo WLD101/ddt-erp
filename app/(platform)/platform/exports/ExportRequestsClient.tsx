@@ -15,8 +15,8 @@ export function ExportRequestActions({ id }: { id: string }) {
     setIsLoading("approve");
     try {
       const result = await approveExportRequestAction(id);
-      if (result.error) {
-        toast.error(result.error);
+      if (!result.success) {
+        toast.error(String("error" in result ? result.error : "Failed to approve export"));
         return;
       }
       toast.success("Export approved. Token generated.");
@@ -33,8 +33,8 @@ export function ExportRequestActions({ id }: { id: string }) {
     setIsLoading("reject");
     try {
       const result = await rejectExportRequestAction(id);
-      if (result.error) {
-        toast.error(result.error);
+      if (!result.success) {
+        toast.error(String("error" in result ? result.error : "Failed to reject export"));
         return;
       }
       toast.success("Export rejected.");

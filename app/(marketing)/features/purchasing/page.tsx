@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { Truck, FileArchive, PackageOpen, Undo2, Building, Calculator } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Purchase Order & Supplier Management | NexusERP",
-  description: "Manage suppliers, automate purchase orders, and track your accounts payable seamlessly with NexusERP.",
+  title: "Purchase Order & Supplier Management | WhatsQuery",
+  description: "Manage suppliers, automate purchase orders, and track your accounts payable seamlessly with WhatsQuery.",
   alternates: {
-    canonical: "https://nexuserp.com/features/purchasing",
+    canonical: "https://whatsquery.example.com/features/purchasing",
   }
 };
 

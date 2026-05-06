@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Server, Users, Activity, BarChart3, Settings, PackageOpen, FileDown, Target } from "lucide-react";
+import { Server, Users, BarChart3, Settings, PackageOpen, FileDown, Target } from "lucide-react";
 import { isPlatformAdminEmail } from "@/lib/security/access";
 
 async function requireSuperAdmin() {
@@ -9,7 +9,7 @@ async function requireSuperAdmin() {
   const userEmail = session?.user?.email?.toLowerCase();
 
   // If unauthenticated or email doesn't strictly match the comma-separated env list, reject.
-  if (!userEmail) redirect("/auth/signin?callbackUrl=/platform");
+  if (!userEmail) redirect("/auth/signin?callbackUrl=/wq-command-center");
   
   if (!isPlatformAdminEmail(userEmail)) {
     // Alternatively, we could throw a generic 403. Redirecting to standard dashboard is safest.
@@ -29,7 +29,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
         <div className="h-20 flex items-center px-6 border-b border-white/5">
           <div className="flex items-center gap-2 text-rose-500">
             <Server className="w-5 h-5" />
-            <span className="font-black tracking-widest uppercase text-sm">Platform Ops</span>
+            <span className="font-black tracking-widest uppercase text-sm">WhatsQuery Platform</span>
           </div>
         </div>
         
@@ -49,9 +49,6 @@ export default async function PlatformLayout({ children }: { children: React.Rea
           <Link href="/platform/exports" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground">
             <FileDown className="w-4 h-4" /> Export Requests
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 hover:text-white text-muted-foreground cursor-not-allowed opacity-50">
-            <Activity className="w-4 h-4" /> System Health
-          </Link>
         </nav>
 
         <div className="p-4 border-t border-white/5 text-xs text-muted-foreground">
@@ -64,7 +61,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
       <main className="flex-1 overflow-auto bg-[url('/grid-pattern.svg')] bg-repeat">
          <div className="h-full bg-black/50 backdrop-blur-[2px]">
            <header className="h-20 border-b border-white/5 flex items-center justify-between px-10 sticky top-0 bg-black/40 backdrop-blur-xl z-50">
-             <h1 className="font-bold text-white/80 uppercase tracking-widest text-xs">Global Operator Dashboard</h1>
+             <h1 className="font-bold text-white/80 uppercase tracking-widest text-xs">WhatsQuery Platform Console</h1>
              <Link href="/" className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2">
                <Settings className="w-3.5 h-3.5" />
                Exit to App

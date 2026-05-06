@@ -1,0 +1,365 @@
+(node:5748) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[RateLimit Error]: Error: Stream isn't writeable and enableOfflineQueue options is false
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[RateLimit Error]: Error: Connection is closed.
+    at checkRateLimit (lib\security\rate-limit.ts:22:13)
+    at Object.authorize (lib\auth.ts:35:43)
+    at async signInAction (modules\auth\actions.ts:96:5)
+  20 |   try {
+  21 |     const current = await Promise.race([
+> 22 |       redis.incr(fullKey),
+     |             ^
+  23 |       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout"...
+  24 |     ]);
+  25 |     
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="light" suppressHydrationWarning={true}>
+                          <head>
+>                         <body className="font-inter">
+                            ...
+                              <SegmentViewNode type="layout" pagePath="(marketing...">
+                                <SegmentTrieNode>
+                                <link>
+                                <script>
+                                <script>
+                                <MarketingLayout>
+>                                 <html lang="en" className="bg-[#0a0a12] text-white antialiased">
+                            ...
+                  ...
+ 
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace. 
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first. 
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.

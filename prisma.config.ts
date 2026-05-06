@@ -1,5 +1,7 @@
-import { defineConfig } from '@prisma/config'
+import "dotenv/config";
 
-export default defineConfig({
+const prismaConfig = {
   earlyAccess: true,
-})
+};
+
+export default prismaConfig;

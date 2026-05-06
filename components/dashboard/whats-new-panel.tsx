@@ -48,7 +48,7 @@ export function WhatsNewTrigger({ entries }: { entries: ChangelogEntry[] }) {
                     <Sparkles className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-black text-white uppercase italic tracking-tighter">Nexus Intelligence</h3>
+                    <h3 className="font-black text-white uppercase italic tracking-tighter">WhatsQuery Intelligence</h3>
                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Product Stream</p>
                   </div>
                </div>

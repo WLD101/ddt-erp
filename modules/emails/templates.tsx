@@ -10,61 +10,63 @@ export interface EmailTemplateData {
   secondaryText?: string;
 }
 
-/**
- * A beautiful, high-fidelity responsive email shell using the NexusERP aesthetic.
- */
-export function NexusEmailShell({ children, previewText }: { children: React.ReactNode; previewText: string }) {
+export function WhatsQueryEmailShell({ children }: { children: React.ReactNode; previewText: string }) {
   return (
-    <div style={{
-      backgroundColor: "#020617",
-      color: "#f8fafc",
-      fontFamily: "Inter, system-ui, sans-serif",
-      padding: "40px 20px",
-      margin: 0,
-    }}>
-      <div style={{
-        maxWidth: "600px",
-        margin: "0 auto",
-        backgroundColor: "rgba(30, 41, 59, 0.5)",
-        border: "1px solid rgba(255, 255, 255, 0.05)",
-        borderRadius: "24px",
-        overflow: "hidden",
-        boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: "32px",
-          textAlign: "center",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-        }}>
-          <div style={{
-            display: "inline-block",
-            padding: "8px 16px",
-            backgroundColor: "#7c3aed",
-            borderRadius: "12px",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: "18px",
-            letterSpacing: "-0.5px",
-          }}>
-            NEXUS<span style={{ opacity: 0.8 }}>ERP</span>
+    <div
+      style={{
+        backgroundColor: "#020617",
+        color: "#f8fafc",
+        fontFamily: "Inter, system-ui, sans-serif",
+        padding: "40px 20px",
+        margin: 0,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "600px",
+          margin: "0 auto",
+          backgroundColor: "rgba(30, 41, 59, 0.5)",
+          border: "1px solid rgba(255, 255, 255, 0.05)",
+          borderRadius: "24px",
+          overflow: "hidden",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div
+          style={{
+            padding: "32px",
+            textAlign: "center",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              backgroundColor: "#7c3aed",
+              borderRadius: "12px",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "18px",
+              letterSpacing: "-0.5px",
+            }}
+          >
+            WHATS<span style={{ opacity: 0.8 }}>QUERY</span>
           </div>
         </div>
 
-        {/* Content */}
-        <div style={{ padding: "40px 32px" }}>
-          {children}
-        </div>
+        <div style={{ padding: "40px 32px" }}>{children}</div>
 
-        {/* Footer */}
-        <div style={{
-          padding: "32px",
-          textAlign: "center",
-          backgroundColor: "rgba(255, 255, 255, 0.02)",
-          borderTop: "1px solid rgba(255, 255, 255, 0.05)",
-        }}>
+        <div
+          style={{
+            padding: "32px",
+            textAlign: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.02)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+          }}
+        >
           <p style={{ color: "#94a3b8", fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>
-            Powered by Nexus Intelligence • San Francisco, CA
+            Powered by WhatsQuery Intelligence • Secure lifecycle email
           </p>
         </div>
       </div>
@@ -72,33 +74,34 @@ export function NexusEmailShell({ children, previewText }: { children: React.Rea
   );
 }
 
-/**
- * Standard content block for lifecycle emails.
- */
 export function StandardLifecycleTemplate(data: EmailTemplateData) {
   return (
-    <NexusEmailShell previewText={data.previewText}>
-      <h1 style={{
-        fontSize: "32px",
-        fontWeight: "900",
-        letterSpacing: "-1px",
-        margin: "0 0 24px 0",
-        color: "white",
-        lineHeight: "1.1",
-      }}>
+    <WhatsQueryEmailShell previewText={data.previewText}>
+      <h1
+        style={{
+          fontSize: "32px",
+          fontWeight: "900",
+          letterSpacing: "-1px",
+          margin: "0 0 24px 0",
+          color: "white",
+          lineHeight: "1.1",
+        }}
+      >
         {data.title}
       </h1>
-      <p style={{
-        fontSize: "16px",
-        lineHeight: "1.6",
-        color: "#cbd5e1",
-        margin: "0 0 32px 0",
-      }}>
+      <p
+        style={{
+          fontSize: "16px",
+          lineHeight: "1.6",
+          color: "#cbd5e1",
+          margin: "0 0 32px 0",
+        }}
+      >
         {data.body}
       </p>
 
-      {data.ctaUrl && data.ctaLabel && (
-        <a 
+      {data.ctaUrl && data.ctaLabel ? (
+        <a
           href={data.ctaUrl}
           style={{
             display: "inline-block",
@@ -114,58 +117,59 @@ export function StandardLifecycleTemplate(data: EmailTemplateData) {
         >
           {data.ctaLabel}
         </a>
-      )}
+      ) : null}
 
-      {data.secondaryText && (
-        <p style={{
-          marginTop: "40px",
-          fontSize: "13px",
-          color: "#64748b",
-          fontStyle: "italic",
-        }}>
+      {data.secondaryText ? (
+        <p
+          style={{
+            marginTop: "40px",
+            fontSize: "13px",
+            color: "#64748b",
+            fontStyle: "italic",
+          }}
+        >
           {data.secondaryText}
         </p>
-      )}
-    </NexusEmailShell>
+      ) : null}
+    </WhatsQueryEmailShell>
   );
 }
 
-/**
- * Lifecycle Event Catalogue
- */
+const appUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+
 export const LifecycleTemplates = {
   WELCOME: (name: string) => ({
-    subject: `Welcome to the future of ERP, ${name}!`,
-    previewText: "Your organization is bootstrapped and ready.",
-    title: "Welcome to \nNexus Intelligence",
-    body: `Hello ${name}, your professional workspace has been successfully provisioned. We've unlocked the full suite of our Enterprise features for your 14-day trial.`,
+    subject: `Welcome to WhatsQuery, ${name}!`,
+    previewText: "Your organization is provisioned and ready.",
+    title: "Welcome to\nWhatsQuery",
+    body: `Hello ${name}, your workspace has been provisioned successfully. Your team can now continue onboarding and activate the package that fits your business.`,
     ctaLabel: "Launch Dashboard",
-    ctaUrl: "https://nexuserp.com/dashboard",
-    secondaryText: "Need a hand? Our engineering team is standing by to help you import your existing data."
+    ctaUrl: `${appUrl}/dashboard`,
+    secondaryText: "Need help importing data or setting up integrations? Start with the guided onboarding flow.",
   }),
   TRIAL_ENDING: (daysLeft: number) => ({
-    subject: "Your trial is ending soon — stay optimized.",
-    previewText: `${daysLeft} days remaining in your premium sequence.`,
+    subject: "Your trial is ending soon.",
+    previewText: `${daysLeft} days remaining in your trial.`,
     title: `${daysLeft} Days Remaining`,
-    body: `Your trial period for the Business Pro plan is concluding. To maintain uninterrupted access to your financial reports and automated workflows, choose your plan today.`,
-    ctaLabel: "Upgrade to Pro",
-    ctaUrl: "https://nexuserp.com/settings/billing",
-    secondaryText: "Don't worry, your data is safe. We'll keep your records for 30 days after the trial expires."
+    body: "Your trial period is close to ending. Choose a package to keep access to reports, inventory workflows, and ecommerce channels active.",
+    ctaLabel: "View Pricing",
+    ctaUrl: `${appUrl}/settings/billing`,
+    secondaryText: "Your data remains available while you complete billing decisions.",
   }),
   TRIAL_EXPIRED: () => ({
     subject: "Your access has been paused.",
     previewText: "Your trial period has concluded.",
     title: "Trial Concluded",
-    body: "Your 14-day trial of NexusERP has expired. Your data is still securely stored, but active management features have been paused until a subscription is active.",
+    body: "Your WhatsQuery trial has expired. Your data is still securely stored, but active management features remain paused until a subscription is active.",
     ctaLabel: "Resume Access",
-    ctaUrl: "https://nexuserp.com/settings/billing"
+    ctaUrl: `${appUrl}/settings/billing`,
   }),
   ONBOARDING_REMINDER: (step: string) => ({
-    subject: "Quick tip: Complete your setup",
-    previewText: "You're just one step away from full visibility.",
+    subject: "Complete your setup",
+    previewText: "You're one step away from full visibility.",
     title: "Finish your setup",
-    body: `We noticed you haven't finished the ${step} yet. Completing this will unlock deeper insights in your financial overview.`,
+    body: `We noticed you have not finished the ${step} yet. Completing it will unlock better reporting and cleaner workspace setup.`,
     ctaLabel: "Finish Onboarding",
-    ctaUrl: "https://nexuserp.com/onboarding"
-  })
+    ctaUrl: `${appUrl}/onboarding`,
+  }),
 };

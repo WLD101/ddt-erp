@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { createCategory } from "../actions";
 import { toast } from "sonner";
-import { Loader2, Tag, FileText } from "lucide-react";
 import { FormFieldWrapper } from "@/components/forms/form-field-wrapper";
 import { FormSection } from "@/components/forms/form-section";
 
@@ -64,8 +63,8 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
             placeholder="e.g. Raw Materials, Electronics..."
           >
             <div className="relative">
-              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-              <Input className="pl-10 bg-white/5 border-white/10 h-11" />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">sell</span>
+              <Input className="pl-10" />
             </div>
           </FormFieldWrapper>
 
@@ -75,23 +74,24 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
             label="Internal Notes"
           >
             <div className="relative">
-              <FileText className="absolute left-3 top-3 w-4 h-4 text-muted-foreground/60" />
+              <span className="material-symbols-outlined absolute left-3 top-3 text-[18px] text-outline">description</span>
+              <span className="material-symbols-outlined absolute left-3 top-3 text-[18px] text-outline">description</span>
               <Textarea 
                 placeholder="Optional description for staff reference..." 
-                className="pl-10 bg-white/5 border-white/10 min-h-[100px] resize-none" 
+                className="pl-10 min-h-[100px] resize-none" 
               />
             </div>
           </FormFieldWrapper>
         </FormSection>
 
-        <div className="pt-4">
+        <div className="pt-6 border-t border-outline-variant/30 flex justify-end gap-3">
           <Button 
             type="submit" 
             disabled={isPending} 
-            className="w-full h-12 text-md font-extrabold uppercase tracking-widest"
+            className="px-8"
           >
             {isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
             ) : "Establish Category"}
           </Button>
         </div>

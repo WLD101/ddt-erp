@@ -10,15 +10,7 @@ import { getCurrentTenantContext, TenantForbiddenError } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 
 export default async function PrintInvoicePage({ params }: { params: { id: string } }) {
-  let ctx;
-  try {
-    ctx = await getCurrentTenantContext();
-  } catch (err) {
-    if (err instanceof TenantForbiddenError) {
-      redirect("/api/auth/signin");
-    }
-    throw err;
-  }
+  const ctx = await getCurrentTenantContext();
 
   const invoice = await prisma.salesInvoice.findUnique({
     where: { id_organizationId: { id: params.id, organizationId: ctx.organizationId } },
@@ -34,7 +26,7 @@ export default async function PrintInvoicePage({ params }: { params: { id: strin
   if (!invoice) notFound();
 
   return (
-    <div className="bg-white min-h-screen text-black">
+    <div className="bg-surface min-h-screen text-on-surface">
       {/* Print Controls - Hidden during actual print */}
       <div className="print:hidden p-4 bg-gray-100 flex justify-between items-center border-b border-gray-200">
         <div>
@@ -59,7 +51,7 @@ export default async function PrintInvoicePage({ params }: { params: { id: strin
       </div>
 
       {/* Invoice Document Box */}
-      <div className="max-w-4xl mx-auto p-12 bg-white print:p-0 print:m-0">
+      <div className="max-w-4xl mx-auto p-12 bg-surface print:p-0 print:m-0">
         
         {/* Header */}
         <div className="flex justify-between items-start border-b border-gray-200 pb-8 mb-8">
@@ -85,7 +77,7 @@ export default async function PrintInvoicePage({ params }: { params: { id: strin
           <div className="text-right">
             <div className="mb-4">
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Issue Date:</p>
-              <p className="font-medium">{format(new Date(invoice.issueDate), "MMMM dd, yyyy")}</p>
+              <p className="font-medium">{format(new Date(invoice.date), "MMMM dd, yyyy")}</p>
             </div>
             <div>
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Status:</p>
@@ -108,11 +100,11 @@ export default async function PrintInvoicePage({ params }: { params: { id: strin
           </thead>
           <tbody className="divide-y divide-gray-200">
             {invoice.items.map((item, i) => (
-              <tr key={item.id} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+              <tr key={item.id} className={i % 2 === 0 ? "bg-gray-50" : "bg-surface"}>
                 <td className="py-4 px-2 font-medium">{item.product.name}</td>
                 <td className="py-4 px-2 text-right">{item.quantity}</td>
-                <td className="py-4 px-2 text-right">${item.unitPrice.toFixed(2)}</td>
-                <td className="py-4 px-2 text-right font-bold text-gray-900">${item.total.toFixed(2)}</td>
+                <td className="py-4 px-2 text-right">Rs. {item.unitPrice.toLocaleString()}</td>
+                <td className="py-4 px-2 text-right font-bold text-gray-900">Rs. {item.total.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -123,21 +115,21 @@ export default async function PrintInvoicePage({ params }: { params: { id: strin
           <div className="w-1/3 space-y-3">
             <div className="flex justify-between text-gray-600">
               <span>Subtotal:</span>
-              <span>${invoice.subtotal.toFixed(2)}</span>
+              <span>Rs. {invoice.subtotal.toLocaleString()}</span>
             </div>
             {invoice.discount > 0 && (
               <div className="flex justify-between text-red-600">
                 <span>Discount:</span>
-                <span>-${invoice.discount.toFixed(2)}</span>
+                <span>-Rs. {invoice.discount.toLocaleString()}</span>
               </div>
             )}
             <div className="flex justify-between text-gray-600">
               <span>Tax:</span>
-              <span>${invoice.taxAmount.toFixed(2)}</span>
+              <span>Rs. {invoice.taxAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-bold text-xl border-t-2 border-gray-800 pt-3 mt-3">
               <span>Total:</span>
-              <span>${invoice.totalAmount.toFixed(2)}</span>
+              <span>Rs. {invoice.totalAmount.toLocaleString()}</span>
             </div>
           </div>
         </div>

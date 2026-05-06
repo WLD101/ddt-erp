@@ -3,7 +3,6 @@
 import { getCurrentTenantContext, requirePermission } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 import * as service from "./service";
-import * as inventoryService from "../inventory/service";
 
 import { canUseFeature } from "@/lib/billing/enforcement";
 
@@ -55,7 +54,7 @@ export async function getTopProducts(limit = 5) {
   const ctx = await getCurrentTenantContext();
   requirePermission(ctx, "reports.view");
   const db = getTenantStore(ctx);
-  return service.getTopProducts(db, limit);
+  return service.getTopProducts(db, ctx.branchId, limit);
 }
 
 /**
@@ -66,8 +65,7 @@ export async function getLowStockAlerts() {
   const ctx = await getCurrentTenantContext();
   requirePermission(ctx, "products.view");
   const db = getTenantStore(ctx);
-  const items = await inventoryService.getInventoryItems(db, ctx.branchId);
-  return items.filter(item => item.quantity <= item.product.lowStockThreshold);
+  return service.getLowStockAlerts(db);
 }
 
 /**
@@ -78,6 +76,37 @@ export async function getChartData() {
   requirePermission(ctx, "reports.view");
   const db = getTenantStore(ctx);
   return service.getFinancialTrends(db, ctx.branchId, 30);
+}
+
+/**
+ * DASHBOARD: ECOMMERCE INTELLIGENCE
+ */
+export async function getEcommerceIntelligence() {
+  const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "reports.view");
+  const db = getTenantStore(ctx);
+  return service.getEcommerceIntelligence(db, ctx.branchId);
+}
+
+export async function getBusinessHealthScore() {
+  const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "reports.view");
+  const db = getTenantStore(ctx);
+  return service.getBusinessHealthScore(db, ctx.branchId);
+}
+
+export async function getTodaysBusinessSummary() {
+  const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "reports.view");
+  const db = getTenantStore(ctx);
+  return service.getTodaysBusinessSummary(db, ctx.branchId);
+}
+
+export async function getEcommerceSyncSummary() {
+  const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "reports.view");
+  const db = getTenantStore(ctx);
+  return service.getEcommerceSyncSummary(db);
 }
 
 /**

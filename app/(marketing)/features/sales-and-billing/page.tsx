@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { ShoppingCart, FileText, RefreshCcw, CreditCard, PieChart, Users } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sales & Invoicing Software | NexusERP",
-  description: "Accelerate checkout, automate B2B invoicing, and manage customer credit flawlessly with the NexusERP Sales engine.",
+  title: "Sales & Invoicing Software | WhatsQuery",
+  description: "Accelerate checkout, automate B2B invoicing, and manage customer credit flawlessly with the WhatsQuery Sales engine.",
   alternates: {
-    canonical: "https://nexuserp.com/features/sales-and-billing",
+    canonical: "https://whatsquery.example.com/features/sales-and-billing",
   }
 };
 
@@ -26,7 +26,7 @@ const FEATURES = [
 const FAQS = [
   { question: "Can I customize the invoice design?", answer: "Yes. Your business profile (name, address, tax IDs) and custom uploaded logic is fundamentally stamped onto all generated PDFs." },
   { question: "How do partial payments work?", answer: "When processing a $1,000 invoice, you can record a $200 cash payment today. The invoice instantly moves to 'Partially Paid' and updates your Accounts Receivable dashboard." },
-  { question: "Does the POS work offline?", answer: "Currently, NexusERP is a cloud-native platform requiring an active internet connection to ensure your inventory remains perfectly synced globally." },
+  { question: "Does the POS work offline?", answer: "Currently, WhatsQuery is a cloud-native platform requiring an active internet connection to ensure your inventory remains perfectly synced globally." },
 ];
 
 export default function SalesFeaturePage() {

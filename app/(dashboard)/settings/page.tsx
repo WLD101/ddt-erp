@@ -3,7 +3,6 @@ import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 
 export default async function SettingsGeneralPage() {
   const ctx = await getCurrentTenantContext();
@@ -29,42 +28,84 @@ export default async function SettingsGeneralPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h2 className="text-3xl font-black tracking-tight text-white uppercase italic">
-          General <span className="text-primary">Settings</span>
+        <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline-md uppercase">
+          Organizational <span className="text-primary">Profile</span>
         </h2>
-        <p className="text-muted-foreground mt-1">
-          Manage organizational profile, regional formatting, and base preferences.
+        <p className="text-on-surface-variant text-sm font-medium mt-1 font-body-md">
+          Manage identity, regional formatting, and base preferences
         </p>
       </div>
 
-      <ProfileForm initialData={organization} />
+      <ProfileForm
+        initialData={{
+          ...organization,
+          phone: organization.phone ?? undefined,
+          email: organization.email ?? undefined,
+          address: organization.address ?? undefined,
+          country: organization.country ?? undefined,
+          taxLabel: organization.taxLabel ?? undefined,
+        }}
+      />
 
-      {/* Advanced / Export Settings */}
-      <h3 className="text-lg font-black uppercase tracking-widest text-white pt-8 border-t border-white/5">Advanced Utilities</h3>
-      
-      <Card className="border-white/5 bg-black/20 backdrop-blur-md">
-        <CardHeader>
-          <CardTitle className="text-xl font-black text-white">Data Export</CardTitle>
-          <CardDescription>
-            Download an offline CSV backup of your organizational data arrays.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-5 bg-primary/5 rounded-xl border border-primary/20 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-bold text-white">Full Inventory Ledger</p>
-              <p className="text-xs text-muted-foreground mt-1">Exports all products, SKUs, and exact physical counts across all branches.</p>
-            </div>
-            <a href="/api/export/inventory" download>
-              <Button variant="outline" className="font-bold text-xs uppercase tracking-widest border-primary/50 text-white hover:bg-primary/20 hover:text-white">
-                <Download className="w-4 h-4 mr-2 text-primary" />
-                Export CSV
-              </Button>
-            </a>
-          </div>
-        </CardContent>
-      </Card>
-      
+      <div className="pt-8 border-t border-outline-variant/30">
+        <h3 className="text-sm font-black uppercase tracking-widest text-on-surface mb-6">Advanced Utilities</h3>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-black text-on-surface tracking-tight font-headline-sm">Data Extraction</CardTitle>
+              <CardDescription className="text-sm text-on-surface-variant font-medium">
+                Download an offline ledger of your organizational data
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-5 bg-surface-container-low/30 rounded-2xl border border-outline-variant/30 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-black text-on-surface uppercase tracking-wider">Full Inventory Manifest</p>
+                  <p className="text-[10px] text-on-surface-variant mt-1 font-medium italic">Exports all products, SKUs, and physical counts.</p>
+                </div>
+                <a href="/api/export/inventory" download>
+                  <Button variant="outline" size="sm" className="h-9">
+                    <span className="material-symbols-outlined text-[18px] mr-2">download</span>
+                    CSV
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-black text-on-surface tracking-tight font-headline-sm">Cloud Connectivity</CardTitle>
+              <CardDescription className="text-sm text-on-surface-variant font-medium">
+                Manage external ecommerce channels and API nodes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <a href="/settings/integrations">
+                  <Button variant="outline" size="sm" className="h-9">
+                    <span className="material-symbols-outlined text-[18px] mr-2">hub</span>
+                    Hub
+                  </Button>
+                </a>
+                <a href="/settings/integrations/daraz">
+                  <Button variant="outline" size="sm" className="h-9">
+                    <span className="material-symbols-outlined text-[18px] mr-2">storefront</span>
+                    Daraz
+                  </Button>
+                </a>
+                <a href="/settings/integrations/shopify">
+                  <Button variant="outline" size="sm" className="h-9">
+                    <span className="material-symbols-outlined text-[18px] mr-2">shopping_bag</span>
+                    Shopify
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

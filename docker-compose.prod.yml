@@ -1,0 +1,83 @@
+# NexusERP Production VPS Environment
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: erp-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: erp_prod
+    # No ports exposed to host, only internal network
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d erp_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis-prod
+    restart: always
+    volumes:
+      - redis_prod_data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: erp-app-prod
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/erp_prod"
+      REDIS_URL: "redis://redis:6379"
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: erp-worker-prod
+    restart: always
+    command: node server.js # Note: Production build of worker should be handled
+    # Actually, for the standalone build, we might need a different entrypoint
+    # For now, let's assume we run the next standalone server but with a worker flag or similar
+    # or just use tsx if the image allows it. Better: use the same image but different command.
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/erp_prod"
+      REDIS_URL: "redis://redis:6379"
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: erp-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:
+  certs:

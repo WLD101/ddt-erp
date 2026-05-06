@@ -59,6 +59,7 @@ export const markAllNotificationsRead = createServerAction({
  */
 export const deleteNotification = createServerAction({
   label: "DeleteNotification",
+  blockInDemoMode: true,
   schema: z.object({ id: z.string() }),
   revalidatePaths: ["/notifications"],
   handler: async ({ input, context }) => {

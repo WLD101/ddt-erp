@@ -1,0 +1,58 @@
+# NexusERP Local Development Environment (Fast Preview)
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: erp-db-local
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: erp_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis-local
+    ports:
+      - "6380:6379"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: erp-app-local
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules # Anonymous volume to avoid host node_modules
+      - /app/.next # Anonymous volume to avoid host .next
+    environment:
+      DATABASE_URL: "postgresql://dev_user:dev_password@db:5432/erp_dev"
+      REDIS_URL: "redis://redis:6379"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: "local-dev-secret-keep-it-secret"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: erp-worker-local
+    command: npx tsx worker.ts
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      DATABASE_URL: "postgresql://dev_user:dev_password@db:5432/erp_dev"
+      REDIS_URL: "redis://redis:6379"
+
+volumes:
+  postgres_dev_data:

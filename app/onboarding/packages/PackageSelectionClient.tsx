@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { selectPackageAction } from "@/modules/packages/actions";
+
 import { Button } from "@/components/ui/button";
+import { selectPackageAction } from "@/modules/packages/actions";
 
 type PackageItem = {
   id: string;
@@ -42,13 +43,23 @@ export function PackageSelectionClient({ packages }: { packages: PackageItem[] }
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {packages.map((pkg) => (
-        <article key={pkg.id} className="rounded-lg border border-white/10 bg-black/45 p-6 text-white shadow-xl">
+        <article key={pkg.id} className="rounded-3xl border border-outline-variant/20 bg-surface p-6 shadow-soft">
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary">{pkg.businessSize || "ERP package"}</p>
-            <h2 className="text-2xl font-black uppercase tracking-tight">{pkg.name}</h2>
-            <p className="text-sm text-muted-foreground">{pkg.isCustom ? "Custom limits and features handled by platform admin." : `${pkg.userLimit} users included.`}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+              {pkg.businessSize || "ERP package"}
+            </p>
+            <h2 className="text-2xl font-black uppercase tracking-tight text-on-surface">{pkg.name}</h2>
+            <p className="text-sm text-on-surface-variant">
+              {pkg.isCustom
+                ? "Custom limits and features handled by platform admin."
+                : `${pkg.userLimit} users included.`}
+            </p>
           </div>
-          <Button className="mt-6 w-full" onClick={() => select(pkg)} disabled={pendingId !== null}>
+          <Button
+            className="mt-6 h-11 w-full rounded-xl font-bold shadow-lg shadow-primary/20"
+            onClick={() => select(pkg)}
+            disabled={pendingId !== null}
+          >
             {pendingId === pkg.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {pkg.isCustom ? "Request Enterprise" : "Select Package"}
           </Button>
@@ -57,3 +68,4 @@ export function PackageSelectionClient({ packages }: { packages: PackageItem[] }
     </div>
   );
 }
+

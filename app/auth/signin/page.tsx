@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { signIn } from "next-auth/react";
+import { signInAction } from "@/modules/auth/actions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,10 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function getSafeCallbackUrl(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\") || value.includes("\n") || value.includes("\r")) {
+  if (!value) {
+    return null;
+  }
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\") || value.includes("\n") || value.includes("\r")) {
     return "/";
   }
   return value;
@@ -32,7 +35,7 @@ function getSafeCallbackUrl(value: string | null) {
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl")) || "/dashboard";
   const [isLoading, setIsLoading] = useState(false);
   
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
@@ -42,19 +45,23 @@ function SignInForm() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
+      const formData = new FormData();
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+      formData.append("callbackUrl", callbackUrl || "/");
+
+      const result = await signInAction(null, formData);
 
       if (result?.error) {
-        toast.error("Invalid email or password");
+        toast.error(result.error);
       } else {
         toast.success("Welcome back!");
-        window.location.assign(callbackUrl || "/");
+        window.location.assign(callbackUrl);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error && (error.message === "NEXT_REDIRECT" || error.digest?.includes("NEXT_REDIRECT"))) {
+        throw error;
+      }
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
@@ -68,9 +75,9 @@ function SignInForm() {
         <div className="mx-auto bg-primary/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 ring-1 ring-primary/30 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
           <Lock className="w-6 h-6 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight text-white">Sign in to ERP</CardTitle>
+        <CardTitle className="text-2xl font-bold tracking-tight text-white">Sign in to WhatsQuery</CardTitle>
         <CardDescription className="text-muted-foreground/80">
-          Enter your credentials to access your organization
+          Enter your credentials to access your workspace
         </CardDescription>
       </CardHeader>
       <CardContent>

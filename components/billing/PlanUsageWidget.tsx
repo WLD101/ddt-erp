@@ -5,6 +5,7 @@ import { getCurrentTenantContext } from "@/lib/tenant";
 import { Progress } from "@/components/ui/progress";
 import { Zap, Users, Package, FileText } from "lucide-react";
 import Link from "next/link";
+import { formatPlanLimit } from "@/lib/billing/plans";
 
 export async function PlanUsageWidget() {
   const ctx = await getCurrentTenantContext();
@@ -38,7 +39,7 @@ export async function PlanUsageWidget() {
           <Zap className="w-3 h-3 mr-1.5 text-primary fill-primary/20" />
           Plan: {plan.name}
         </h4>
-        {plan.id === "free" && (
+        {plan.id === "starter" && (
           <Link 
             href="/settings/billing" 
             className="text-[10px] font-bold text-primary hover:text-primary/80 transition-colors"
@@ -61,7 +62,7 @@ export async function PlanUsageWidget() {
                   <span className="ml-1.5">{stat.label}</span>
                 </div>
                 <span className={isNearLimit ? "text-rose-400" : "text-slate-300"}>
-                  {stat.current} / {stat.limit}
+                  {stat.current} / {formatPlanLimit(stat.limit)}
                 </span>
               </div>
               <div className="relative h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -77,10 +78,10 @@ export async function PlanUsageWidget() {
         })}
       </div>
       
-      {plan.id === "free" && (
+      {plan.id === "starter" && (
         <div className="mt-4 pt-4 border-t border-white/5">
           <p className="text-[10px] leading-relaxed text-slate-500 italic">
-            Upgrade to Pro for unlimited sales and up to 500 products.
+            Upgrade to Business for more users, more branches, CSV import, and ecommerce-ready workflows.
           </p>
         </div>
       )}

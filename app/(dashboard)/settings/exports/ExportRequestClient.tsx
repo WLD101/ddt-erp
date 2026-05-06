@@ -26,14 +26,14 @@ export function ExportRequestClient() {
   }
 
   return (
-    <form onSubmit={submit} className="max-w-xl space-y-5 rounded-lg border border-white/10 bg-black/40 p-6">
+    <form onSubmit={submit} className="max-w-xl space-y-5 rounded-lg border border-outline-variant/30 bg-surface/40 p-6">
       <div className="space-y-2">
-        <label htmlFor="scope" className="text-sm font-bold text-white/70">Export scope</label>
+        <label htmlFor="scope" className="text-sm font-bold text-on-surface-variant">Export scope</label>
         <select
           id="scope"
           value={scope}
           onChange={(event) => setScope(event.target.value)}
-          className="h-10 w-full rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white"
+          className="h-10 w-full rounded-md border border-outline-variant/30 bg-surface/40 px-3 text-sm text-on-surface"
         >
           <option value="tenant_summary">Tenant summary</option>
           <option value="customers">Customers</option>

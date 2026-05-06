@@ -3,9 +3,7 @@
 
 import React from "react";
 import { 
-  UserCircle, 
   LogOut, 
-  Settings, 
   User, 
   ShieldCheck,
   LayoutDashboard
@@ -21,7 +19,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/modules/auth/actions";
-import Link from "next/link";
 
 interface UserButtonProps {
   user: {
@@ -40,7 +37,7 @@ export function UserButton({ user }: UserButtonProps) {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="rounded-full bg-primary/10 hover:bg-primary/20 hover:-translate-y-0.5 transition-all duration-300 ring-2 ring-transparent hover:ring-primary/50 relative group"
+            className="w-9 h-9 rounded-full border border-outline-variant shadow-sm hover:opacity-80 transition-opacity p-0 overflow-hidden"
           />
         }
       >
@@ -48,46 +45,53 @@ export function UserButton({ user }: UserButtonProps) {
           <img 
             src={user.image} 
             alt={user.name || "User"} 
-            className="w-full h-full rounded-full object-cover"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <UserCircle className="w-6 h-6 text-primary" />
-        )}
-        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full group-hover:scale-110 transition-transform" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 mt-2 border-white/10 bg-[#121212]/95 backdrop-blur-xl shadow-2xl" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-semibold text-white leading-none">{user.name || "Anonymous"}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+          <div className="w-full h-full bg-primary-container flex items-center justify-center text-on-primary font-bold">
+            {user.name?.[0]?.toUpperCase() || "U"}
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/5" />
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 mt-2 border-outline-variant bg-surface shadow-soft" align="end">
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild className="focus:bg-white/5 cursor-pointer">
-            <Link href="/" className="flex items-center">
-              <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
-              <span>Dashboard</span>
-            </Link>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-semibold text-on-surface leading-none">{user.name || "Anonymous"}</p>
+              <p className="text-xs leading-none text-on-surface-variant">{user.email}</p>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator className="bg-outline-variant" />
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            className="focus:bg-surface-container-low cursor-pointer"
+            onClick={() => window.location.assign("/")}
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
+            <span className="font-body-md">Dashboard</span>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild className="focus:bg-white/5 cursor-pointer">
-            <Link href="/settings" className="flex items-center">
-              <ShieldCheck className="mr-2 h-4 w-4 text-primary" />
-              <span>Org Settings</span>
-            </Link>
+          <DropdownMenuItem
+            className="focus:bg-surface-container-low cursor-pointer"
+            onClick={() => window.location.assign("/settings")}
+          >
+            <ShieldCheck className="mr-2 h-4 w-4 text-primary" />
+            <span className="font-body-md">Org Settings</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-white/5 cursor-pointer">
+          <DropdownMenuItem className="focus:bg-surface-container-low cursor-pointer">
             <User className="mr-2 h-4 w-4 text-primary" />
-            <span>My Profile</span>
+            <span className="font-body-md">My Profile</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator className="bg-white/5" />
+        <DropdownMenuSeparator className="bg-outline-variant" />
         <DropdownMenuItem 
-          className="focus:bg-red-500/10 text-red-500 cursor-pointer transition-colors"
-          onClick={() => signOutAction()}
+          className="focus:bg-error-container/20 text-error cursor-pointer transition-colors"
+          onClick={async () => {
+            await signOutAction();
+          }}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span className="font-body-md font-medium">Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

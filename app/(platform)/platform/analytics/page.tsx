@@ -15,7 +15,7 @@ export default async function PlatformAnalyticsPage() {
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white flex items-center gap-3">
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic text-on-surface flex items-center gap-3">
             Product <span className="text-primary italic">Intelligence</span>
           </h2>
           <p className="text-muted-foreground text-sm">Orchestrating platform growth metrics and product market fit signals.</p>
@@ -30,12 +30,12 @@ export default async function PlatformAnalyticsPage() {
         
         {/* Activation Funnel (2/3) */}
         <div className="lg:col-span-2 space-y-8">
-            <Card className="bg-black/40 border-white/5 shadow-2xl relative overflow-hidden">
-                <CardHeader className="border-b border-white/5 bg-white/[0.01]">
+            <Card className="bg-surface/40 border-outline-variant/20 shadow-2xl relative overflow-hidden">
+                <CardHeader className="border-b border-outline-variant/20 bg-surface/[0.01]">
                     <div className="flex items-center gap-3">
                         <Target className="w-5 h-5 text-primary" />
                         <div>
-                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-white/90">Activation Funnel</CardTitle>
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-on-surface/90">Activation Funnel</CardTitle>
                             <CardDescription className="text-xs">Conversion efficiency from Signup to First Productive Sale.</CardDescription>
                         </div>
                     </div>
@@ -45,10 +45,10 @@ export default async function PlatformAnalyticsPage() {
                         {funnel.map((stage, i) => (
                             <div key={stage.stage} className="relative">
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/50">{stage.stage}</span>
-                                    <span className="text-sm font-black text-white">{stage.count} <span className="text-muted-foreground font-normal text-[10px]">({stage.percentage.toFixed(1)}%)</span></span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">{stage.stage}</span>
+                                    <span className="text-sm font-black text-on-surface">{stage.count} <span className="text-muted-foreground font-normal text-[10px]">({stage.percentage.toFixed(1)}%)</span></span>
                                 </div>
-                                <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-3 w-full bg-surface-container-low rounded-full overflow-hidden">
                                     <div 
                                         className="h-full bg-gradient-to-r from-primary/40 to-primary shadow-[0_0_15px_rgba(124,58,237,0.3)] transition-all duration-1000"
                                         style={{ width: `${stage.percentage}%` }}
@@ -65,12 +65,12 @@ export default async function PlatformAnalyticsPage() {
                 </CardContent>
             </Card>
 
-            <Card className="bg-black/40 border-white/5 shadow-2xl overflow-hidden">
-                <CardHeader className="border-b border-white/5 bg-white/[0.01]">
+            <Card className="bg-surface/40 border-outline-variant/20 shadow-2xl overflow-hidden">
+                <CardHeader className="border-b border-outline-variant/20 bg-surface/[0.01]">
                     <div className="flex items-center gap-3">
                         <TrendingUp className="w-5 h-5 text-emerald-400" />
                         <div>
-                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-white/90">Retention Pattern</CardTitle>
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-on-surface/90">Retention Pattern</CardTitle>
                             <CardDescription className="text-xs">Daily Unique Active Organizations (Last 7 Days)</CardDescription>
                         </div>
                     </div>
@@ -85,19 +85,19 @@ export default async function PlatformAnalyticsPage() {
 
         {/* Feature Usage & Insights (1/3) */}
         <div className="space-y-6">
-            <Card className="bg-black/40 border-white/5 shadow-xl">
+            <Card className="bg-surface/40 border-outline-variant/20 shadow-xl">
                  <CardHeader>
-                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-white/50">Top-Used Features</CardTitle>
+                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-on-surface-variant/50">Top-Used Features</CardTitle>
                  </CardHeader>
                  <CardContent>
                     <div className="space-y-6">
                         {features.map(f => (
                             <div key={f.category} className="space-y-2">
                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
-                                    <span className="text-white/70">{f.category}</span>
+                                    <span className="text-on-surface-variant">{f.category}</span>
                                     <span className="text-primary">{f.count} events</span>
                                 </div>
-                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-1.5 w-full bg-surface-container-low rounded-full overflow-hidden">
                                     <div 
                                         className="h-full bg-primary/40"
                                         style={{ width: `${Math.min(100, (f.count / (features[0]?.count || 1)) * 100)}%` }}
@@ -112,14 +112,14 @@ export default async function PlatformAnalyticsPage() {
             <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 space-y-4 shadow-[0_0_40px_rgba(124,58,237,0.05)]">
                 <div className="flex items-center gap-3 mb-2">
                     <Zap className="w-5 h-5 text-primary" />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-white">North Star Update</h4>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-on-surface">North Star Update</h4>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed italic">
                     "Activation is concentrated in <strong>{features[0]?.category || '...'}</strong>. Users who create 3+ <strong>{features[0]?.category || '...'}</strong> items within 24h have a 4.2x higher conversion rate."
                 </p>
-                <div className="pt-4 border-t border-white/5">
-                     <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Growth Recommendation</p>
-                     <p className="text-[11px] text-white/80 mt-1 font-medium">Focus product updates on multi-sku batch editing.</p>
+                <div className="pt-4 border-t border-outline-variant/20">
+                     <p className="text-[10px] text-on-surface/30 font-bold uppercase tracking-widest">Growth Recommendation</p>
+                     <p className="text-[11px] text-on-surface/80 mt-1 font-medium">Focus product updates on multi-sku batch editing.</p>
                 </div>
             </div>
         </div>
@@ -144,3 +144,4 @@ function AreaChartWrapper({ data }: { data: any[] }) {
         </span>
     );
 }
+

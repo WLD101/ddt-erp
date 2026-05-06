@@ -23,8 +23,14 @@ export async function requirePlatformAdmin() {
 
 export async function requirePlatformAdminPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/signin?callbackUrl=/platform");
-  if (!isPlatformAdminEmail(session.user.email)) redirect("/");
+  if (!session?.user?.id) {
+    console.log("Unauthorized admin access attempt");
+    redirect("/auth/signin?callbackUrl=/wq-command-center");
+  }
+  if (!isPlatformAdminEmail(session.user.email)) {
+    console.log("Unauthorized admin access attempt");
+    redirect("/dashboard");
+  }
   return session;
 }
 

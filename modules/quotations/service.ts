@@ -101,6 +101,45 @@ export async function updateQuotationStatus(
 }
 
 /**
+ * SERVICE: CONVERT QUOTATION TO INVOICE
+ */
+export async function convertToInvoice(db: ScopedPrisma, branchId: string, quotationId: string) {
+  const { createSalesInvoice } = await import("../sales/service");
+  
+  return db.$transaction(async (tx) => {
+    const quotation = await tx.quotation.findUnique({
+      where: { id: quotationId, branchId },
+      include: { items: true },
+    });
+
+    if (!quotation) throw new Error("Quotation not found.");
+    if (quotation.status === "CONVERTED") throw new Error("Quotation already converted to invoice.");
+
+    const invoiceNumber = `INV-FROM-QT-${quotation.quotationNumber}`;
+
+    const invoice = await createSalesInvoice(tx as any, branchId, {
+      customerId: quotation.customerId,
+      invoiceNumber: invoiceNumber,
+      items: quotation.items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+      })),
+      discount: quotation.discount || 0,
+      notes: quotation.notes || `Generated from Quotation ${quotation.quotationNumber}`,
+      quotationId: quotation.id,
+    });
+
+    await tx.quotation.update({
+      where: { id: quotationId },
+      data: { status: "CONVERTED" },
+    });
+
+    return invoice;
+  });
+}
+
+/**
  * SERVICE: DELETE QUOTATION
  */
 export async function deleteQuotation(db: ScopedPrisma, id: string) {

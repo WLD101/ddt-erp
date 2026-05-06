@@ -249,10 +249,13 @@ async function _checkSubscriptionHealth(db: ScopedPrisma, now: Date) {
 
 // ─── Expired Quotations ───────────────────────────────────────────────────────
 async function _checkExpiredQuotations(db: ScopedPrisma, now: Date) {
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   const expiredQuotes = await db.quotation.findMany({
     where: {
       status: { notIn: ["CONVERTED", "REJECTED", "EXPIRED"] },
-      expiryDate: { lt: now },
+      createdAt: { lt: thirtyDaysAgo },
     },
     include: { customer: true },
   });
@@ -268,7 +271,7 @@ async function _checkExpiredQuotations(db: ScopedPrisma, now: Date) {
       type: NotificationType.QUOTATION_EXPIRED,
       severity: Severity.WARNING,
       title: "Proposal Expired",
-      message: `Quotation ${quote.quotationNumber} for ${quote.customer.name} ($${quote.totalAmount.toFixed(2)}) has expired without acceptance.`,
+      message: `Quotation ${quote.id} for ${quote.customer.name} ($${quote.totalAmount.toFixed(2)}) has expired without acceptance.`,
       actionUrl: `/sales/quotes/${quote.id}`,
       entityType: "Quotation",
       deduplicateKey: `${quote.id}-expired`,

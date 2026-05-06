@@ -4,6 +4,7 @@ import { z } from "zod";
 // ─── Step Registry ─────────────────────────────────────────────────────────────
 export const ONBOARDING_STEPS = [
   { id: "welcome",     label: "Welcome",        skippable: false },
+  { id: "industry",    label: "Industry",       skippable: false },
   { id: "profile",     label: "Business Info",  skippable: false },
   { id: "branch",      label: "Location",       skippable: true  },
   { id: "product",     label: "First Product",  skippable: true  },
@@ -19,7 +20,7 @@ export const TOTAL_STEPS = ONBOARDING_STEPS.length;
 // ─── Zod Schemas ───────────────────────────────────────────────────────────────
 
 export const businessTypeSchema = z.object({
-  businessType: z.enum(["wholesaler", "retailer", "reseller", "service", "other"]),
+  businessType: z.enum(["wholesaler", "retailer", "ecommerce", "distribution", "service", "manufacturing", "other"]),
 });
 
 export const profileSchema = z.object({
@@ -42,10 +43,10 @@ export const branchSchema = z.object({
 export const onboardingProductSchema = z.object({
   name:              z.string().min(2, "Product name required"),
   sku:               z.string().optional(),
-  unitPrice:         z.number().min(0),
-  costPrice:         z.number().min(0).default(0),
-  openingStock:      z.number().min(0).int().default(0),
-  lowStockThreshold: z.number().min(0).int().default(5),
+  unitPrice:         z.coerce.number().min(0),
+  costPrice:         z.coerce.number().min(0).default(0),
+  openingStock:      z.coerce.number().min(0).int().default(0),
+  lowStockThreshold: z.coerce.number().min(0).int().default(5),
 });
 
 export const onboardingCustomerSchema = z.object({
@@ -59,6 +60,69 @@ export const inviteSchema = z.object({
   email: z.string().email("Valid email required"),
   role:  z.enum(["admin", "staff"]),
 });
+
+export const industryModulesSchema = z.object({
+  industry: z.string(),
+  modules: z.array(z.string()),
+});
+
+export const INDUSTRY_MODULES: Record<string, { label: string; modules: { id: string; label: string; description: string }[] }> = {
+  retail: {
+    label: "Retail",
+    modules: [
+      { id: "inventory_mgmt", label: "Inventory Management", description: "Real-time stock tracking and alerts." },
+      { id: "sales_reports", label: "Sales Reports", description: "Daily sales and profit analytics." },
+      { id: "customer_mgmt", label: "Customer Management", description: "CRM and loyalty tracking." },
+      { id: "supplier_mgmt", label: "Supplier Management", description: "Purchase orders and vendor bills." },
+    ]
+  },
+  wholesale: {
+    label: "Trading / Wholesale",
+    modules: [
+      { id: "bulk_pricing", label: "Bulk Pricing", description: "Tiered pricing for large orders." },
+      { id: "purchases", label: "Purchases", description: "Record supplier bills and inward stock." },
+      { id: "inventory_mgmt", label: "Inventory Management", description: "Track stock levels and reorder signals." },
+      { id: "reports", label: "Business Reports", description: "Monitor sales, profit, and outstanding balances." },
+    ]
+  },
+  ecommerce: {
+    label: "Ecommerce",
+    modules: [
+      { id: "channel_sync", label: "Channel Sync", description: "Sync products, orders, and stock with connected stores." },
+      { id: "csv_import", label: "CSV / Excel Import", description: "Import catalogues and orders without API access." },
+      { id: "inventory_mgmt", label: "Inventory Management", description: "Prevent stock mismatch across online channels." },
+      { id: "reports", label: "Channel Reports", description: "Track revenue and orders by ecommerce channel." },
+    ]
+  },
+  distribution: {
+    label: "Light Distribution",
+    modules: [
+      { id: "branches", label: "Branches", description: "Manage stock across hubs and sales locations." },
+      { id: "inventory_mgmt", label: "Inventory Management", description: "Track dispatch-ready stock by branch." },
+      { id: "purchases", label: "Purchases", description: "Receive supplier stock into branch inventory." },
+      { id: "reports", label: "Operational Reports", description: "Review movement, low stock, and branch activity." },
+    ]
+  },
+  manufacturing: {
+    label: "Manufacturing",
+    modules: [
+      { id: "products", label: "Products", description: "Manage finished goods and production-ready SKUs." },
+      { id: "inventory", label: "Inventory", description: "Track raw materials and finished stock levels." },
+      { id: "purchases", label: "Purchases", description: "Receive materials and supplier bills for production." },
+      { id: "sales", label: "Sales", description: "Create customer invoices for manufactured goods." },
+      { id: "production", label: "Production", description: "Use production workflows for work orders and output tracking." },
+    ]
+  },
+  service_basic: {
+    label: "Service Basic",
+    modules: [
+      { id: "sales_invoices", label: "Sales Invoices", description: "Create invoices for basic service billing." },
+      { id: "customers", label: "Customer Management", description: "Manage client records and contact details." },
+      { id: "expenses", label: "Expenses", description: "Track service delivery costs and overhead." },
+      { id: "reports", label: "Basic Reports", description: "Review invoices, payments, and expenses." },
+    ]
+  },
+};
 
 // ─── State Helpers ─────────────────────────────────────────────────────────────
 
@@ -74,42 +138,49 @@ export async function getOnboardingState(organizationId: string) {
         organizationId,
         currentStep: 0,
         completedSteps: "",
-        skippedSteps: "",
       },
     });
   }
 
+  const steps = state.completedSteps ? state.completedSteps.split(",") : [];
+  const completed = steps.filter(s => !s.startsWith("skipped:") && s !== "demoDataInserted");
+  const skipped = steps.filter(s => s.startsWith("skipped:")).map(s => s.slice(8));
+
   // Cast for code compatibility elsewhere
   return {
     ...state,
-    completedSteps: state.completedSteps ? state.completedSteps.split(",") : [],
-    skippedSteps: state.skippedSteps ? state.skippedSteps.split(",") : [],
+    completedSteps: completed,
+    skippedSteps: skipped,
   } as any;
 }
 
 export async function markStepDone(organizationId: string, stepId: StepId) {
-  const state = await getOnboardingState(organizationId);
-  const completedSteps = Array.from(new Set([...state.completedSteps, stepId]));
-  const nextIndex = Math.min(state.currentStep + 1, TOTAL_STEPS - 1);
+  const state = await prisma.onboardingState.findUnique({ where: { organizationId } });
+  const steps = state?.completedSteps ? state.completedSteps.split(",") : [];
+  const withoutStep = steps.filter(s => s !== stepId && s !== `skipped:${stepId}`);
+  const nextSteps = Array.from(new Set([...withoutStep, stepId]));
+  const nextIndex = Math.min((state?.currentStep ?? 0) + 1, TOTAL_STEPS - 1);
 
   return prisma.onboardingState.update({
     where: { organizationId },
     data: { 
-      completedSteps: completedSteps.join(","), 
+      completedSteps: nextSteps.join(","), 
       currentStep: nextIndex 
     },
   });
 }
 
 export async function skipStep(organizationId: string, stepId: StepId) {
-  const state = await getOnboardingState(organizationId);
-  const skippedSteps = Array.from(new Set([...state.skippedSteps, stepId]));
-  const nextIndex = Math.min(state.currentStep + 1, TOTAL_STEPS - 1);
+  const state = await prisma.onboardingState.findUnique({ where: { organizationId } });
+  const steps = state?.completedSteps ? state.completedSteps.split(",") : [];
+  const withoutStep = steps.filter(s => s !== stepId && s !== `skipped:${stepId}`);
+  const nextSteps = Array.from(new Set([...withoutStep, `skipped:${stepId}`]));
+  const nextIndex = Math.min((state?.currentStep ?? 0) + 1, TOTAL_STEPS - 1);
 
   return prisma.onboardingState.update({
     where: { organizationId },
     data: { 
-      skippedSteps: skippedSteps.join(","), 
+      completedSteps: nextSteps.join(","), 
       currentStep: nextIndex 
     },
   });
@@ -142,12 +213,24 @@ export async function updateBusinessProfile(organizationId: string, data: z.infe
   });
 }
 
+export async function updateIndustryAndModules(organizationId: string, data: z.infer<typeof industryModulesSchema>) {
+  return prisma.organization.update({
+    where: { id: organizationId },
+    data: {
+      industry: data.industry,
+      industryType: data.industry,
+      enabledModules: data.modules.join(","),
+    },
+  });
+}
+
 // ─── Demo Data Seeder ──────────────────────────────────────────────────────────
 
 export async function seedDemoData(organizationId: string, branchId: string) {
   // Guard: only insert once
   const state = await prisma.onboardingState.findUnique({ where: { organizationId } });
-  if (state?.demoDataInserted) return { alreadySeeded: true };
+  const steps = state?.completedSteps ? state.completedSteps.split(",") : [];
+  if (steps.includes("demoDataInserted")) return { alreadySeeded: true };
 
   await prisma.$transaction(async (tx) => {
     // Demo Supplier
@@ -211,21 +294,13 @@ export async function seedDemoData(organizationId: string, branchId: string) {
     });
 
     // Demo Quotation
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 14);
-
     await tx.quotation.create({
       data: {
         organizationId,
         branchId,
         customerId: customer1.id,
-        quotationNumber: "QT-DEMO-001",
         status: "SENT",
-        expiryDate,
-        subtotal: 249.95,
-        discount: 0,
         totalAmount: 249.95,
-        notes: "This is a demo quotation created during onboarding. You can delete it when ready.",
         items: {
           create: [
             { productId: product1.id, quantity: 3, unitPrice: 49.99, total: 149.97 },
@@ -237,9 +312,10 @@ export async function seedDemoData(organizationId: string, branchId: string) {
   });
 
   // Mark demo data flag
+  const nextSteps = Array.from(new Set([...steps, "demoDataInserted"]));
   await prisma.onboardingState.update({
     where: { organizationId },
-    data: { demoDataInserted: true },
+    data: { completedSteps: nextSteps.join(",") },
   });
 
   return { seeded: true };

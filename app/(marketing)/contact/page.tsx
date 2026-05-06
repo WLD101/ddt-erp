@@ -31,7 +31,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email Us</p>
-                        <p className="text-white font-bold">sales@nexuserp.com</p>
+                        <p className="text-white font-bold">sales@whatsquery.example.com</p>
                     </div>
                 </div>
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Call Directly</p>
-                        <p className="text-white font-bold">+1 (888) NEXUS-ERP</p>
+                        <p className="text-white font-bold">Contact sales through your configured support line</p>
                     </div>
                 </div>
 

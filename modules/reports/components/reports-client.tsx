@@ -1,4 +1,3 @@
-// modules/reports/components/reports-client.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -17,17 +16,6 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Package, 
-  TrendingDown, 
-  Clock, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  History,
-  Calendar as CalendarIcon
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -67,50 +55,51 @@ export function ReportsClient() {
 
   if (!metrics && isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary" />
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin">progress_activity</span>
+        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Aggregating Node Data...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-10 animate-in fade-in duration-700">
       {/* Filters Bar */}
-      <div className="flex flex-col md:flex-row items-end justify-end gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-        <div className="space-y-1.5 flex-1 md:flex-none">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Period From</label>
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input 
-              type="date" 
-              value={dateRange.from} 
-              onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-              className="bg-black/20 border-white/5 pl-9 w-full md:w-auto"
-            />
-          </div>
+      <div className="flex flex-col md:flex-row items-end justify-end gap-6 bg-white p-6 rounded-3xl border border-outline-variant/30 shadow-soft">
+        <div className="space-y-2 flex-1 md:flex-none">
+          <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-1 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">event</span> Start Cycle
+          </label>
+          <Input 
+            type="date" 
+            value={dateRange.from} 
+            onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+            className="h-10 rounded-xl bg-surface-container-lowest border-outline-variant/30"
+          />
         </div>
-        <div className="space-y-1.5 flex-1 md:flex-none">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Period To</label>
-          <div className="relative">
-             <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-             <Input 
-               type="date" 
-               value={dateRange.to} 
-               onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-               className="bg-black/20 border-white/5 pl-9 w-full md:w-auto"
-             />
-          </div>
+        <div className="space-y-2 flex-1 md:flex-none">
+          <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-1 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">event</span> End Cycle
+          </label>
+          <Input 
+            type="date" 
+            value={dateRange.to} 
+            onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+            className="h-10 rounded-xl bg-surface-container-lowest border-outline-variant/30"
+          />
         </div>
-        <div className="space-y-1.5 flex-1 md:flex-none">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Grouping</label>
+        <div className="space-y-2 flex-1 md:flex-none">
+          <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-1 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">layers</span> Resolution
+          </label>
           <Select value={interval} onValueChange={(val: any) => setInterval(val)}>
-            <SelectTrigger className="bg-black/20 border-white/5 w-full md:w-32">
+            <SelectTrigger className="h-10 rounded-xl bg-surface-container-lowest border-outline-variant/30 w-full md:w-36 font-black text-[11px] uppercase tracking-widest">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-white/10 text-white">
-              <SelectItem value="day">Daily</SelectItem>
-              <SelectItem value="week">Weekly</SelectItem>
-              <SelectItem value="month">Monthly</SelectItem>
+            <SelectContent className="rounded-2xl border-outline-variant/30">
+              <SelectItem value="day" className="text-[11px] font-black uppercase tracking-widest">Daily</SelectItem>
+              <SelectItem value="week" className="text-[11px] font-black uppercase tracking-widest">Weekly</SelectItem>
+              <SelectItem value="month" className="text-[11px] font-black uppercase tracking-widest">Monthly</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -121,83 +110,99 @@ export function ReportsClient() {
         <MetricCard 
           title="Net Profit" 
           value={metrics?.grossProfit ?? 0} 
-          icon={<DollarSign className="w-4 h-4 text-emerald-500" />}
-          description="Revenue - COGS - Expenses"
+          icon="payments"
+          color="text-secondary"
+          bgColor="bg-secondary/10"
+          borderColor="border-secondary/20"
+          description="Bottom-line liquidity"
         />
         <MetricCard 
           title="Total Revenue" 
           value={metrics?.totalRevenue ?? 0} 
-          icon={<TrendingUp className="w-4 h-4 text-primary" />}
-          description={`From ${metrics?.totalSalesCount ?? 0} sales`}
+          icon="trending_up"
+          color="text-primary"
+          bgColor="bg-primary/10"
+          borderColor="border-primary/20"
+          description={`${metrics?.totalSalesCount ?? 0} Nodes Processed`}
         />
         <MetricCard 
           title="COGS" 
           value={metrics?.totalCOGS ?? 0} 
-          icon={<Package className="w-4 h-4 text-amber-500" />}
-          description="Cost of goods sold"
+          icon="inventory_2"
+          color="text-amber-600"
+          bgColor="bg-amber-500/10"
+          borderColor="border-amber-500/20"
+          description="Material acquisition cost"
         />
         <MetricCard 
           title="Expenses" 
           value={metrics?.totalExpenses ?? 0} 
-          icon={<TrendingDown className="w-4 h-4 text-rose-500" />}
-          description="General operational costs"
+          icon="trending_down"
+          color="text-error"
+          bgColor="bg-error/10"
+          borderColor="border-error/20"
+          description="Operational overhead"
         />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-10 lg:grid-cols-3">
         {/* Trend Chart */}
-        <Card className="lg:col-span-2 border-white/5 bg-background/50 backdrop-blur-sm shadow-xl">
-          <CardHeader className="border-b border-white/5 pb-6">
-            <CardTitle className="text-xl">Financial Analysis</CardTitle>
-            <CardDescription>Multi-series performance tracking</CardDescription>
+        <Card className="lg:col-span-2 rounded-3xl shadow-soft">
+          <CardHeader className="border-b border-outline-variant/10 pb-6 bg-surface-container-lowest">
+            <CardTitle className="text-lg font-black text-on-surface tracking-tight font-headline-sm">Financial Node Analysis</CardTitle>
+            <CardDescription className="text-xs font-medium text-on-surface-variant uppercase tracking-widest">Multi-series telemetry tracking</CardDescription>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-8 px-6">
             <FinancialTrendChart data={trends} />
           </CardContent>
         </Card>
 
         {/* Recent Transactions */}
-        <Card className="border-white/5 bg-background/50 backdrop-blur-sm overflow-hidden flex flex-col">
-          <CardHeader className="border-b border-white/5 flex flex-row items-center justify-between">
+        <Card className="rounded-3xl shadow-soft overflow-hidden flex flex-col">
+          <CardHeader className="border-b border-outline-variant/10 pb-6 bg-surface-container-lowest">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <History className="w-4 h-4 text-primary" />
-                Recent Activity
+              <CardTitle className="text-lg font-black text-on-surface tracking-tight font-headline-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[24px]">history</span>
+                Node Activity
               </CardTitle>
-              <CardDescription>Latest 10 transactions</CardDescription>
+              <CardDescription className="text-xs font-medium text-on-surface-variant uppercase tracking-widest">Latest 10 transactions</CardDescription>
             </div>
           </CardHeader>
           <CardContent className="p-0 flex-1 overflow-auto">
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-outline-variant/10">
               {transactions.map((tx) => (
-                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
-                  <div className="flex items-center gap-3">
+                <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-surface-container-low/20 transition-colors group">
+                  <div className="flex items-center gap-4">
                     <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center",
-                      tx.type === "SALE" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                      "w-10 h-10 rounded-xl flex items-center justify-center border",
+                      tx.type === "SALE" ? "bg-secondary/10 text-secondary border-secondary/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"
                     )}>
-                      {tx.type === "SALE" ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                      <span className="material-symbols-outlined text-[20px]">
+                        {tx.type === "SALE" ? "call_made" : "call_received"}
+                      </span>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-white group-hover:text-primary transition-colors">{tx.entity}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">{tx.number || "Unnumbered"}</p>
+                      <p className="text-sm font-black text-on-surface group-hover:text-primary transition-colors tracking-tight">{tx.entity}</p>
+                      <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest opacity-40">{tx.number || "UNNAMED"}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className={cn(
-                      "text-sm font-black",
-                      tx.type === "SALE" ? "text-emerald-400/90" : "text-amber-400/90"
+                      "text-sm font-black tracking-tight",
+                      tx.type === "SALE" ? "text-secondary" : "text-amber-600"
                     )}>
-                      {tx.type === "SALE" ? "+" : "-"}${tx.amount.toFixed(2)}
+                      {tx.type === "SALE" ? "+" : "-"}Rs. {tx.amount.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">{format(new Date(tx.date), "MMM dd")}</p>
+                    <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest">{format(new Date(tx.date), "MMM dd")}</p>
                   </div>
                 </div>
               ))}
               {transactions.length === 0 && !isLoading && (
-                <div className="p-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
-                  <Clock className="w-8 h-8 opacity-20" />
-                  No transactions in this period
+                <div className="p-10 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-3xl bg-surface-container-low flex items-center justify-center text-on-surface-variant/20 mx-auto">
+                    <span className="material-symbols-outlined text-3xl">history_toggle_off</span>
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant italic">Operational Silence</p>
                 </div>
               )}
             </div>
@@ -208,20 +213,20 @@ export function ReportsClient() {
   );
 }
 
-function MetricCard({ title, value, icon, description }: { title: string; value: number; icon: React.ReactNode; description: string }) {
+function MetricCard({ title, value, icon, description, color, bgColor, borderColor }: { title: string; value: number; icon: string; description: string; color: string; bgColor: string; borderColor: string }) {
   return (
-    <Card className="border-white/5 bg-gradient-to-br from-background/50 to-background/20 backdrop-blur-md">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-bold tracking-widest uppercase text-muted-foreground/70">{title}</CardTitle>
-        <div className="p-2 bg-white/5 rounded-full border border-white/5">
-          {icon}
+    <Card className="rounded-3xl shadow-soft border-outline-variant/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60">{title}</CardTitle>
+        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", bgColor, borderColor)}>
+          <span className={cn("material-symbols-outlined text-[20px]", color)}>{icon}</span>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold tracking-tight mb-1">
-          ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <div className="text-2xl font-black text-on-surface tracking-tighter mb-1">
+          Rs. {value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
-        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+        <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest italic">
           {description}
         </p>
       </CardContent>

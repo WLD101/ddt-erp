@@ -19,18 +19,18 @@ export default async function NewPurchasePage() {
         <div>
           <Link 
             href="/purchases" 
-            className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 hover:text-white transition-colors mb-2"
+            className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 hover:text-on-surface transition-colors mb-2"
           >
             <ChevronLeft className="w-3 h-3" /> Back to Manifests
           </Link>
-          <h2 className="text-4xl font-black tracking-tighter text-white uppercase">Inbound Manifest</h2>
+          <h2 className="text-4xl font-black tracking-tighter text-on-surface uppercase">Inbound Manifest</h2>
           <p className="text-muted-foreground text-xs font-medium italic mt-1">
             Validating stock integration and establishing supplier liability
           </p>
         </div>
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-xl shadow-2xl">
+      <div className="bg-surface-container-low border border-outline-variant/30 rounded-[2.5rem] p-10 backdrop-blur-xl shadow-2xl">
         <PurchaseForm suppliers={suppliers} products={products} />
       </div>
 
@@ -42,3 +42,4 @@ export default async function NewPurchasePage() {
     </div>
   );
 }
+

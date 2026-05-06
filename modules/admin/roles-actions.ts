@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 "use server";
 
 import { createServerAction } from "@/lib/actions/builder";

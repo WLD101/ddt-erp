@@ -1,84 +1,103 @@
-// middleware.ts
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import {
-  getAuthenticatedRouteRedirect,
-  getPostSignInRedirect,
   getUnauthenticatedRedirect,
   stripSensitiveSearchParams,
+  isSuperAdmin,
 } from "@/lib/security/access";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
+export default async function proxy(req: NextRequest) {
   const { nextUrl } = req;
-  const userEmail = req.auth?.user?.email;
+  const pathname = nextUrl.pathname;
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  });
+  const isLoggedIn = !!token;
+  const userEmail = typeof token?.email === "string" ? token.email : undefined;
+  const organizationId =
+    typeof token?.organizationId === "string" ? token.organizationId : undefined;
 
-  const sanitizedSearch = stripSensitiveSearchParams(nextUrl.searchParams);
+  const preserveSensitiveAuthParams =
+    pathname.startsWith("/auth/verify-otp") ||
+    pathname.startsWith("/auth/reset-password") ||
+    pathname.startsWith("/auth/join");
+
+  const sanitizedSearch = preserveSensitiveAuthParams
+    ? { changed: false, search: nextUrl.search }
+    : stripSensitiveSearchParams(nextUrl.searchParams);
+
   if (sanitizedSearch.changed) {
     const cleanUrl = nextUrl.clone();
     cleanUrl.search = sanitizedSearch.search;
     return NextResponse.redirect(cleanUrl);
   }
 
-  // Define paths
-  const isAuthRoute = nextUrl.pathname.startsWith("/auth");
-  const isApiRoute = nextUrl.pathname.startsWith("/api");
-  const isPublicRoute = 
-    nextUrl.pathname === "/" || 
-    nextUrl.pathname === "/pricing" || 
-    nextUrl.pathname === "/contact" || 
-    nextUrl.pathname === "/book-demo" ||
-    nextUrl.pathname === "/partners";
+  const isAuthRoute = pathname.startsWith("/auth");
+  const isApiRoute = pathname.startsWith("/api") || pathname.startsWith("/_next");
 
-  // 1. If it's an API route, don't redirect (let the API handle auth)
+  const isPublicRoute =
+    pathname === "/" ||
+    pathname === "/pricing" ||
+    pathname === "/contact" ||
+    pathname === "/about" ||
+    pathname === "/features" ||
+    pathname === "/partners" ||
+    pathname.startsWith("/auth/verify") ||
+    pathname.startsWith("/industries");
+
   if (isApiRoute) {
     return NextResponse.next();
   }
 
-  // 2. If it's an Auth route (/auth/signin, etc.)
+  if (pathname === "/platform") {
+    return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
+  }
+
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(
-        new URL(
-          getPostSignInRedirect({
-            email: userEmail,
-            callbackUrl: nextUrl.searchParams.get("callbackUrl"),
-            organizationId: req.auth?.user?.organizationId,
-          }),
-          nextUrl
-        )
-      );
+      if (isSuperAdmin(userEmail)) {
+        return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
+      }
+      if (!organizationId) {
+        return NextResponse.redirect(new URL("/onboarding/packages", nextUrl));
+      }
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
     }
-    // Allow access to auth pages if not logged in
     return NextResponse.next();
   }
 
-  // 3. If it's not an auth route and the user is NOT logged in
-  if (!isLoggedIn && !isPublicRoute) {
-    return NextResponse.redirect(new URL(getUnauthenticatedRedirect(nextUrl.pathname, nextUrl.search), nextUrl));
+  if (!isLoggedIn && !isPublicRoute && !pathname.startsWith("/onboarding")) {
+    return NextResponse.redirect(
+      new URL(getUnauthenticatedRedirect(pathname, nextUrl.search), nextUrl)
+    );
   }
 
-  if (isLoggedIn) {
-    const redirectPath = getAuthenticatedRouteRedirect({
-      pathname: nextUrl.pathname,
-      email: userEmail,
-      organizationId: req.auth?.user?.organizationId,
-    });
-    if (redirectPath) {
-      return NextResponse.redirect(new URL(redirectPath, nextUrl));
+  if (isLoggedIn && !isSuperAdmin(userEmail) && !organizationId && !pathname.startsWith("/onboarding") && !isPublicRoute) {
+    return NextResponse.redirect(new URL("/onboarding/packages", nextUrl));
+  }
+
+  if (pathname === "/dashboard" && isSuperAdmin(userEmail)) {
+    return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
+  }
+
+  if (pathname.startsWith("/wq-command-center")) {
+    if (!isLoggedIn || !isSuperAdmin(userEmail)) {
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
     }
   }
 
-  // 4. If logged in but somehow missing organizationId (should be rare/impossible on fresh logic)
-  // We could redirect to a /onboarding page if needed.
-  // if (isLoggedIn && !req.auth?.user?.organizationId && nextUrl.pathname !== "/onboarding") {
-  //   return NextResponse.redirect(new URL("/onboarding", nextUrl));
-  // }
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
 
-  return NextResponse.next();
-});
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+}
 
-// Optionally, don't run middleware on some paths
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

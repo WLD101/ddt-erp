@@ -7,10 +7,10 @@ import { CtaBanner } from "@/components/marketing/seo/CtaBanner";
 import { Warehouse, Truck, Users2, FileArchive, RefreshCw, HandCoins } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "B2B Wholesale Cloud ERP System | NexusERP",
+  title: "B2B Wholesale Cloud ERP System | WhatsQuery",
   description: "Drive your B2B wholesale distribution business. Manage massive catalogs, complex pricing tiers, and intensive accounts receivables cleanly.",
   alternates: {
-    canonical: "https://nexuserp.com/industries/wholesale-erp",
+    canonical: "https://whatsquery.example.com/industries/wholesale-erp",
   }
 };
 

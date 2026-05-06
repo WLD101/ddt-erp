@@ -1,12 +1,11 @@
-import { Settings, UserCircle, LogOut, HelpCircle } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { UserButton } from "./user-button";
 import { getBranches } from "@/modules/admin/branch-actions";
 import { BranchSelector } from "./admin/BranchSelector";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { getCurrentTenantContext } from "@/lib/tenant";
+import { cn } from "@/lib/utils";
+import { CommandPalette } from "./dashboard/CommandPalette";
 
 export async function Navbar() {
   const session = await auth();
@@ -25,43 +24,54 @@ export async function Navbar() {
   }
 
   return (
-    <header className="h-20 border-b border-white/5 bg-background/50 backdrop-blur-md flex items-center justify-between px-10 sticky top-0 z-50">
-      <div className="flex items-center gap-8">
-        <h1 className="font-black text-xl hidden sm:block tracking-tighter uppercase italic text-white/90">
-          Nexus<span className="text-primary italic">ERP</span>
-        </h1>
+    <header className="flex items-center justify-between px-8 sticky top-0 z-30 bg-white/80 backdrop-blur-xl h-20 border-b border-outline-variant/30 transition-all duration-300">
+      <div className="flex items-center gap-6 flex-1">
+        <div className="relative w-full max-w-lg hidden md:block">
+          <CommandPalette />
+        </div>
         {branches.length > 0 && (
-          <div className="border-l border-white/10 pl-8">
+          <div className="ml-2">
             <BranchSelector branches={branches} activeBranchId={activeBranchId} />
           </div>
         )}
       </div>
-      
-      <div className="flex items-center space-x-6">
-        <NotificationBell />
-        <Link href="/help" className="hover:bg-primary/20 hover:text-primary transition-all duration-300 p-2 rounded-md">
-          <HelpCircle className="w-5 h-5 text-muted-foreground transition-colors" />
-        </Link>
-        <Link href="/settings" className="hover:bg-primary/20 hover:text-primary transition-all duration-300 p-2 rounded-md">
-          <Settings className="w-5 h-5 text-muted-foreground transition-colors" />
-        </Link>
-        <div className="flex items-center space-x-3 border-l border-white/10 pl-6">
-          <div className="flex flex-col items-end">
-            <span className="text-sm font-semibold leading-none text-foreground">
-              {session?.user?.name || "User"}
-            </span>
-            <span className="text-[10px] text-primary font-bold mt-1 uppercase tracking-widest bg-primary/10 px-1.5 py-0.5 rounded">
-              {role}
-            </span>
+
+      <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3">
+          <NavActionIcon icon="event_note" />
+          <NotificationBell />
+          <NavActionIcon icon="help_center" />
+        </div>
+        
+        <div className="h-8 w-px bg-outline-variant/30"></div>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-black text-on-surface tracking-tight leading-none">
+              {session?.user?.name || "Neural Operator"}
+            </p>
+            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5 opacity-60">
+              {role || "Admin"} Node
+            </p>
           </div>
-          <UserButton user={{
-            name: session?.user?.name,
-            email: session?.user?.email,
-            image: session?.user?.image,
-            role: role
-          }} />
+          <div className="p-1 rounded-2xl border border-outline-variant/30 bg-white shadow-soft">
+            <UserButton user={{
+              name: session?.user?.name,
+              email: session?.user?.email,
+              image: session?.user?.image,
+              role: role
+            }} />
+          </div>
         </div>
       </div>
     </header>
+  );
+}
+
+function NavActionIcon({ icon }: { icon: string }) {
+  return (
+    <button className="w-10 h-10 flex items-center justify-center text-on-surface-variant/60 hover:text-primary transition-all duration-300 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10">
+      <span className="material-symbols-outlined text-[22px]">{icon}</span>
+    </button>
   );
 }

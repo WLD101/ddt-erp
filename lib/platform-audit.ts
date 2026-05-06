@@ -9,7 +9,7 @@ export async function writePlatformAuditLog(params: {
 }) {
   return prisma.platformAuditLog.create({
     data: {
-      actorId: params.actorId ?? null,
+      actorId: params.actorId ?? "SYSTEM",
       action: params.action,
       entityType: params.entityType,
       entityId: params.entityId,

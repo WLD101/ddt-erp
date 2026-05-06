@@ -1,6 +1,7 @@
-const DEFAULT_TENANT_HOME = "/";
-const PLATFORM_HOME = "/platform";
-const DEV_PLATFORM_ADMINS = ["admin@ddterp.local"];
+const DEFAULT_TENANT_HOME = "/dashboard";
+const PLATFORM_HOME = "/wq-command-center";
+const LEGACY_PLATFORM_PREFIX = "/platform";
+const DEV_PLATFORM_ADMINS = ["admin@whatsquery.local"];
 const SENSITIVE_QUERY_KEYS = new Set([
   "email",
   "password",
@@ -26,8 +27,11 @@ export function isEmailAllowed(email: string | null | undefined, allowList = "")
 
 export function isPlatformAdminEmail(email: string | null | undefined, nodeEnv = process.env.NODE_ENV) {
   if (!email) return false;
-  if (isEmailAllowed(email, process.env.SUPER_ADMIN_EMAILS || "")) return true;
-  return nodeEnv !== "production" && DEV_PLATFORM_ADMINS.includes(email.toLowerCase());
+  return isEmailAllowed(email, process.env.SUPER_ADMIN_EMAILS || "");
+}
+
+export function isSuperAdmin(email: string | null | undefined, nodeEnv = process.env.NODE_ENV) {
+  return isPlatformAdminEmail(email, nodeEnv);
 }
 
 export function isSafeRelativePath(path: string | null | undefined) {
@@ -67,10 +71,22 @@ export function getPostSignInRedirect(params: {
   callbackUrl?: string | null;
   organizationId?: string | null;
 }) {
-  if (isPlatformAdminEmail(params.email)) return PLATFORM_HOME;
+  const fallback = params.organizationId ? DEFAULT_TENANT_HOME : "/";
+  const callbackUrl = sanitizeRedirectPath(params.callbackUrl, fallback);
+  if (isPlatformAdminEmail(params.email)) {
+    if (callbackUrl === LEGACY_PLATFORM_PREFIX || callbackUrl.startsWith(`${LEGACY_PLATFORM_PREFIX}/`)) {
+      return PLATFORM_HOME;
+    }
+    if (callbackUrl === PLATFORM_HOME || callbackUrl.startsWith(`${PLATFORM_HOME}/`)) {
+      return PLATFORM_HOME;
+    }
+    if (callbackUrl === "/" || callbackUrl === DEFAULT_TENANT_HOME) {
+      return PLATFORM_HOME;
+    }
+    return callbackUrl;
+  }
 
-  const callbackUrl = sanitizeRedirectPath(params.callbackUrl);
-  if (callbackUrl.startsWith(PLATFORM_HOME)) return DEFAULT_TENANT_HOME;
+  if (callbackUrl.startsWith(PLATFORM_HOME) || callbackUrl.startsWith(LEGACY_PLATFORM_PREFIX)) return DEFAULT_TENANT_HOME;
 
   if (!params.organizationId && callbackUrl === DEFAULT_TENANT_HOME) {
     return "/onboarding";
@@ -90,11 +106,17 @@ export function getAuthenticatedRouteRedirect(params: {
 }) {
   const isPlatformAdmin = isPlatformAdminEmail(params.email);
 
-  if (isPlatformAdmin && !params.pathname.startsWith(PLATFORM_HOME)) {
+  const isPlatformPath =
+    params.pathname === PLATFORM_HOME ||
+    params.pathname.startsWith(`${PLATFORM_HOME}/`) ||
+    params.pathname === LEGACY_PLATFORM_PREFIX ||
+    params.pathname.startsWith(`${LEGACY_PLATFORM_PREFIX}/`);
+
+  if (isPlatformAdmin && params.pathname === LEGACY_PLATFORM_PREFIX) {
     return PLATFORM_HOME;
   }
 
-  if (!isPlatformAdmin && params.pathname.startsWith(PLATFORM_HOME)) {
+  if (!isPlatformAdmin && isPlatformPath) {
     return DEFAULT_TENANT_HOME;
   }
 
