@@ -1,6 +1,7 @@
 import { Redis } from "ioredis";
 
 const globalForRedis = global as unknown as { redis: Redis };
+let connectPromise: Promise<void> | null = null;
 
 function createRedis() {
   const client = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
@@ -21,5 +22,19 @@ function createRedis() {
 export const redis = globalForRedis.redis || createRedis();
 
 if (process.env.NODE_ENV !== "production") globalForRedis.redis = redis;
+
+export async function ensureRedisConnection() {
+  if (redis.status === "ready" || redis.status === "connecting") {
+    return;
+  }
+
+  if (!connectPromise) {
+    connectPromise = redis.connect().then(() => undefined).finally(() => {
+      connectPromise = null;
+    });
+  }
+
+  await connectPromise;
+}
 
 export default redis;

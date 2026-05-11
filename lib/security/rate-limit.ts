@@ -1,4 +1,4 @@
-import redis from "@/lib/redis";
+import redis, { ensureRedisConnection } from "@/lib/redis";
 
 export type RateLimitResult = {
   allowed: boolean;
@@ -49,6 +49,8 @@ export async function checkRateLimit(
   const fullKey = `ratelimit:${key}`;
   
   try {
+    await ensureRedisConnection();
+
     const current = await Promise.race([
       redis.incr(fullKey),
       new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout")), 500))
