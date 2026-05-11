@@ -33,7 +33,6 @@ export async function trackEvent(data: {
             category: data.category,
             userId: data.userId,
             organizationId: data.organizationId,
-            properties: data.properties ? JSON.stringify(data.properties) : null,
         }
     }).catch(err => console.error("[Analytics Error] Failed to log event:", err));
 }
