@@ -66,7 +66,7 @@ export default async function QuotationDetailPage({ params }: { params: any }) {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-on-surface-variant/50">
                        <Calendar className="w-3.5 h-3.5 text-indigo-400" />
-                       <span className="font-bold uppercase tracking-tighter">Issued:</span> {format(new Date(quote.date), "MMM dd, yyyy")}
+                       <span className="font-bold uppercase tracking-tighter">Issued:</span> {format(new Date(quote.createdAt ?? quote.date), "MMM dd, yyyy")}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-on-surface-variant/50">
                        <Clock className="w-3.5 h-3.5 text-rose-400" />

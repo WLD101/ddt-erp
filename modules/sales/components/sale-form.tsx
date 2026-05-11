@@ -43,6 +43,7 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
       invoiceNumber: initialData?.invoiceNumber || `INV-${Date.now().toString().slice(-6)}`,
       discount: initialData?.discount || 0,
       notes: initialData?.notes || "",
+      quotationId: initialData?.quotationId || undefined,
       items: initialData?.items?.map((item: any) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -97,6 +98,7 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
+        <input type="hidden" {...form.register("quotationId")} />
         <FormSection 
           title="Consignment Header" 
           description="Customer assignment and document reference"
