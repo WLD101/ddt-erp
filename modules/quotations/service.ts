@@ -74,7 +74,6 @@ export async function createQuotation(db: ScopedPrisma, branchId: string, data: 
         quotationNumber: data.quotationNumber,
         status: "SENT", // Default status for new quotes
         expiryDate: data.expiryDate,
-        subtotal,
         discount,
         totalAmount,
         notes: data.notes,
