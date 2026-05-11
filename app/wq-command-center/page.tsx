@@ -240,6 +240,7 @@ export default async function CommandCenterPage() {
                     <div>Payment reference: <span className="text-on-surface">{tenant.subscription?.manualPaymentReference || "Not set"}</span></div>
                   </div>
                 </CardHeader>
+                <CardContent>
                   <div className="grid gap-4 lg:grid-cols-2 pt-6">
                     <form action={updateOrganizationAdminAction} className="space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
                       <input type="hidden" name="organizationId" value={tenant.id} />
