@@ -7,7 +7,7 @@ import { PLAN_ORDER, PLANS, formatPlanLimit } from "@/lib/billing/plans";
 const ctaByPlan = {
   starter: { label: "Start Starter", href: "/auth/signup" },
   business: { label: "Choose Business", href: "/auth/signup" },
-  pro: { label: "Book Pro Demo", href: "/book-demo" },
+  pro: { label: "Start Pro Trial", href: "/auth/signup" },
   enterprise: { label: "Talk to Sales", href: "/contact" },
 } as const;
 
@@ -15,19 +15,20 @@ export default function PricingPage() {
   const plans = PLAN_ORDER.map((planId) => PLANS[planId]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <section className="pt-24 pb-16 text-center">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+    <div className="flex min-h-screen w-full flex-col bg-surface-container-lowest">
+      <section className="pt-24 pb-16 text-center relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(var(--primary),0.03),transparent_60%)] pointer-events-none" />
+        <div className="mx-auto max-w-7xl px-6 relative z-10">
+          <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-primary">
             <Store className="h-3.5 w-3.5" />
             Flexible SaaS Packages
           </div>
-          <h1 className="mb-6 text-5xl font-black uppercase italic tracking-tighter text-white md:text-7xl">
+          <h1 className="mb-6 text-5xl font-black uppercase italic tracking-tighter text-on-surface md:text-7xl">
             Pricing Built For
             <br />
             <span className="text-primary">Retail And Wholesale Teams</span>
           </h1>
-          <p className="mx-auto mb-10 max-w-3xl text-lg text-muted-foreground">
+          <p className="mx-auto mb-10 max-w-3xl text-lg font-medium text-on-surface-variant">
             Choose the package that fits your branch count, team size, and ecommerce workflow. Prices are simple, monthly,
             and designed for growing teams.
           </p>
@@ -44,62 +45,62 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
-                className={`flex flex-col rounded-3xl border p-8 transition-all duration-300 hover:-translate-y-2 ${
+                className={`flex flex-col rounded-[2.5rem] border p-8 transition-all duration-300 hover:-translate-y-2 ${
                   plan.highlight
-                    ? "scale-[1.02] border-primary/50 bg-white/[0.03] shadow-2xl shadow-primary/10 ring-1 ring-primary/20"
-                    : "border-white/5 bg-black/40 shadow-xl hover:border-white/10"
+                    ? "scale-[1.02] border-primary/30 bg-surface shadow-2xl shadow-primary/5 ring-1 ring-primary/10"
+                    : "border-outline-variant/30 bg-surface shadow-soft hover:border-outline-variant/60"
                 } animate-in fade-in slide-in-from-bottom-12 duration-1000 fill-mode-backwards`}
                 style={{ animationDelay: `${index * 120}ms` }}
               >
                 {plan.highlight ? (
-                  <div className="mb-6 rounded-full bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+                  <div className="mb-6 rounded-xl bg-primary px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-on-primary text-center">
                     Most Popular
                   </div>
                 ) : null}
 
                 <div className="mb-5">
-                  <h2 className="text-2xl font-black text-white">{plan.name}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{plan.tagline}</p>
+                  <h2 className="text-2xl font-black text-on-surface tracking-tight">{plan.name}</h2>
+                  <p className="mt-2 text-xs font-medium leading-relaxed text-on-surface-variant">{plan.tagline}</p>
                 </div>
 
                 <div className="mb-6 flex items-end gap-2">
-                  <span className="text-4xl font-black tracking-tight text-white">{plan.price.display}</span>
-                  {plan.price.cadence ? <span className="pb-1 text-sm font-medium text-muted-foreground">{plan.price.cadence}</span> : null}
+                  <span className="text-4xl font-black tracking-tighter text-on-surface">{plan.price.display}</span>
+                  {plan.price.cadence ? <span className="pb-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">{plan.price.cadence}</span> : null}
                 </div>
 
-                <div className="mb-6 grid grid-cols-2 gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-4 text-left">
+                <div className="mb-6 grid grid-cols-2 gap-3 rounded-2xl border border-outline-variant/10 bg-surface-container-low/30 p-4 text-left">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Branches</p>
-                    <p className="mt-1 text-lg font-black text-white">{branchLabel}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant opacity-70">Branches</p>
+                    <p className="mt-1 text-lg font-black text-on-surface tracking-tight">{branchLabel}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Users</p>
-                    <p className="mt-1 text-lg font-black text-white">{userLabel}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant opacity-70">Users</p>
+                    <p className="mt-1 text-lg font-black text-on-surface tracking-tight">{userLabel}</p>
                   </div>
                 </div>
 
-                <div className="mb-8 space-y-3 flex-1">
+                <div className="mb-8 space-y-4 flex-1">
                   {plan.includedModules.map((feature) => (
-                    <div key={feature} className="flex items-center gap-3 text-sm text-white/80">
-                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                        <Check className="h-3 w-3 text-primary" />
+                    <div key={feature} className="flex items-center gap-3 text-sm text-on-surface font-medium">
+                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 shadow-sm">
+                        <Check className="h-3 w-3 text-primary stroke-[3px]" />
                       </div>
-                      <span>{feature}</span>
+                      <span className="text-xs">{feature}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="mb-6 rounded-2xl border border-white/5 bg-black/20 p-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Support</p>
-                  <p className="mt-2 text-sm font-medium text-white/80">{plan.supportLabel}</p>
+                <div className="mb-6 rounded-2xl border border-outline-variant/10 bg-surface-container-lowest p-4">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant opacity-70">Support</p>
+                  <p className="mt-2 text-xs font-bold text-on-surface">{plan.supportLabel}</p>
                 </div>
 
                 <Link href={cta.href} className="w-full">
                   <Button
-                    className={`h-12 w-full rounded-xl font-bold uppercase tracking-tight group ${
+                    className={`h-12 w-full rounded-xl font-black uppercase tracking-widest text-[11px] group shadow-sm transition-all active:scale-95 ${
                       plan.highlight
-                        ? "bg-primary text-white hover:bg-primary/90"
-                        : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                        ? "bg-primary text-on-primary hover:bg-primary/90 shadow-primary/20 shadow-lg"
+                        : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low"
                     }`}
                     variant={plan.highlight ? "default" : "outline"}
                   >
@@ -113,26 +114,32 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="relative mb-24 border-y border-white/5 bg-primary/5 py-20">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-white/5 bg-black/20 p-6">
-            <PackageCheck className="mb-4 h-8 w-8 text-primary" />
-            <h3 className="text-xl font-black text-white">No surprise setup fees</h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+      <section className="relative mb-24 border-y border-outline-variant/10 bg-primary/[0.02] py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 md:grid-cols-3">
+          <div className="rounded-3xl border border-outline-variant/20 bg-surface p-8 shadow-soft">
+            <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
+              <PackageCheck className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-xl font-black text-on-surface mb-3 tracking-tight">No surprise setup fees</h3>
+            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
               Start with a monthly package, onboard your team, and expand branches only when your operations need it.
             </p>
           </div>
-          <div className="rounded-3xl border border-white/5 bg-black/20 p-6">
-            <Store className="mb-4 h-8 w-8 text-primary" />
-            <h3 className="text-xl font-black text-white">Built for connected commerce</h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          <div className="rounded-3xl border border-outline-variant/20 bg-surface p-8 shadow-soft">
+            <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
+              <Store className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-xl font-black text-on-surface mb-3 tracking-tight">Built for connected commerce</h3>
+            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
               Business and Pro packages are ready for WooCommerce, Shopify, Daraz, and CSV-based operations.
             </p>
           </div>
-          <div className="rounded-3xl border border-white/5 bg-black/20 p-6">
-            <ShieldCheck className="mb-4 h-8 w-8 text-primary" />
-            <h3 className="text-xl font-black text-white">Upgrade when complexity grows</h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          <div className="rounded-3xl border border-outline-variant/20 bg-surface p-8 shadow-soft">
+            <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-xl font-black text-on-surface mb-3 tracking-tight">Upgrade when complexity grows</h3>
+            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
               Enterprise is available for multi-company groups, API-led teams, and custom workflow rollouts.
             </p>
           </div>
@@ -141,3 +148,4 @@ export default function PricingPage() {
     </div>
   );
 }
+

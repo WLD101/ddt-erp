@@ -86,81 +86,81 @@ function SignUpForm() {
 
   if (isSuccess) {
     return (
-      <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl text-center py-12 px-6 animate-in fade-in zoom-in duration-500">
-        <div className="mx-auto bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-2 ring-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-          <CheckCircle2 className="w-8 h-8 text-green-500" />
+      <Card className="border-outline-variant/30 bg-surface shadow-soft text-center py-12 px-6 animate-in fade-in zoom-in duration-500 rounded-3xl">
+        <div className="mx-auto bg-green-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-green-500/20 shadow-sm">
+          <CheckCircle2 className="w-8 h-8 text-green-600" />
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight text-white mb-2">Check Your Email</CardTitle>
-        <CardDescription className="text-muted-foreground text-lg">
+        <CardTitle className="text-2xl font-black tracking-tight text-on-surface mb-2">Check Your Email</CardTitle>
+        <CardDescription className="text-on-surface-variant text-sm font-medium">
           Enter the OTP to unlock onboarding.<br />
-          Redirecting you to verification...
+          Redirecting to verification...
         </CardDescription>
       </Card>
     );
   }
 
   return (
-    <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden relative">
+    <Card className="border-outline-variant/30 bg-surface shadow-soft animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden relative rounded-3xl">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
-      <CardHeader className="space-y-1 text-center">
-        <div className="mx-auto bg-primary/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 ring-1 ring-primary/30 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
+      <CardHeader className="space-y-1 text-center pt-8">
+        <div className="mx-auto bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-primary/20 shadow-sm">
           <UserPlus className="w-6 h-6 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight text-white">Create your WhatsQuery account</CardTitle>
-        <CardDescription className="text-muted-foreground/80">
-          Start your workspace and continue to guided setup
+        <CardTitle className="text-2xl font-black tracking-tight text-on-surface">Create account</CardTitle>
+        <CardDescription className="text-on-surface-variant text-xs font-medium uppercase tracking-wider">
+          Bootstrap your workspace in seconds
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 group">
-              <Label htmlFor="name" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Full Name</Label>
+              <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Full Name</Label>
               <Input
                 id="name"
                 placeholder="John Doe"
-                className="bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                className="bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                 {...register("name")}
                 disabled={isLoading}
               />
               {errors.name && (
-                <p className="text-[10px] text-red-400 mt-1 animate-in slide-in-from-left-2">{errors.name.message}</p>
+                <p className="text-[10px] text-destructive mt-1 animate-in slide-in-from-left-2">{errors.name.message}</p>
               )}
             </div>
             
             <div className="space-y-2 group">
-              <Label htmlFor="organizationName" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Company Name</Label>
+              <Label htmlFor="organizationName" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Company</Label>
               <div className="relative">
-                <Building className="absolute left-3 top-3 h-3.5 w-3.5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                <Building className="absolute left-3 top-3 h-3.5 w-3.5 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="organizationName"
                   placeholder="Acme Corp"
-                  className="pl-9 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                  className="pl-9 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                   {...register("organizationName")}
                   disabled={isLoading}
                 />
               </div>
               {errors.organizationName && (
-                <p className="text-[10px] text-red-400 mt-1 animate-in slide-in-from-left-2">{errors.organizationName.message}</p>
+                <p className="text-[10px] text-destructive mt-1 animate-in slide-in-from-left-2">{errors.organizationName.message}</p>
               )}
             </div>
           </div>
 
           <div className="space-y-2 group">
-            <Label htmlFor="email" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Email Address</Label>
+            <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Email Address</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
               <Input
                 id="email"
                 placeholder="name@company.com"
                 type="email"
-                className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                 {...register("email")}
                 disabled={isLoading}
               />
             </div>
             {errors.email && (
-              <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
+              <p className="text-xs text-destructive flex items-center mt-1 animate-in slide-in-from-left-2">
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.email.message}
               </p>
             )}
@@ -168,61 +168,61 @@ function SignUpForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2 group">
-              <Label htmlFor="phone" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Phone</Label>
+              <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Phone</Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="phone"
                   placeholder="+1 555 0100"
-                  className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                  className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                   {...register("phone")}
                   disabled={isLoading}
                 />
               </div>
-              {errors.phone && <p className="text-[10px] text-red-400 mt-1">{errors.phone.message}</p>}
+              {errors.phone && <p className="text-[10px] text-destructive mt-1">{errors.phone.message}</p>}
             </div>
             <div className="space-y-2 group">
-              <Label htmlFor="city" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">City</Label>
+              <Label htmlFor="city" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">City</Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                <MapPin className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="city"
                   placeholder="New York"
-                  className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                  className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                   {...register("city")}
                   disabled={isLoading}
                 />
               </div>
-              {errors.city && <p className="text-[10px] text-red-400 mt-1">{errors.city.message}</p>}
+              {errors.city && <p className="text-[10px] text-destructive mt-1">{errors.city.message}</p>}
             </div>
             <div className="space-y-2 group">
-              <Label htmlFor="country" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Country</Label>
+              <Label htmlFor="country" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Country</Label>
               <Input
                 id="country"
-                placeholder="United States"
-                className="bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                placeholder="US"
+                className="bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                 {...register("country")}
                 disabled={isLoading}
               />
-              {errors.country && <p className="text-[10px] text-red-400 mt-1">{errors.country.message}</p>}
+              {errors.country && <p className="text-[10px] text-destructive mt-1">{errors.country.message}</p>}
             </div>
           </div>
           
           <div className="space-y-2 group">
-            <Label htmlFor="password" className="text-sm font-medium text-white/70 group-focus-within:text-primary transition-colors">Password</Label>
+            <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-primary/50 transition-all hover:bg-black/30"
+                className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
                 {...register("password")}
                 disabled={isLoading}
               />
             </div>
             {errors.password && (
-              <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
+              <p className="text-xs text-destructive flex items-center mt-1 animate-in slide-in-from-left-2">
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.password.message}
               </p>
             )}
@@ -234,7 +234,7 @@ function SignUpForm() {
             <div 
               className="cf-turnstile" 
               data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-              data-theme="dark"
+              data-theme="light"
               data-callback="onTurnstileSuccess"
             />
           </div>
@@ -253,14 +253,14 @@ function SignUpForm() {
           }} />
 
           <Button 
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-primary/20 mt-2 active:scale-[0.98]" 
+            className="w-full h-11 bg-primary hover:bg-primary/90 text-on-primary font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 mt-2 active:scale-[0.98]" 
             type="submit"
             disabled={isLoading}
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Bootstrapping...
+                Provisioning...
               </>
             ) : (
               "Create Account"
@@ -268,10 +268,10 @@ function SignUpForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4 text-center border-t border-white/5 pt-6 bg-white/[0.02]">
-        <p className="text-sm text-muted-foreground">
+      <CardFooter className="flex flex-col space-y-4 text-center border-t border-outline-variant/10 pt-6 pb-8 bg-surface-container-lowest/50">
+        <p className="text-xs font-medium text-on-surface-variant">
           Already have an account?{" "}
-          <Link href="/auth/signin" className="text-primary hover:underline font-medium hover:opacity-80">
+          <Link href="/auth/signin" className="text-primary hover:underline font-bold hover:opacity-80">
             Sign in
           </Link>
         </p>
