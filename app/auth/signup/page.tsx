@@ -59,7 +59,9 @@ function SignUpForm() {
   }, [setValue, searchParams]);
 
   const onSubmit = async (data: SignUpFormValues) => {
-    if (!turnstileToken) {
+    const requireTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    
+    if (requireTurnstile && !turnstileToken) {
       toast.error("Please complete the security check.");
       return;
     }
@@ -220,27 +222,32 @@ function SignUpForm() {
 
           <input type="hidden" {...register("industry")} />
 
-          <div className="flex justify-center my-4">
-            <div 
-              className="cf-turnstile" 
-              data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-              data-theme="dark"
-              data-callback="onTurnstileSuccess"
-            />
-          </div>
+          {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+            <div className="flex justify-center my-4">
+              <div 
+                className="cf-turnstile" 
+                data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                data-theme="dark"
+                data-callback="onTurnstileSuccess"
+              />
+            </div>
+          )}
 
-          <Script
-            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-            strategy="afterInteractive"
-          />
-
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              function onTurnstileSuccess(token) {
-                window.dispatchEvent(new CustomEvent('turnstile-token', { detail: token }));
-              }
-            `
-          }} />
+          {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+            <>
+              <Script
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                strategy="afterInteractive"
+              />
+              <script dangerouslySetInnerHTML={{
+                __html: `
+                  window.onTurnstileSuccess = function(token) {
+                    window.dispatchEvent(new CustomEvent('turnstile-token', { detail: token }));
+                  };
+                `
+              }} />
+            </>
+          )}
 
           <Button 
             className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(99,102,241,0.3)] mt-2 active:scale-[0.98] border-t border-indigo-400/20" 
