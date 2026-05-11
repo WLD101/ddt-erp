@@ -1,0 +1,10 @@
+[Unit]
+Description=Run WhatsQuery PostgreSQL backup daily
+
+[Timer]
+OnCalendar=*-*-* 02:15:00
+Persistent=true
+Unit=whatsquery-postgres-backup.service
+
+[Install]
+WantedBy=timers.target

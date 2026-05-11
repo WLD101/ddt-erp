@@ -1,0 +1,12 @@
+[Unit]
+Description=WhatsQuery PostgreSQL backup
+Wants=network-online.target postgresql.service
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/var/www/whatsquery/scripts/backup-db.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
