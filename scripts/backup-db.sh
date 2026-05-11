@@ -27,11 +27,24 @@ extract_env() {
   printf '%s' "${value}"
 }
 
+normalize_backup_database_url() {
+  python3 - "$1" <<'PY'
+from sys import argv
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+parsed = urlsplit(argv[1])
+query = [(key, value) for key, value in parse_qsl(parsed.query, keep_blank_values=True) if key != "schema"]
+print(urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(query), parsed.fragment)))
+PY
+}
+
 DATABASE_URL="$(extract_env "DATABASE_URL")"
 if [[ -z "${DATABASE_URL}" ]]; then
   log "ERROR: DATABASE_URL is missing from ${APP_ENV_FILE}."
   exit 1
 fi
+
+BACKUP_DATABASE_URL="$(normalize_backup_database_url "${DATABASE_URL}")"
 
 cleanup_restore_db() {
   sudo -u postgres dropdb --if-exists "${RESTORE_DB}" >/dev/null 2>&1 || true
@@ -40,7 +53,7 @@ cleanup_restore_db() {
 trap cleanup_restore_db EXIT
 
 log "Starting PostgreSQL backup to ${BACKUP_FILE}."
-pg_dump "${DATABASE_URL}" | gzip -9 > "${BACKUP_FILE}"
+pg_dump "${BACKUP_DATABASE_URL}" | gzip -9 > "${BACKUP_FILE}"
 sha256sum "${BACKUP_FILE}" > "${CHECKSUM_FILE}"
 gzip -t "${BACKUP_FILE}"
 
