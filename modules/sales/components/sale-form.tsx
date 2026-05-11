@@ -60,7 +60,7 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
   const { showLimitModal } = usePlanModal();
 
   function onSubmit(data: SalesInvoiceFormValues) {
-    if (initialData) {
+    if (initialData?.id) {
       toast.info("Sales editing is coming soon to the backend. UI finalized.");
       return;
     }
@@ -283,7 +283,7 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
           >
             {isPending ? (
               <span className="material-symbols-outlined animate-spin text-[24px]">progress_activity</span>
-            ) : initialData ? "Synchronize Sale" : "Authorize Final Invoice"}
+            ) : initialData?.id ? "Synchronize Sale" : "Authorize Final Invoice"}
           </Button>
         </div>
       </form>
