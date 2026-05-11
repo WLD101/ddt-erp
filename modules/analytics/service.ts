@@ -66,7 +66,7 @@ export async function getFeatureUsage() {
         by: ['category'],
         _count: { _all: true },
         where: { category: { not: "AUTH" } },
-        orderBy: { _count: { _all: 'desc' } }
+        orderBy: { _count: { id: 'desc' } }
     });
 
     return raw.map(item => ({
