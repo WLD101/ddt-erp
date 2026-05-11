@@ -69,34 +69,33 @@ function SignInForm() {
   };
 
   return (
-    <Card className="border-outline-variant/30 bg-surface shadow-soft animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden relative rounded-3xl">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
-      <CardHeader className="space-y-1 text-center pt-8">
-        <div className="mx-auto bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-primary/20 shadow-sm">
-          <Lock className="w-6 h-6 text-primary" />
+    <Card className="glass-card border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden relative rounded-[32px]">
+      <CardHeader className="space-y-1 text-center pt-10">
+        <div className="mx-auto bg-indigo-500/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 border border-indigo-500/20 shadow-sm">
+          <Lock className="w-6 h-6 text-indigo-400" />
         </div>
-        <CardTitle className="text-2xl font-black tracking-tight text-on-surface">Sign in</CardTitle>
-        <CardDescription className="text-on-surface-variant text-xs font-medium uppercase tracking-wider">
-          Welcome back to WhatsQuery
+        <CardTitle className="text-3xl font-extrabold tracking-tight text-white">Sign in</CardTitle>
+        <CardDescription className="text-slate-400 text-sm font-medium">
+          Welcome back to WhatsQuery.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-2 group">
-            <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Email Address</Label>
+            <Label htmlFor="email" className="text-sm font-semibold text-slate-300">Email Address</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant group-focus-within:text-primary transition-colors" />
+              <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
               <Input
                 id="email"
                 placeholder="name@company.com"
                 type="email"
-                className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all hover:bg-white/10 rounded-xl"
                 {...register("email")}
                 disabled={isLoading}
               />
             </div>
             {errors.email && (
-              <p className="text-xs text-destructive flex items-center mt-1 animate-in slide-in-from-left-2">
+              <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.email.message}
               </p>
             )}
@@ -104,51 +103,52 @@ function SignInForm() {
           
           <div className="space-y-2 group">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Password</Label>
+              <Label htmlFor="password" className="text-sm font-semibold text-slate-300">Password</Label>
               <Link 
                 href="/auth/forgot-password" 
-                className="text-[11px] font-bold text-primary hover:underline transition-all hover:opacity-80"
+                className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-all"
               >
                 Forgot password?
               </Link>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant group-focus-within:text-primary transition-colors" />
+              <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
               <Input
                 id="password"
                 type="password"
-                className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                placeholder="••••••••"
+                className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all hover:bg-white/10 rounded-xl"
                 {...register("password")}
                 disabled={isLoading}
               />
             </div>
             {errors.password && (
-              <p className="text-xs text-destructive flex items-center mt-1 animate-in slide-in-from-left-2">
+              <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.password.message}
               </p>
             )}
           </div>
 
           <Button 
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-on-primary font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 active:scale-[0.98] mt-2" 
+            className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(99,102,241,0.3)] active:scale-[0.98] mt-4 border-t border-indigo-400/20" 
             type="submit"
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Authenticating...
               </>
             ) : (
-              "Sign In"
+              "Sign In to Workspace"
             )}
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4 text-center border-t border-outline-variant/10 pt-6 pb-8 bg-surface-container-lowest/50">
-        <p className="text-xs font-medium text-on-surface-variant">
+      <CardFooter className="flex flex-col space-y-4 text-center border-t border-white/5 pt-6 pb-8 bg-black/20">
+        <p className="text-sm font-medium text-slate-400">
           Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="text-primary hover:underline font-bold hover:opacity-80">
+          <Link href="/auth/signup" className="text-indigo-400 hover:text-indigo-300 font-bold transition">
             Create workspace
           </Link>
         </p>
@@ -160,8 +160,8 @@ function SignInForm() {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <Card className="border-outline-variant/30 bg-surface shadow-soft py-20 text-center rounded-3xl">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+      <Card className="glass-card border-white/10 shadow-2xl py-24 text-center rounded-[32px] w-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
       </Card>
     }>
       <SignInForm />

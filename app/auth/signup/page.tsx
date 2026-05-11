@@ -86,12 +86,12 @@ function SignUpForm() {
 
   if (isSuccess) {
     return (
-      <Card className="border-outline-variant/30 bg-surface shadow-soft text-center py-12 px-6 animate-in fade-in zoom-in duration-500 rounded-3xl">
-        <div className="mx-auto bg-green-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-green-500/20 shadow-sm">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
+      <Card className="glass-card border-green-500/20 bg-green-500/5 text-center py-16 px-6 animate-in fade-in zoom-in duration-500 rounded-[32px]">
+        <div className="mx-auto bg-green-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 border border-green-500/20 shadow-sm">
+          <CheckCircle2 className="w-8 h-8 text-green-400" />
         </div>
-        <CardTitle className="text-2xl font-black tracking-tight text-on-surface mb-2">Check Your Email</CardTitle>
-        <CardDescription className="text-on-surface-variant text-sm font-medium">
+        <CardTitle className="text-2xl font-bold tracking-tight text-white mb-2">Check Your Email</CardTitle>
+        <CardDescription className="text-slate-300 text-sm">
           Enter the OTP to unlock onboarding.<br />
           Redirecting to verification...
         </CardDescription>
@@ -100,14 +100,13 @@ function SignUpForm() {
   }
 
   return (
-    <Card className="border-outline-variant/30 bg-surface shadow-soft animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden relative rounded-3xl">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
-      <CardHeader className="space-y-1 text-center pt-8">
-        <div className="mx-auto bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-primary/20 shadow-sm">
-          <UserPlus className="w-6 h-6 text-primary" />
+    <Card className="glass-card border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden relative rounded-[32px] w-full md:max-w-lg">
+      <CardHeader className="space-y-1 text-center pt-10">
+        <div className="mx-auto bg-indigo-500/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 border border-indigo-500/20 shadow-sm">
+          <UserPlus className="w-6 h-6 text-indigo-400" />
         </div>
-        <CardTitle className="text-2xl font-black tracking-tight text-on-surface">Create account</CardTitle>
-        <CardDescription className="text-on-surface-variant text-xs font-medium uppercase tracking-wider">
+        <CardTitle className="text-3xl font-extrabold tracking-tight text-white">Create Account</CardTitle>
+        <CardDescription className="text-slate-400 text-sm">
           Bootstrap your workspace in seconds
         </CardDescription>
       </CardHeader>
@@ -115,114 +114,105 @@ function SignUpForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 group">
-              <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Full Name</Label>
+              <Label htmlFor="name" className="text-sm font-semibold text-slate-300">Full Name</Label>
               <Input
                 id="name"
                 placeholder="John Doe"
-                className="bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                className="h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 hover:bg-white/10 rounded-xl transition-all"
                 {...register("name")}
                 disabled={isLoading}
               />
               {errors.name && (
-                <p className="text-[10px] text-destructive mt-1 animate-in slide-in-from-left-2">{errors.name.message}</p>
+                <p className="text-[10px] text-red-400 mt-1 animate-in slide-in-from-left-2">{errors.name.message}</p>
               )}
             </div>
             
             <div className="space-y-2 group">
-              <Label htmlFor="organizationName" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Company</Label>
+              <Label htmlFor="organizationName" className="text-sm font-semibold text-slate-300">Company</Label>
               <div className="relative">
-                <Building className="absolute left-3 top-3 h-3.5 w-3.5 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
+                <Building className="absolute left-3.5 top-3.5 h-3.5 w-3.5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                 <Input
                   id="organizationName"
                   placeholder="Acme Corp"
-                  className="pl-9 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                  className="pl-9 h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 hover:bg-white/10 rounded-xl transition-all"
                   {...register("organizationName")}
                   disabled={isLoading}
                 />
               </div>
               {errors.organizationName && (
-                <p className="text-[10px] text-destructive mt-1 animate-in slide-in-from-left-2">{errors.organizationName.message}</p>
+                <p className="text-[10px] text-red-400 mt-1 animate-in slide-in-from-left-2">{errors.organizationName.message}</p>
               )}
             </div>
           </div>
 
           <div className="space-y-2 group">
-            <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Email Address</Label>
+            <Label htmlFor="email" className="text-sm font-semibold text-slate-300">Email Address</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
+              <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
               <Input
                 id="email"
                 placeholder="name@company.com"
                 type="email"
-                className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 hover:bg-white/10 rounded-xl transition-all"
                 {...register("email")}
                 disabled={isLoading}
               />
             </div>
             {errors.email && (
-              <p className="text-xs text-destructive flex items-center mt-1 animate-in slide-in-from-left-2">
+              <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.email.message}
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2 group">
-              <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Phone</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
-                <Input
-                  id="phone"
-                  placeholder="+1 555 0100"
-                  className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
-                  {...register("phone")}
-                  disabled={isLoading}
-                />
-              </div>
-              {errors.phone && <p className="text-[10px] text-destructive mt-1">{errors.phone.message}</p>}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="space-y-1.5 group md:col-span-1">
+              <Label htmlFor="phone" className="text-xs font-semibold text-slate-300">Phone</Label>
+              <Input
+                id="phone"
+                placeholder="+1..."
+                className="h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 hover:bg-white/10 rounded-xl text-sm"
+                {...register("phone")}
+                disabled={isLoading}
+              />
             </div>
-            <div className="space-y-2 group">
-              <Label htmlFor="city" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">City</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
-                <Input
-                  id="city"
-                  placeholder="New York"
-                  className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
-                  {...register("city")}
-                  disabled={isLoading}
-                />
-              </div>
-              {errors.city && <p className="text-[10px] text-destructive mt-1">{errors.city.message}</p>}
+            <div className="space-y-1.5 group">
+              <Label htmlFor="city" className="text-xs font-semibold text-slate-300">City</Label>
+              <Input
+                id="city"
+                placeholder="New York"
+                className="h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 hover:bg-white/10 rounded-xl text-sm"
+                {...register("city")}
+                disabled={isLoading}
+              />
             </div>
-            <div className="space-y-2 group">
-              <Label htmlFor="country" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Country</Label>
+            <div className="space-y-1.5 group">
+              <Label htmlFor="country" className="text-xs font-semibold text-slate-300">Country</Label>
               <Input
                 id="country"
                 placeholder="US"
-                className="bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                className="h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 hover:bg-white/10 rounded-xl text-sm"
                 {...register("country")}
                 disabled={isLoading}
               />
-              {errors.country && <p className="text-[10px] text-destructive mt-1">{errors.country.message}</p>}
             </div>
           </div>
           
           <div className="space-y-2 group">
-            <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-on-surface-variant group-focus-within:text-primary transition-colors">Password</Label>
+            <Label htmlFor="password" className="text-sm font-semibold text-slate-300">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-on-surface-variant/60 group-focus-within:text-primary transition-colors" />
+              <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="pl-10 bg-surface border-outline-variant/50 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-primary/20 transition-all hover:bg-surface-container-low"
+                className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 hover:bg-white/10 rounded-xl transition-all"
                 {...register("password")}
                 disabled={isLoading}
               />
             </div>
             {errors.password && (
-              <p className="text-xs text-destructive flex items-center mt-1 animate-in slide-in-from-left-2">
+              <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
                 <AlertCircle className="w-3 h-3 mr-1" /> {errors.password.message}
               </p>
             )}
@@ -234,7 +224,7 @@ function SignUpForm() {
             <div 
               className="cf-turnstile" 
               data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-              data-theme="light"
+              data-theme="dark"
               data-callback="onTurnstileSuccess"
             />
           </div>
@@ -253,13 +243,13 @@ function SignUpForm() {
           }} />
 
           <Button 
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-on-primary font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 mt-2 active:scale-[0.98]" 
+            className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(99,102,241,0.3)] mt-2 active:scale-[0.98] border-t border-indigo-400/20" 
             type="submit"
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Provisioning...
               </>
             ) : (
@@ -268,10 +258,10 @@ function SignUpForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4 text-center border-t border-outline-variant/10 pt-6 pb-8 bg-surface-container-lowest/50">
-        <p className="text-xs font-medium text-on-surface-variant">
+      <CardFooter className="flex flex-col space-y-4 text-center border-t border-white/5 pt-6 pb-8 bg-black/20">
+        <p className="text-sm font-medium text-slate-400">
           Already have an account?{" "}
-          <Link href="/auth/signin" className="text-primary hover:underline font-bold hover:opacity-80">
+          <Link href="/auth/signin" className="text-indigo-400 hover:text-indigo-300 font-bold transition">
             Sign in
           </Link>
         </p>

@@ -22,70 +22,78 @@ export const metadata: Metadata = {
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface-container-lowest text-on-surface antialiased">
+    <div className="marketing-theme min-h-screen relative text-slate-300 antialiased selection:bg-indigo-500/30 overflow-x-hidden">
+      
+      {/* Ambient Light Background Effects from MainSite */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-indigo-600/20 rounded-full blur-[120px] opacity-40 mix-blend-screen animate-pulse duration-[10s]"></div>
+        <div className="absolute top-[20%] right-[-5%] w-[40vw] h-[40vw] bg-purple-600/20 rounded-full blur-[100px] opacity-30 mix-blend-screen"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[60vw] h-[60vw] bg-blue-600/10 rounded-full blur-[150px] opacity-40 mix-blend-screen"></div>
+      </div>
+
       <Suspense fallback={null}>
         <ReferralTracker />
       </Suspense>
 
-        <header className="sticky top-0 z-50 border-b border-outline-variant/20 bg-surface/80 backdrop-blur-xl shadow-sm">
-          <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <Link href="/" className="hover:opacity-80 transition-opacity">
-              <BrandLogo size="sm" />
+      <header className="glass-nav fixed w-full top-0 z-50 transition-all duration-300">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <BrandLogo size="sm" dark={true} />
+          </Link>
+
+          <div className="hidden lg:flex gap-8 font-medium text-slate-400 text-sm">
+            <Link href="/" className="hover:text-white transition">Home</Link>
+            <Link href="/pricing" className="hover:text-white transition">Pricing</Link>
+            <Link href="/auth/signup" className="hover:text-white transition">Book Demo</Link>
+            <Link href="/auth/signin" className="hover:text-white transition">Client Login</Link>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link href="/auth/signup" className="bg-white text-slate-900 px-6 py-2.5 rounded-full font-bold text-sm hover:bg-slate-200 transition active:scale-95 shadow-lg shadow-white/10">
+              Start Free Trial
             </Link>
-
-            <ul className="flex items-center space-x-8 text-[11px] font-black uppercase tracking-widest text-on-surface-variant">
-              <li><Link href="/" className="transition-colors hover:text-primary">Home</Link></li>
-              <li><Link href="/pricing" className="transition-colors hover:text-primary">Pricing</Link></li>
-              <li><Link href="/auth/signup" className="transition-colors hover:text-primary">Book Demo</Link></li>
-              <li><Link href="/auth/signin" className="transition-colors hover:text-primary">Sign In</Link></li>
-              <li>
-                <Link href="/auth/signup" className="rounded-xl bg-primary px-5 py-2.5 text-on-primary transition-all shadow-lg shadow-primary/20 hover:bg-primary/90 font-black">
-                  Start Free Trial
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </header>
-
-      <main className="flex-1 overflow-x-hidden">{children}</main>
-
-      <footer className="border-t border-outline-variant/10 bg-surface py-20">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 text-sm text-on-surface-variant md:grid-cols-4">
-          <div className="md:col-span-1">
-            <BrandLogo size="sm" className="mb-6" />
-            <p className="mb-6 text-xs font-medium leading-relaxed">
-              The AI-ready operating system for modern businesses to manage sales, inventory, purchases, expenses, reports, and connected commerce.
-            </p>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-50">&copy; {new Date().getFullYear()} WhatsQuery.</p>
           </div>
+        </nav>
+      </header>
 
-          <div>
-            <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">Product</h4>
-            <ul className="space-y-3 text-[11px] font-medium">
-              <li><Link href="/features/inventory" className="transition-colors hover:text-primary">Inventory</Link></li>
-              <li><Link href="/features/sales-and-billing" className="transition-colors hover:text-primary">Sales & Billing</Link></li>
-              <li><Link href="/features/purchasing" className="transition-colors hover:text-primary">Purchasing</Link></li>
-              <li><Link href="/features/financial-reports" className="transition-colors hover:text-primary">Reports</Link></li>
-            </ul>
+      <main className="relative z-10 flex-1 pt-24">{children}</main>
+
+      <footer className="border-t border-white/5 bg-[#020617] pt-20 pb-10 relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div className="space-y-6">
+              <Link href="/" className="block">
+                <BrandLogo size="sm" dark={true} />
+              </Link>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                WhatsQuery is an AI-ready Enterprise platform tailored for fast-growing SME trading, wholesale, and distribution operations.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-6">Solutions</h4>
+              <ul className="space-y-4 text-sm text-slate-400">
+                <li><Link href="#" className="hover:text-indigo-400 transition">Inventory</Link></li>
+                <li><Link href="#" className="hover:text-indigo-400 transition">Accounting</Link></li>
+                <li><Link href="#" className="hover:text-indigo-400 transition">Wholesale</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-6">Legal</h4>
+              <ul className="space-y-4 text-sm text-slate-400">
+                <li><Link href="#" className="hover:text-indigo-400 transition">Privacy Policy</Link></li>
+                <li><Link href="#" className="hover:text-indigo-400 transition">Terms of Service</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-6">Company</h4>
+              <address className="not-italic text-sm text-slate-400 space-y-4">
+                <p>International House, 61 Mosley St.<br/>Manchester, UK</p>
+                <p><a href="mailto:contact@whatsquery.com" className="hover:text-white font-bold transition">contact@whatsquery.com</a></p>
+              </address>
+            </div>
           </div>
-
-          <div>
-            <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">Industries</h4>
-            <ul className="space-y-3 text-[11px] font-medium">
-              <li><Link href="/industries/small-business-erp" className="transition-colors hover:text-primary">Small Business</Link></li>
-              <li><Link href="/industries/wholesale-erp" className="transition-colors hover:text-primary">Wholesale</Link></li>
-              <li><Link href="/industries/retail-erp" className="transition-colors hover:text-primary">Retail</Link></li>
-              <li><Link href="/industries/manufacturing-erp" className="transition-colors hover:text-primary">Manufacturing</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">Company</h4>
-            <ul className="space-y-3 text-[11px] font-medium">
-              <li><Link href="/pricing" className="transition-colors hover:text-primary">Pricing & Plans</Link></li>
-              <li><Link href="/auth/signin" className="transition-colors hover:text-primary">Sign In</Link></li>
-              <li><a href="mailto:sales@whatsquery.example.com" className="transition-colors hover:text-primary">Contact Sales</a></li>
-            </ul>
+          <div className="text-center pt-8 border-t border-white/5 text-slate-600 text-xs">
+            &copy; {new Date().getFullYear()} WhatsQuery. All rights reserved. Built with Starlight Technology.
           </div>
         </div>
       </footer>

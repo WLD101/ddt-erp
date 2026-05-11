@@ -5,37 +5,37 @@ import { Button } from "@/components/ui/button";
 import { PLAN_ORDER, PLANS, formatPlanLimit } from "@/lib/billing/plans";
 
 const ctaByPlan = {
-  starter: { label: "Start Starter", href: "/auth/signup" },
-  business: { label: "Choose Business", href: "/auth/signup" },
-  pro: { label: "Start Pro Trial", href: "/auth/signup" },
-  enterprise: { label: "Talk to Sales", href: "/contact" },
+  starter: { label: "Start Free", href: "/auth/signup" },
+  business: { label: "Start Trial", href: "/auth/signup" },
+  pro: { label: "Choose Pro", href: "/auth/signup" },
+  enterprise: { label: "Contact Sales", href: "/contact" },
 } as const;
 
 export default function PricingPage() {
   const plans = PLAN_ORDER.map((planId) => PLANS[planId]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-surface-container-lowest">
-      <section className="pt-24 pb-16 text-center relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(var(--primary),0.03),transparent_60%)] pointer-events-none" />
+    <div className="relative min-h-screen w-full flex flex-col selection:bg-indigo-500/40 selection:text-white">
+      
+      {/* Page Header */}
+      <section className="pt-20 pb-16 text-center relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 relative z-10">
-          <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-            <Store className="h-3.5 w-3.5" />
-            Flexible SaaS Packages
+          <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-indigo-300 reveal">
+            <Store className="h-4 w-4" />
+            Transparent Pricing Plans
           </div>
-          <h1 className="mb-6 text-5xl font-black uppercase italic tracking-tighter text-on-surface md:text-7xl">
-            Pricing Built For
-            <br />
-            <span className="text-primary">Retail And Wholesale Teams</span>
+          <h1 className="mb-6 text-5xl md:text-7xl font-black tracking-tight text-white leading-[0.9] reveal stagger-1">
+            BUILT FOR<br/>
+            <span className="hero-gradient">RETAIL & WHOLESALE</span>
           </h1>
-          <p className="mx-auto mb-10 max-w-3xl text-lg font-medium text-on-surface-variant">
-            Choose the package that fits your branch count, team size, and ecommerce workflow. Prices are simple, monthly,
-            and designed for growing teams.
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-400 reveal stagger-2">
+            Flexible subscriptions tailored to branch counts, processing volumes, and integrated sales channels.
           </p>
         </div>
       </section>
 
-      <section className="relative pb-24">
+      {/* Pricing Grid */}
+      <section className="relative pb-24 z-10">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 lg:grid-cols-4">
           {plans.map((plan, index) => {
             const cta = ctaByPlan[plan.id];
@@ -45,67 +45,60 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
-                className={`flex flex-col rounded-[2.5rem] border p-8 transition-all duration-300 hover:-translate-y-2 ${
-                  plan.highlight
-                    ? "scale-[1.02] border-primary/30 bg-surface shadow-2xl shadow-primary/5 ring-1 ring-primary/10"
-                    : "border-outline-variant/30 bg-surface shadow-soft hover:border-outline-variant/60"
-                } animate-in fade-in slide-in-from-bottom-12 duration-1000 fill-mode-backwards`}
-                style={{ animationDelay: `${index * 120}ms` }}
+                className={`flex flex-col rounded-[32px] p-8 transition-all duration-500 hover:-translate-y-2 glass-card relative ${
+                  plan.highlight 
+                    ? "border-indigo-500/40 scale-[1.03] shadow-[0_30px_60px_-15px_rgba(99,102,241,0.3)]" 
+                    : "hover:border-white/20"
+                }`}
               >
-                {plan.highlight ? (
-                  <div className="mb-6 rounded-xl bg-primary px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-on-primary text-center">
-                    Most Popular
+                {plan.highlight && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[11px] font-bold px-4 py-1 rounded-full shadow-lg tracking-wide">
+                    RECOMMENDED
                   </div>
-                ) : null}
+                )}
 
-                <div className="mb-5">
-                  <h2 className="text-2xl font-black text-on-surface tracking-tight">{plan.name}</h2>
-                  <p className="mt-2 text-xs font-medium leading-relaxed text-on-surface-variant">{plan.tagline}</p>
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-white">{plan.name}</h2>
+                  <p className="mt-2 text-sm text-slate-400 min-h-[40px] leading-snug">{plan.tagline}</p>
                 </div>
 
-                <div className="mb-6 flex items-end gap-2">
-                  <span className="text-4xl font-black tracking-tighter text-on-surface">{plan.price.display}</span>
-                  {plan.price.cadence ? <span className="pb-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">{plan.price.cadence}</span> : null}
+                <div className="mb-6 flex items-baseline gap-1">
+                  <span className="text-4xl font-black tracking-tight text-white">{plan.price.display}</span>
+                  {plan.price.cadence && <span className="text-sm text-slate-500 font-medium">{plan.price.cadence}</span>}
                 </div>
 
-                <div className="mb-6 grid grid-cols-2 gap-3 rounded-2xl border border-outline-variant/10 bg-surface-container-low/30 p-4 text-left">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant opacity-70">Branches</p>
-                    <p className="mt-1 text-lg font-black text-on-surface tracking-tight">{branchLabel}</p>
+                <div className="grid grid-cols-2 gap-2 mb-6 py-4 border-y border-white/5 text-sm font-medium">
+                  <div className="text-center border-r border-white/5">
+                    <p className="text-slate-500 text-xs mb-1">Branches</p>
+                    <p className="text-white text-lg font-bold">{branchLabel}</p>
                   </div>
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant opacity-70">Users</p>
-                    <p className="mt-1 text-lg font-black text-on-surface tracking-tight">{userLabel}</p>
+                  <div className="text-center">
+                    <p className="text-slate-500 text-xs mb-1">Users</p>
+                    <p className="text-white text-lg font-bold">{userLabel}</p>
                   </div>
                 </div>
 
-                <div className="mb-8 space-y-4 flex-1">
+                <div className="space-y-3.5 flex-1 mb-8">
                   {plan.includedModules.map((feature) => (
-                    <div key={feature} className="flex items-center gap-3 text-sm text-on-surface font-medium">
-                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 shadow-sm">
-                        <Check className="h-3 w-3 text-primary stroke-[3px]" />
+                    <div key={feature} className="flex items-start gap-3 text-sm text-slate-300">
+                      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full mt-0.5 ${plan.highlight ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-indigo-400'}`}>
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
                       </div>
-                      <span className="text-xs">{feature}</span>
+                      <span className="leading-tight">{feature}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="mb-6 rounded-2xl border border-outline-variant/10 bg-surface-container-lowest p-4">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant opacity-70">Support</p>
-                  <p className="mt-2 text-xs font-bold text-on-surface">{plan.supportLabel}</p>
-                </div>
-
-                <Link href={cta.href} className="w-full">
+                <Link href={cta.href} className="w-full mt-auto">
                   <Button
-                    className={`h-12 w-full rounded-xl font-black uppercase tracking-widest text-[11px] group shadow-sm transition-all active:scale-95 ${
+                    className={`w-full h-12 rounded-xl font-bold tracking-wide transition-all active:scale-95 border-t ${
                       plan.highlight
-                        ? "bg-primary text-on-primary hover:bg-primary/90 shadow-primary/20 shadow-lg"
-                        : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low"
+                        ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_10px_20px_rgba(99,102,241,0.3)] border-indigo-400/30"
+                        : "bg-white/5 border-white/10 text-white hover:bg-white/10"
                     }`}
-                    variant={plan.highlight ? "default" : "outline"}
                   >
                     {cta.label}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
@@ -114,38 +107,41 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="relative mb-24 border-y border-outline-variant/10 bg-primary/[0.02] py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-outline-variant/20 bg-surface p-8 shadow-soft">
-            <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
-              <PackageCheck className="h-6 w-6 text-primary" />
+      {/* Trust Features */}
+      <section className="relative pb-24 z-10 px-6">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 border-t border-white/5 pt-16">
+          <div className="flex gap-5">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0 border border-indigo-500/20">
+              <PackageCheck className="h-6 w-6 text-indigo-400" />
             </div>
-            <h3 className="text-xl font-black text-on-surface mb-3 tracking-tight">No surprise setup fees</h3>
-            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
-              Start with a monthly package, onboard your team, and expand branches only when your operations need it.
-            </p>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">No Surprise Fees</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">Start with a fixed monthly subscription and onboard instantly. Pay as you scale.</p>
+            </div>
           </div>
-          <div className="rounded-3xl border border-outline-variant/20 bg-surface p-8 shadow-soft">
-            <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
-              <Store className="h-6 w-6 text-primary" />
+          
+          <div className="flex gap-5">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20">
+              <Store className="h-6 w-6 text-purple-400" />
             </div>
-            <h3 className="text-xl font-black text-on-surface mb-3 tracking-tight">Built for connected commerce</h3>
-            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
-              Business and Pro packages are ready for WooCommerce, Shopify, Daraz, and CSV-based operations.
-            </p>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">Retail-Ready</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">Out-of-the-box support for WooCommerce, Shopify, and direct Daraz API sync.</p>
+            </div>
           </div>
-          <div className="rounded-3xl border border-outline-variant/20 bg-surface p-8 shadow-soft">
-            <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+
+          <div className="flex gap-5">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">
+              <ShieldCheck className="h-6 w-6 text-blue-400" />
             </div>
-            <h3 className="text-xl font-black text-on-surface mb-3 tracking-tight">Upgrade when complexity grows</h3>
-            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
-              Enterprise is available for multi-company groups, API-led teams, and custom workflow rollouts.
-            </p>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">Enterprise Grade</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">Dedicated compliance ready architecture, audit trailing, and multi-level group permissions.</p>
+            </div>
           </div>
         </div>
       </section>
+
     </div>
   );
 }
-

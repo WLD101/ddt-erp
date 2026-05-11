@@ -1,202 +1,130 @@
 import React from "react";
 import Link from "next/link";
-import { ChevronRight, ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { ChevronRight, Sparkles, Rocket, BarChart3, ShieldCheck, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { isPlatformAdminEmail } from "@/lib/security/access";
 import { shouldShowOnboarding } from "@/modules/onboarding/actions";
 
-const industries = [
-  {
-    id: "trading-wholesale",
-    title: "Trading & Wholesale",
-    description: "Manage customers, suppliers, products, purchases, and sales invoices for growing SMEs.",
-    icon: "inventory_2",
-    color: "from-blue-500/20 to-cyan-500/20",
-    border: "border-blue-500/30",
-  },
-  {
-    id: "ecommerce",
-    title: "Ecommerce",
-    description: "Sync products, inventory, and orders across Daraz, Shopify, WooCommerce, and CSV imports.",
-    icon: "storefront",
-    color: "from-orange-500/20 to-red-500/20",
-    border: "border-orange-500/30",
-  },
-  {
-    id: "retail-distribution",
-    title: "Retail & Distribution",
-    description: "Track branch stock, low-stock alerts, daily billing, and light distribution operations.",
-    icon: "local_shipping",
-    color: "from-emerald-500/20 to-teal-500/20",
-    border: "border-emerald-500/30",
-  },
-];
-
 export default async function MarketingHomePage() {
   const session = await auth();
   if (session?.user?.id) {
     if (session.user.email && isPlatformAdminEmail(session.user.email)) {
-      return (
-        <div className="flex flex-col w-full bg-surface-container-lowest">
-          <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-            <div className="relative z-10 max-w-4xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black tracking-[0.25em] uppercase text-primary mb-10 backdrop-blur-md">
-                Public Site
-              </div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-on-surface leading-[0.9] mb-8">
-                WhatsQuery for <br />
-                <span className="text-primary italic">Modern Operators</span>
-              </h1>
-              <p className="text-lg md:text-xl text-on-surface-variant max-w-3xl mx-auto leading-relaxed mb-10 font-medium">
-                You are signed in as a platform admin, but public pages remain available normally.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/pricing">
-                  <Button variant="outline" className="h-14 px-10 text-xs font-black uppercase tracking-widest rounded-2xl border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low transition-all shadow-sm">
-                    View Pricing
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </section>
-        </div>
-      );
-    }
-    const isEligible = await shouldShowOnboarding();
-    if (isEligible) {
-      redirect("/onboarding");
+      // Admin flow, skip logic remains, just basic link out
     } else {
-      redirect("/dashboard");
+      const isEligible = await shouldShowOnboarding();
+      if (isEligible) redirect("/onboarding");
+      else redirect("/dashboard");
     }
   }
 
   return (
-    <div className="flex flex-col w-full bg-surface-container-lowest">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[160px] opacity-50 animate-pulse" />
-          <div className="absolute bottom-0 right-[-10%] w-[50%] h-[50%] bg-sky-500/10 rounded-full blur-[160px] opacity-40" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black tracking-[0.25em] uppercase text-primary mb-10 backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-1000">
-            <span className="flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+    <div className="relative flex flex-col min-h-screen overflow-hidden selection:bg-indigo-500/40 selection:text-white">
+      
+      {/* Main Hero Section - Starlight Layout */}
+      <section className="relative pt-16 pb-24 md:pt-32 md:pb-40 px-6">
+        <div className="relative z-10 max-w-7xl mx-auto text-center flex flex-col items-center">
+          
+          {/* Top Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[12px] font-medium tracking-wide text-indigo-300 mb-8 reveal">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
             </span>
-            AI-Ready Cloud ERP For Fast-Moving Teams
+            The Next Gen AI-ERP Is Here
           </div>
-          
-          <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-on-surface leading-[0.85] mb-10 animate-in fade-in slide-in-from-bottom-12 duration-1000">
-            ENGINEERED FOR <br />
-            <span className="text-primary italic">HYPER-GROWTH.</span>
+
+          {/* Massive Heading */}
+          <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-[0.9] text-white mb-8 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)] reveal stagger-1">
+            ENGINEERED FOR<br/>
+            <span className="hero-gradient">HYPER-GROWTH.</span>
           </h1>
-          
-          <p className="text-lg md:text-2xl text-on-surface-variant max-w-3xl mx-auto leading-relaxed mb-14 font-medium animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
-            WhatsQuery is built for trading, wholesale, retail, distribution, and ecommerce SMEs that need one place for stock, purchases, sales, expenses, and channel sync.
+
+          {/* Subhead */}
+          <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-12 reveal stagger-2">
+            Enterprise intelligence for retail, distribution, wholesale, and ecommerce. Centralize stock, sales, accounting, and multi-channel operations in a beautiful, unified hub.
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+
+          {/* Call to Actions */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 reveal stagger-3">
             <Link href="/auth/signup">
-              <Button className="h-16 px-12 text-sm font-black uppercase tracking-widest rounded-2xl bg-primary text-on-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <Button size="lg" className="h-14 px-10 text-base font-bold rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_25px_rgba(99,102,241,0.4)] border-t border-indigo-400/30 transition-all transform hover:scale-[1.03] active:scale-95 group">
+                Get Started Free
+                <Rocket className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link href="/auth/signup">
-              <Button variant="outline" className="h-16 px-12 text-sm font-black uppercase tracking-widest rounded-2xl border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low shadow-soft transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-3">
-                <Play className="h-4 w-4 fill-current" />
-                Watch Demo
+              <Button variant="ghost" size="lg" className="h-14 px-10 text-base font-bold rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white backdrop-blur-md transition-all">
+                Book Platform Demo
               </Button>
             </Link>
-          </div>
-          
-          {/* Trust Indicators */}
-          <div className="mt-24 flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale transition-all hover:grayscale-0 animate-in fade-in duration-1000 delay-500">
-             <div className="flex items-center gap-2 font-black tracking-tighter text-2xl italic text-on-surface">TRUSTED <span className="text-primary">BY</span> 500+ <span className="text-primary">BRANDS</span></div>
           </div>
         </div>
       </section>
 
-      {/* Industries Section */}
-      <section id="industries" className="relative py-32 px-6 border-y border-outline-variant/10 bg-surface">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(var(--primary),0.03),transparent_40%)] pointer-events-none" />
-        
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="max-w-3xl mb-20">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-[2px] w-12 bg-primary" />
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Vertical Power</span>
-            </div>
-            <h3 className="text-4xl md:text-6xl font-black text-on-surface tracking-tight leading-tight">
-              One platform. <br />
-              <span className="text-on-surface-variant">Tailored for your industry.</span>
-            </h3>
+      {/* Feature Grid Section */}
+      <section className="relative py-24 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">Everything You Need</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">Designed to scale with your infrastructure as you grow from first sale to enterprise volume.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-            {industries.map((industry, index) => (
-              <div 
-                key={industry.id}
-                className={`group relative p-10 rounded-[2.5rem] border border-outline-variant/30 bg-surface shadow-soft hover:shadow-hover transition-all duration-500 hover:-translate-y-4 animate-in fade-in slide-in-from-bottom-12 duration-1000 fill-mode-backwards`}
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                {/* Subtle background gradient effect */}
-                <div className={`absolute inset-0 rounded-[2.5rem] bg-gradient-to-br ${industry.color} opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none`} />
-                
-                <div className="relative z-10">
-                  <div className="mb-10 inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-surface border border-outline-variant/40 shadow-soft group-hover:scale-110 group-hover:border-primary/50 transition-all duration-500">
-                    <span className="material-symbols-outlined text-4xl text-on-surface group-hover:text-primary transition-colors">
-                      {industry.icon}
-                    </span>
-                  </div>
-                  
-                  <h4 className="text-3xl font-black text-on-surface mb-4 tracking-tight">{industry.title}</h4>
-                  <p className="text-base font-medium text-on-surface-variant leading-relaxed mb-10 group-hover:text-on-surface transition-colors">
-                    {industry.description}
-                  </p>
-                  
-                  <Link href={`/auth/signup?industry=${industry.id}`} className="block w-full">
-                    <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-surface border border-outline-variant text-on-surface hover:bg-primary hover:text-on-primary hover:border-primary transition-all duration-300 active:scale-95 shadow-sm">
-                      Start Setup
-                      <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* Decorative element */}
-                <div className="absolute top-8 right-8 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500 pointer-events-none text-on-surface">
-                  <span className="material-symbols-outlined text-8xl">
-                    {industry.icon}
-                  </span>
-                </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            
+            {/* Card 1 */}
+            <div className="glass-card p-8 md:p-12 rounded-[32px] transition-all duration-500 hover:-translate-y-2 hover:border-indigo-500/30 group">
+              <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 border border-indigo-500/20 text-indigo-400">
+                <Sparkles className="h-8 w-8" />
               </div>
-            ))}
+              <h3 className="text-2xl font-bold text-white mb-4">AI Intelligent Forecasting</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Predict stockouts and automatically generate purchase orders based on historical velocity and seasonal spikes.
+              </p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="glass-card p-8 md:p-12 rounded-[32px] transition-all duration-500 hover:-translate-y-2 hover:border-purple-500/30 group">
+              <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 border border-purple-500/20 text-purple-400">
+                <BarChart3 className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Real-Time Ledger</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Instant reconciliation across bank accounts, credits, assets, and P&L statements with enterprise precision.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="glass-card p-8 md:p-12 rounded-[32px] transition-all duration-500 hover:-translate-y-2 hover:border-blue-500/30 group">
+              <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 border border-blue-500/20 text-blue-400">
+                <Globe className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Global Multi-Store</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Central management of unlimited physical locations, warehouses, and third-party logistic providers.
+              </p>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* Social Proof / Stats */}
-      <section className="py-28 px-6 bg-surface-container-lowest relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(var(--primary),0.02),transparent_60%)] pointer-events-none" />
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
-           {[
-             { label: "Active Users", value: "10K+" },
-             { label: "Branches Managed", value: "2.5K" },
-             { label: "Daily Transactions", value: "50K+" },
-             { label: "Uptime SLA", value: "99.9%" }
-           ].map((stat, i) => (
-             <div key={i} className="text-center p-10 rounded-[2rem] bg-surface border border-outline-variant/20 shadow-soft">
-                <p className="text-4xl md:text-5xl font-black text-on-surface mb-2 tracking-tighter">{stat.value}</p>
-                <p className="text-[11px] font-black uppercase tracking-widest text-primary/70">{stat.label}</p>
-             </div>
-           ))}
+      {/* Big CTA Section */}
+      <section className="relative py-32 px-6 overflow-hidden z-10">
+        <div className="absolute inset-0 bg-indigo-600/10 blur-[100px] rounded-full -z-10 mx-auto w-2/3 h-2/3 pointer-events-none"></div>
+        <div className="max-w-5xl mx-auto glass-card p-12 md:p-20 rounded-[40px] text-center relative border border-indigo-500/20">
+          <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">Ready to simplify?</h2>
+          <p className="text-xl text-indigo-200 mb-12 max-w-xl mx-auto">Join hundreds of high-volume merchants using WhatsQuery to run reliable ops.</p>
+          <Link href="/auth/signup">
+            <Button size="lg" className="h-16 px-12 text-lg font-bold rounded-full bg-white hover:bg-slate-100 text-slate-900 transition-all shadow-[0_20px_50px_rgba(255,255,255,0.15)] active:scale-95">
+              Launch Workspace Now
+            </Button>
+          </Link>
         </div>
       </section>
+
     </div>
   );
 }
