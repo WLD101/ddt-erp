@@ -4,6 +4,7 @@ import { ScopedPrisma } from "@/lib/db/client";
 import { z } from "zod";
 import { quantitySchema, moneySchema } from "@/lib/validations/common";
 import { writeAuditLog } from "@/lib/audit";
+import { decrementInventoryOrThrow } from "@/lib/inventory/stock";
 
 export const returnItemSchema = z.object({
   productId: z.string(),
@@ -219,23 +220,11 @@ export async function createPurchaseReturn(db: ScopedPrisma, branchId: string, d
 
     // Stock Reconciliation (Decrement)
     for (const item of data.items) {
-      const invItem = await tx.inventoryItem.findUnique({
-        where: {
-          organizationId_branchId_productId: {
-            organizationId: db.organizationId,
-            branchId,
-            productId: item.productId,
-          }
-        }
-      });
-
-      if (!invItem || invItem.quantity < item.quantity) {
-        throw new Error(`Insufficient stock for ${item.productId} to fulfill purchase return.`);
-      }
-
-      await tx.inventoryItem.update({
-        where: { id: invItem.id },
-        data: { quantity: { decrement: item.quantity } }
+      const invItem = await decrementInventoryOrThrow(tx, {
+        organizationId: db.organizationId,
+        branchId,
+        productId: item.productId,
+        quantity: item.quantity,
       });
 
       await tx.stockMovement.create({

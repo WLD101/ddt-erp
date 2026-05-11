@@ -3,6 +3,7 @@
 import { ScopedPrisma } from "@/lib/db/client";
 import { z } from "zod";
 import { quantitySchema } from "@/lib/validations/common";
+import { adjustInventoryOrThrow } from "@/lib/inventory/stock";
 
 export const initializeSchema = z.object({
   productId: z.string().min(1, "Product is required"),
@@ -77,7 +78,12 @@ export async function adjustStock(
 ) {
   return db.$transaction(async (tx) => {
     const item = await tx.inventoryItem.findUnique({
-      where: { id: data.inventoryItemId },
+      where: {
+        id_organizationId: {
+          id: data.inventoryItemId,
+          organizationId: db.organizationId,
+        },
+      },
     });
 
     if (!item) throw new Error("Inventory item not found.");
@@ -85,14 +91,11 @@ export async function adjustStock(
       throw new Error("Inventory item does not belong to the active branch.");
     }
 
-    // PREVENT NEGATIVE STOCK
-    if (data.adjustment < 0 && item.quantity + data.adjustment < 0) {
-      throw new Error(`Insufficient stock. Current: ${item.quantity}, requested deduction: ${Math.abs(data.adjustment)}`);
-    }
-
-    await tx.inventoryItem.update({
-      where: { id: data.inventoryItemId },
-      data: { quantity: { increment: data.adjustment } },
+    const updatedItem = await adjustInventoryOrThrow(tx, {
+      inventoryItemId: data.inventoryItemId,
+      organizationId: db.organizationId,
+      branchId,
+      adjustment: data.adjustment,
     });
 
     await tx.stockMovement.create({
@@ -111,6 +114,6 @@ export async function adjustStock(
       await checkLowStockForItem(tx as any, data.inventoryItemId);
     }
 
-    return item;
+    return updatedItem;
   });
 }

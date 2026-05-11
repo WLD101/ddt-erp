@@ -6,6 +6,8 @@ import { prisma } from "../../lib/prisma";
 import { getOrganizationAccessState } from "../../lib/billing/access";
 import { verifyOtp } from "../../modules/otp/service";
 import { GET as blockedCustomerExport } from "../../app/api/export/customers/route";
+import { getTenantStore } from "../../lib/db/client";
+import { createSalesInvoice } from "../../modules/sales/service";
 
 let dbAvailable: boolean | null = null;
 
@@ -52,6 +54,48 @@ async function createOrg(prefix: string, accessStatus = "active") {
       },
     },
   });
+}
+
+async function createSalesFixture(prefix: string) {
+  const organization = await createOrg(prefix, "active");
+  const branch = await prisma.branch.create({
+    data: {
+      organizationId: organization.id,
+      name: `${prefix} HQ`,
+      isMain: true,
+    },
+  });
+  const customer = await prisma.customer.create({
+    data: {
+      organizationId: organization.id,
+      name: `${prefix} Customer`,
+      email: `${prefix}-customer@example.com`,
+    },
+  });
+  const product = await prisma.product.create({
+    data: {
+      organizationId: organization.id,
+      name: `${prefix} Product`,
+      sku: `${prefix.toUpperCase()}-${Date.now()}`,
+      unitPrice: 25,
+      costPrice: 10,
+      lowStockThreshold: 1,
+    },
+  });
+
+  return {
+    organization,
+    branch,
+    customer,
+    product,
+    db: getTenantStore({
+      userId: "security-test-user",
+      organizationId: organization.id,
+      branchId: branch.id,
+      role: "owner",
+      permissions: ["sales.create"],
+    }),
+  };
 }
 
 test("manual paid subscription keeps ERP access active", async (t) => {
@@ -184,6 +228,58 @@ test("wrong OTP increments attempts and expired OTP fails", async (t) => {
     assert.equal(expired.error, "OTP expired.");
   } finally {
     await prisma.otpVerification.deleteMany({ where: { email: { in: [email, expiredEmail] } } });
+  }
+});
+
+test("sales invoices cannot drive inventory below zero", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
+  const fixture = await createSalesFixture("stock-guard");
+
+  await prisma.inventoryItem.create({
+    data: {
+      organizationId: fixture.organization.id,
+      branchId: fixture.branch.id,
+      productId: fixture.product.id,
+      quantity: 1,
+      location: "Primary Shelf",
+    },
+  });
+
+  try {
+    await assert.rejects(
+      createSalesInvoice(fixture.db as any, fixture.branch.id, {
+        customerId: fixture.customer.id,
+        invoiceNumber: `INV-STOCK-${Date.now()}`,
+        items: [
+          {
+            productId: fixture.product.id,
+            quantity: 2,
+            unitPrice: 25,
+          },
+        ],
+        discount: 0,
+        notes: "Negative inventory prevention test",
+      }),
+      /Insufficient stock/
+    );
+
+    const inventory = await prisma.inventoryItem.findUniqueOrThrow({
+      where: {
+        organizationId_branchId_productId: {
+          organizationId: fixture.organization.id,
+          branchId: fixture.branch.id,
+          productId: fixture.product.id,
+        },
+      },
+    });
+    const invoiceCount = await prisma.salesInvoice.count({
+      where: { organizationId: fixture.organization.id },
+    });
+
+    assert.equal(inventory.quantity, 1);
+    assert.equal(invoiceCount, 0);
+  } finally {
+    await prisma.organization.delete({ where: { id: fixture.organization.id } });
   }
 });
 

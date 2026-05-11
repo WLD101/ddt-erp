@@ -28,7 +28,7 @@ import { usePlanModal } from "@/components/billing/PlanProvider";
 
 interface SaleFormProps {
   customers: { id: string; name: string }[];
-  products: { id: string; name: string; unitPrice: number }[];
+  products: { id: string; name: string; unitPrice: number; availableQuantity: number }[];
   initialData?: any;
   onSuccess?: () => void;
 }
@@ -59,11 +59,64 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
 
   const { showLimitModal } = usePlanModal();
 
+  function getStockIssues(data: SalesInvoiceFormValues) {
+    const requestedQuantityByProduct = new Map<string, number>();
+
+    for (const item of data.items) {
+      requestedQuantityByProduct.set(
+        item.productId,
+        (requestedQuantityByProduct.get(item.productId) ?? 0) + Number(item.quantity || 0)
+      );
+    }
+
+    return data.items
+      .map((item, index) => {
+        const product = products.find((entry) => entry.id === item.productId);
+        if (!product) {
+          return null;
+        }
+
+        const requestedQuantity = requestedQuantityByProduct.get(item.productId) ?? 0;
+        if (requestedQuantity <= product.availableQuantity) {
+          return null;
+        }
+
+        return {
+          index,
+          productName: product.name,
+          availableQuantity: product.availableQuantity,
+          requestedQuantity,
+        };
+      })
+      .filter(Boolean) as Array<{
+        index: number;
+        productName: string;
+        availableQuantity: number;
+        requestedQuantity: number;
+      }>;
+  }
+
   function onSubmit(data: SalesInvoiceFormValues) {
     if (initialData?.id) {
       toast.info("Sales editing is coming soon to the backend. UI finalized.");
       return;
     }
+
+    form.clearErrors();
+    const stockIssues = getStockIssues(data);
+    if (stockIssues.length > 0) {
+      for (const issue of stockIssues) {
+        form.setError(`items.${issue.index}.quantity`, {
+          type: "manual",
+          message: `Only ${issue.availableQuantity} in stock for ${issue.productName}.`,
+        });
+      }
+      toast.error(
+        `${stockIssues[0].productName} has only ${stockIssues[0].availableQuantity} in stock.`
+      );
+      return;
+    }
+
     startTransition(async () => {
       const result = await createSalesInvoice(data);
       if (result.success) {
@@ -196,6 +249,27 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
                     >
                       <Input type="number" className="text-center font-bold" />
                     </FormFieldWrapper>
+                    {(() => {
+                      const selectedProductId = form.watch(`items.${index}.productId`);
+                      const selectedProduct = products.find((product) => product.id === selectedProductId);
+                      if (!selectedProduct) {
+                        return null;
+                      }
+
+                      const requestedQuantity = Number(watchedItems?.[index]?.quantity || 0);
+                      const isOverRequested = requestedQuantity > selectedProduct.availableQuantity;
+
+                      return (
+                        <p
+                          className={cn(
+                            "mt-2 text-[10px] font-bold uppercase tracking-[0.12em]",
+                            isOverRequested ? "text-error" : "text-on-surface-variant"
+                          )}
+                        >
+                          Available stock: {selectedProduct.availableQuantity}
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div className="md:col-span-3">
                     <FormFieldWrapper 

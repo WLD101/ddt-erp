@@ -1,6 +1,7 @@
 import { ScopedPrisma } from "@/lib/db/client";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { decrementInventoryOrThrow } from "@/lib/inventory/stock";
 
 export const productionMaterialSchema = z.object({
   productId: z.string().min(1, "Material is required"),
@@ -318,36 +319,12 @@ export async function completeProductionOrder(
     }
 
     for (const material of workOrder.materials) {
-      const inventoryItem = await tx.inventoryItem.findUnique({
-        where: {
-          organizationId_branchId_productId: {
-            organizationId,
-            branchId,
-            productId: material.productId,
-          },
-        },
-      });
-
-      const availableQuantity = inventoryItem?.quantity ?? 0;
-      if (!inventoryItem || availableQuantity < material.quantity) {
-        throw new Error(
-          `Not enough stock for ${material.product.name}. Required ${material.quantity}, available ${availableQuantity}.`
-        );
-      }
-    }
-
-    for (const material of workOrder.materials) {
-      const inventoryItem = await tx.inventoryItem.update({
-        where: {
-          organizationId_branchId_productId: {
-            organizationId,
-            branchId,
-            productId: material.productId,
-          },
-        },
-        data: {
-          quantity: { decrement: material.quantity },
-        },
+      const inventoryItem = await decrementInventoryOrThrow(tx, {
+        organizationId,
+        branchId,
+        productId: material.productId,
+        quantity: material.quantity,
+        productName: material.product.name,
       });
 
       await tx.stockMovement.create({

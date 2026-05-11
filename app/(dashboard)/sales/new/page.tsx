@@ -2,6 +2,7 @@
 import React from "react";
 import { getCustomers } from "@/modules/customers/actions";
 import { getProducts } from "@/modules/products/actions";
+import { getInventoryItems } from "@/modules/inventory/actions";
 import { SaleForm } from "@/modules/sales/components/sale-form";
 import Link from "next/link";
 import { getQuotationById } from "@/modules/quotations/actions";
@@ -12,13 +13,22 @@ export default async function NewSalePage({
   searchParams: Promise<{ fromQuote?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const [rawCustomers, rawProducts] = await Promise.all([
+  const [rawCustomers, rawProducts, rawInventoryItems] = await Promise.all([
     getCustomers(),
-    getProducts()
+    getProducts(),
+    getInventoryItems(),
   ]);
 
   const customers = rawCustomers.map((c: any) => ({ id: c.id, name: c.name }));
-  const products = rawProducts.map((p: any) => ({ id: p.id, name: p.name, unitPrice: p.unitPrice }));
+  const inventoryByProductId = new Map<string, number>(
+    rawInventoryItems.map((item: any) => [item.productId, item.quantity])
+  );
+  const products = rawProducts.map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    unitPrice: p.unitPrice,
+    availableQuantity: inventoryByProductId.get(p.id) ?? 0,
+  }));
 
   let preData = null;
   if (resolvedSearchParams.fromQuote) {

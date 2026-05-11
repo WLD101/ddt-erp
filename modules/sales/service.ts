@@ -1,6 +1,7 @@
 import { ScopedPrisma } from "@/lib/db/client";
 import { z } from "zod";
 import { moneySchema, quantitySchema } from "@/lib/validations/common";
+import { decrementInventoryOrThrow } from "@/lib/inventory/stock";
 
 export const salesInvoiceItemSchema = z.object({
   productId: z.string().min(1, "Product is required"),
@@ -49,17 +50,22 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
     const productIds = Array.from(new Set(data.items.map((item) => item.productId)));
     const products = await tx.product.findMany({
       where: { organizationId: db.organizationId, id: { in: productIds } },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (products.length !== productIds.length) {
       throw new Error("One or more products were not found in this organization.");
     }
 
+    const requestedQuantityByProduct = new Map<string, number>();
     let subtotal = 0;
 
     const itemsToCreate = data.items.map((item) => {
       const total = item.quantity * item.unitPrice;
       subtotal += total;
+      requestedQuantityByProduct.set(
+        item.productId,
+        (requestedQuantityByProduct.get(item.productId) ?? 0) + item.quantity
+      );
       return {
         productId: item.productId,
         quantity: item.quantity,
@@ -71,6 +77,20 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
     const taxAmount = 0;
     const discount = data.discount || 0;
     const totalAmount = Math.max(0, subtotal - discount + taxAmount);
+
+    const productNames = new Map(products.map((product) => [product.id, product.name]));
+
+    const inventoryItemsByProductId = new Map<string, { id: string }>();
+    for (const [productId, quantity] of requestedQuantityByProduct.entries()) {
+      const inventoryItem = await decrementInventoryOrThrow(tx, {
+        organizationId: db.organizationId,
+        branchId,
+        productId,
+        quantity,
+        productName: productNames.get(productId),
+      });
+      inventoryItemsByProductId.set(productId, { id: inventoryItem.id });
+    }
 
     // 1. Create invoice + line items
     const invoice = await tx.salesInvoice.create({
@@ -99,31 +119,13 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
       });
     }
 
-    // 2. Decrement inventory and record stock movements (Branch-Specific)
+    // 2. Record stock movements for the items already deducted in this transaction.
     for (const item of invoice.items) {
-      const inventoryItem = await tx.inventoryItem.upsert({
-        where: {
-          organizationId_branchId_productId: {
-            organizationId: db.organizationId,
-            branchId,
-            productId: item.productId,
-          },
-        },
-        create: {
-          organizationId: db.organizationId,
-          branchId,
-          productId: item.productId,
-          quantity: -item.quantity,
-          location: "Default",
-        },
-        update: { quantity: { decrement: item.quantity } },
-      });
-
       await tx.stockMovement.create({
         data: {
           organizationId: db.organizationId,
           branchId,
-          inventoryItemId: inventoryItem.id,
+          inventoryItemId: inventoryItemsByProductId.get(item.productId)!.id,
           type: "OUT",
           quantity: item.quantity,
           reason: `Sales Invoice: ${invoice.invoiceNumber}`,
