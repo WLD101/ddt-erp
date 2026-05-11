@@ -12,6 +12,7 @@ export const salesInvoiceSchema = z.object({
   items: z.array(salesInvoiceItemSchema).min(1, "At least one item is required"),
   discount: z.coerce.number().min(0).optional().default(0),
   notes: z.string().optional(),
+  quotationId: z.string().optional(),
 });
 
 export type SalesInvoiceFormValues = z.input<typeof salesInvoiceSchema>;
