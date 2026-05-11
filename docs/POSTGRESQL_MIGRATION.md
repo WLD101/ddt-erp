@@ -26,7 +26,7 @@ npm run seed
 ### Production Deployment (Hostinger VPS)
 On your VPS environment:
 1. Set the environment variable `DATABASE_URL`.
-2. Ensure `SUPER_ADMIN_EMAILS` includes `contact@whatsquery.com`.
+2. Ensure `SUPER_ADMIN_EMAILS` includes `admin@whatsquery.com`.
 3. Run:
 ```bash
 npx prisma migrate deploy

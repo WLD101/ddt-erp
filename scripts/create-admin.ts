@@ -4,8 +4,21 @@ import { getBootstrapAdminPassword } from "../lib/security/env";
 
 const prisma = new PrismaClient();
 
+function getBootstrapAdminEmail() {
+  const emails = (process.env.SUPER_ADMIN_EMAILS || "")
+    .split(",")
+    .map((candidate) => candidate.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (emails.length > 0) {
+    return emails[0];
+  }
+
+  return "admin@whatsquery.com";
+}
+
 async function main() {
-  const email = "contact@whatsquery.com";
+  const email = getBootstrapAdminEmail();
   const password = getBootstrapAdminPassword();
   const hashedPassword = await bcrypt.hash(password, 12);
 

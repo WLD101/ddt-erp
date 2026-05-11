@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 
 import { seedPermissions, initializeTenantRoles } from "../lib/security/seed";
-import { isProductionEnv } from "../lib/security/env";
+import { getBootstrapAdminPassword, isProductionEnv } from "../lib/security/env";
 
 const prisma = new PrismaClient();
 
@@ -13,8 +13,24 @@ const DEMO_PASSWORD = "Demo123!";
 const ORG_SLUG = "al-sadiq-traders";
 const ORG_NAME = "Al Sadiq Traders";
 
-const ADMIN_EMAIL = "contact@whatsquery.com";
-const ADMIN_PASSWORD = "14789Wagus.";
+function getBootstrapAdminEmail() {
+  const emails = (process.env.SUPER_ADMIN_EMAILS || "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (emails.length > 0) {
+    return emails[0];
+  }
+
+  return "admin@whatsquery.com";
+}
+
+const ADMIN_EMAIL = getBootstrapAdminEmail();
+const ADMIN_PASSWORD =
+  process.env.NODE_ENV === "production"
+    ? getBootstrapAdminPassword()
+    : process.env.SUPER_ADMIN_BOOTSTRAP_PASSWORD || "ChangeMe123!";
 
 const branchSeeds = [
   {

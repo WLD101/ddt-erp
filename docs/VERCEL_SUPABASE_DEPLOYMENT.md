@@ -41,7 +41,7 @@ NEXTAUTH_URL=https://yourdomain.com
 NEXTAUTH_SECRET=replace-with-long-random-secret
 DATABASE_URL=postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
 DIRECT_URL=postgresql://postgres:password@db.project-ref.supabase.co:5432/postgres
-SUPER_ADMIN_EMAILS=contact@whatsquery.com
+SUPER_ADMIN_EMAILS=admin@whatsquery.com
 ENCRYPTION_KEY=replace-with-long-random-secret
 ALLOW_OTP_BYPASS=false
 ENABLE_DEBUG_ROUTES=false

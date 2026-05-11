@@ -13,6 +13,7 @@ export default async function proxy(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === "production",
   });
   const isLoggedIn = !!token;
   const userEmail = typeof token?.email === "string" ? token.email : undefined;

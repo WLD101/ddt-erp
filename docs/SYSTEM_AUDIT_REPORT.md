@@ -54,8 +54,8 @@ WhatsQuery ERP is a professional-grade, multi-tenant SaaS application designed f
 - **Documentation:** Created [POSTGRESQL_MIGRATION.md](file:///c:/Users/WLD10/.gemini/antigravity/scratch/ddt-erp/docs/POSTGRESQL_MIGRATION.md).
 
 ### 2. Seeding & Admin Setup
-- **Admin Email:** `contact@whatsquery.com` added as a Super Admin in seed logic.
-- **Admin Password:** `14789Wagus.` (Bcrypt hashed).
+- **Admin Email:** `admin@whatsquery.com` added as the default Super Admin in seed logic.
+- **Admin Password:** supplied at deploy time through `SUPER_ADMIN_BOOTSTRAP_PASSWORD` and rotated after first login.
 - **Package Seeding:** Seed script now automatically creates standard SaaS packages (Starter to Enterprise).
 
 ### 3. Logic Hardening
@@ -71,7 +71,7 @@ WhatsQuery ERP is a professional-grade, multi-tenant SaaS application designed f
 - [x] **Security:** Tenant-scoping verified across all modules.
 - [x] **Auth:** NextAuth Session handling stabilized.
 - [x] **Build:** `npm run build` succeeds locally (TS Check: OK).
-- [x] **Admin:** Command Center accessible to `contact@whatsquery.com`.
+- [x] **Admin:** Command Center accessible to `admin@whatsquery.com`.
 - [ ] **Deployment:** Pending VPS Environment Secret configuration.
 
 ---

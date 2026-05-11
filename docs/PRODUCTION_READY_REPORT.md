@@ -43,7 +43,7 @@ Use this step-by-step playbook in your production environment to verify ERP func
 *   **Invoice Status Update:** Verify the Sales Invoice status changes to `PAID` (or `PARTIALLY_PAID` for partial amounts) and the selected **Financial Account** balance increases by the exact amount paid.
 
 ### 6. Command Center (Super Admin Control)
-*   **Super Admin Login:** Sign in as `contact@whatsquery.com` (defined in `SUPER_ADMIN_EMAILS`).
+*   **Super Admin Login:** Sign in as `admin@whatsquery.com` (defined in `SUPER_ADMIN_EMAILS`).
 *   **Navigate Command Center:** Go to `/wq-command-center`. Verify access to the administrative platform dashboard.
 *   **Manual Tenant Creation:** Create a tenant organization manually, assign a package, and mark subscription status as `ACTIVE` and `PAID`.
 *   **Login as Tenant:** Switch role/context to verify the tenant's automated activation works flawlessly.

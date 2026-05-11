@@ -135,7 +135,7 @@ sudo certbot --nginx -d yourdomain.com
 
 - [ ] **Database**: Verify connection with `pm2 logs`.
 - [ ] **Migrations**: Ensure `npx prisma migrate status` shows up to date.
-- [ ] **Seeding**: Log in with `contact@whatsquery.com` / `14789Wagus.`.
+- [ ] **Seeding**: Log in with `admin@whatsquery.com` using the current `SUPER_ADMIN_BOOTSTRAP_PASSWORD`, then rotate it immediately.
 - [ ] **Admin**: Verify `/wq-command-center` is accessible.
 - [ ] **Tenant**: Create a test business and verify onboarding flow.
 - [ ] **Billing**: Select a package and verify the "Payment Pending" screen.
