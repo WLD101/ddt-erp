@@ -37,7 +37,6 @@ const industries = [
 export default async function MarketingHomePage() {
   const session = await auth();
   if (session?.user?.id) {
-  if (session?.user?.id) {
     if (session.user.email && isPlatformAdminEmail(session.user.email)) {
       return (
         <div className="flex flex-col w-full bg-surface-container-lowest">
