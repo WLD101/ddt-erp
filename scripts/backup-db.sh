@@ -5,6 +5,7 @@ APP_ENV_FILE="${WHATSQUERY_ENV_FILE:-/var/www/whatsquery/.env}"
 BACKUP_ROOT="${WHATSQUERY_BACKUP_ROOT:-/var/backups/whatsquery/postgres}"
 LOG_DIR="${WHATSQUERY_LOG_DIR:-/var/log/whatsquery}"
 RETENTION_DAYS="${WHATSQUERY_BACKUP_RETENTION_DAYS:-14}"
+OFFSITE_SYNC_COMMAND="${WHATSQUERY_BACKUP_SYNC_COMMAND:-}"
 
 mkdir -p "${BACKUP_ROOT}" "${LOG_DIR}"
 
@@ -78,4 +79,14 @@ find "${BACKUP_ROOT}" -maxdepth 1 -type f -name 'whatsquery_*.sql.gz.sha256' -mt
 
 log "Backup verified successfully. Public tables restored: ${RESTORED_TABLE_COUNT}."
 log "Latest backup symlink updated at ${BACKUP_ROOT}/latest.sql.gz."
-log "Ready for off-server sync from ${BACKUP_ROOT}."
+if [[ -n "${OFFSITE_SYNC_COMMAND}" ]]; then
+  log "Starting off-server sync."
+  if bash -lc "${OFFSITE_SYNC_COMMAND}" >>"${LOG_FILE}" 2>&1; then
+    log "Off-server sync completed successfully."
+  else
+    log "ERROR: Off-server sync failed."
+    exit 1
+  fi
+else
+  log "Ready for off-server sync from ${BACKUP_ROOT}."
+fi
