@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export interface BrandLogoProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -19,7 +18,9 @@ export function BrandLogo({ hideText = false, size = "md", dark = false, classNa
 
   return (
     <div className={cn("flex items-center gap-3 logo-shimmer", className)} {...props}>
-      <Image 
+      {/* `next/image` is returning 400s in production for this local logo path, so this public brand mark stays on a plain img to keep auth/marketing routes stable. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/logo3.png" 
         alt="WhatsQuery Logo"
         width={dims.w}

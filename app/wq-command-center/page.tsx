@@ -7,8 +7,6 @@ import { CreateClientForm } from "./create-client-form";
 import { requirePlatformAdminPage } from "@/lib/security/guards";
 import {
   approveManualPaymentFromCommandCenterAction,
-  extendOrganizationSubscriptionAction,
-  failManualPaymentFromCommandCenterAction,
   getCommandCenterSnapshot,
   setOrganizationStatusAction,
   updatePackageFromCommandCenterAction,
@@ -18,19 +16,12 @@ import {
 
 export const dynamic = "force-dynamic";
 const isProduction = process.env.NODE_ENV === "production";
+const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+const panelClassName = "rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm";
 
 function formatDate(value?: Date | null) {
   if (!value) return "Never";
   return new Date(value).toLocaleDateString();
-}
-
-function formatMoney(value?: number | null, currency = "USD") {
-  if (typeof value !== "number") return "Catalog pricing";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
-  }).format(value);
 }
 
 function formatBillingCycle(value?: string | null) {
@@ -64,121 +55,139 @@ function readCustomFeatureList(value?: string | null) {
   }
 }
 
+function MetricCard({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: string;
+  label: string;
+  value: React.ReactNode;
+  tone: "primary" | "secondary" | "error";
+}) {
+  const toneClassName = {
+    primary: "bg-primary/10 text-primary",
+    secondary: "bg-secondary/10 text-secondary",
+    error: "bg-error/10 text-error",
+  }[tone];
+
+  return (
+    <Card className={`${shellCardClassName} transition-transform duration-300 hover:-translate-y-1`}>
+      <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">{label}</CardTitle>
+        <div className={`rounded-2xl p-2 ${toneClassName}`}>
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-6">
+        <div className="text-4xl font-black tracking-tight text-on-surface">{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default async function CommandCenterPage() {
   await requirePlatformAdminPage();
   const { tenants, packages, audits } = await getCommandCenterSnapshot();
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface pb-12">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),linear-gradient(180deg,#f8f9ff_0%,#eef4ff_100%)] text-on-surface pb-12">
       <div className="mx-auto max-w-7xl space-y-8 px-6 pt-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 bg-surface border border-outline-variant/30 p-8 rounded-3xl shadow-soft">
-          <div className="space-y-3">
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none font-black tracking-widest text-[10px] uppercase px-3 py-1">
-              Command Center
-            </Badge>
-            <h1 className="text-4xl font-black tracking-tight text-on-surface flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary text-[32px]">hub</span>
-              WhatsQuery Authority
-            </h1>
-            <p className="max-w-2xl text-sm text-on-surface-variant font-medium">
-              Global operator surface for organizational control, custom package configuration, billing overrides, and live infrastructure monitoring.
-            </p>
+        <section className="overflow-hidden rounded-[32px] border border-outline-variant/30 bg-linear-to-br from-surface via-surface to-surface-container-low shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col gap-8 px-8 py-8 xl:flex-row xl:items-end xl:justify-between">
+            <div className="space-y-4">
+              <Badge className="border-none bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20">
+                Command Center
+              </Badge>
+              <div className="space-y-3">
+                <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-on-surface sm:text-5xl">
+                  <span className="material-symbols-outlined text-[34px] text-primary sm:text-[40px]">hub</span>
+                  WhatsQuery Authority
+                </h1>
+                <p className="max-w-2xl text-sm font-medium leading-6 text-on-surface-variant sm:text-base">
+                  Manage tenant provisioning, billing overrides, subscription posture, and support operations from one controlled global surface.
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Live tenants</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{tenants.length}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Organizations under management</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Catalog plans</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{packages.length}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Packages available for assignment</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Recent activity</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{audits.length}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Newest audit events in scope</p>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 border-t border-outline-variant/20 px-8 py-4">
             <Link href="/platform/packages">
-              <button className="flex items-center gap-2 px-4 h-10 bg-surface border border-outline-variant text-on-surface font-black text-[11px] uppercase tracking-widest rounded-xl shadow-soft hover:bg-surface-container-low transition-all">
+              <Button variant="outline" className="h-10 rounded-2xl border-outline-variant/40 px-4 text-[11px] font-black uppercase tracking-[0.2em]">
                 <span className="material-symbols-outlined text-[18px]">inventory_2</span>
-                Catalog
-              </button>
+                Package catalog
+              </Button>
             </Link>
             <Link href="/platform/exports">
-              <button className="flex items-center gap-2 px-4 h-10 bg-surface border border-outline-variant text-on-surface font-black text-[11px] uppercase tracking-widest rounded-xl shadow-soft hover:bg-surface-container-low transition-all">
-                <span className="material-symbols-outlined text-[18px] ">cloud_download</span>
-                Exports
-              </button>
+              <Button variant="outline" className="h-10 rounded-2xl border-outline-variant/40 px-4 text-[11px] font-black uppercase tracking-[0.2em]">
+                <span className="material-symbols-outlined text-[18px]">cloud_download</span>
+                Export queue
+              </Button>
             </Link>
             <Link href="/platform/leads">
-              <button className="flex items-center gap-2 px-5 h-10 bg-primary text-on-primary font-black text-[11px] uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+              <Button className="h-10 rounded-2xl bg-primary px-5 text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:opacity-90">
                 <span className="material-symbols-outlined text-[18px]">contact_support</span>
-                Leads
-              </button>
+                Demo leads
+              </Button>
             </Link>
           </div>
-        </div>
+        </section>
 
         <section className="grid gap-6 md:grid-cols-3">
-          <Card className="rounded-3xl border-outline-variant/30 shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Total Organizations</CardTitle>
-              </div>
-              <div className="p-2 bg-primary/10 text-primary rounded-xl">
-                <span className="material-symbols-outlined text-[20px]">apartment</span>
-              </div>
-            </CardHeader>
-            <CardContent className="text-4xl font-black text-primary tracking-tight pb-6">
-              {tenants.length}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-3xl border-outline-variant/30 shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Active Packages</CardTitle>
-              </div>
-              <div className="p-2 bg-secondary/10 text-secondary rounded-xl">
-                <span className="material-symbols-outlined text-[20px]">sell</span>
-              </div>
-            </CardHeader>
-            <CardContent className="text-4xl font-black text-secondary tracking-tight pb-6">
-              {packages.length}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-3xl border-outline-variant/30 shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Recent Events</CardTitle>
-              </div>
-              <div className="p-2 bg-error/10 text-error rounded-xl">
-                <span className="material-symbols-outlined text-[20px]">history</span>
-              </div>
-            </CardHeader>
-            <CardContent className="text-4xl font-black text-error tracking-tight pb-6">
-              {audits.length}
-            </CardContent>
-          </Card>
+          <MetricCard icon="apartment" label="Total organizations" value={tenants.length} tone="primary" />
+          <MetricCard icon="sell" label="Active packages" value={packages.length} tone="secondary" />
+          <MetricCard icon="history" label="Recent events" value={audits.length} tone="error" />
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.3fr,1fr]">
-          <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-            <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-4">
-              <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">add_business</span>
-                Provision New Client
+                Provision new client
               </CardTitle>
+              <CardDescription className="text-sm font-medium text-on-surface-variant">
+                Create a new business account, assign subscription controls, and grant immediate access without leaving the command center.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="px-6 pb-6 pt-6">
               <CreateClientForm />
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-            <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-4">
-              <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">info</span>
-                Provisioning Protocol
+                Provisioning protocol
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4 text-sm font-medium text-on-surface-variant">
-              <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20">
-                <p>Admin-created businesses are injected as <b className="text-on-surface">PAID</b> by default unless explicitly toggled.</p>
+            <CardContent className="space-y-4 px-6 pb-6 pt-6 text-sm font-medium text-on-surface-variant">
+              <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                <p>Admin-created businesses default to <b className="text-on-surface">paid active access</b> unless explicitly created as demo.</p>
               </div>
-              <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20">
-                <p>Smart routing automatically resolves localized currency settings based on input country.</p>
+              <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                <p>Country selection drives the default ledger currency and keeps new tenant setup consistent.</p>
               </div>
-              <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20">
-                <p>Custom package modifications bypass public catalog enforcement, enabling unique enterprise contract override.</p>
+              <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                <p>Custom package overrides stay tenant-specific and do not mutate the shared package catalog.</p>
               </div>
             </CardContent>
           </Card>
@@ -187,12 +196,12 @@ export default async function CommandCenterPage() {
         <section className="grid gap-8 lg:grid-cols-[2fr,1fr]">
           <div className="space-y-6">
             {tenants.map((tenant) => (
-              <Card key={tenant.id} className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-                <CardHeader className="space-y-4 border-b border-outline-variant/10 bg-surface-container-lowest pb-5">
+              <Card key={tenant.id} className={shellCardClassName}>
+                <CardHeader className="space-y-5 border-b border-outline-variant/10 bg-linear-to-r from-surface to-surface-container-lowest px-6 pb-6 pt-6">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <CardTitle className="text-2xl font-black">{tenant.name}</CardTitle>
-                      <CardDescription className="text-on-surface/60">
+                    <div className="space-y-2">
+                      <CardTitle className="text-2xl font-black tracking-tight">{tenant.name}</CardTitle>
+                      <CardDescription className="text-sm font-medium text-on-surface/60">
                         /{tenant.slug} - {tenant.country || "Country not set"} - {tenant.currency}
                       </CardDescription>
                     </div>
@@ -228,21 +237,42 @@ export default async function CommandCenterPage() {
                       ) : null}
                     </div>
                   </div>
-                  <div className="grid gap-3 text-xs text-on-surface-variant sm:grid-cols-4">
-                    <div>Users: <span className="font-bold text-on-surface">{tenant._count.members}</span></div>
-                    <div>Branches: <span className="font-bold text-on-surface">{tenant._count.branches}</span></div>
-                    <div>Products: <span className="font-bold text-on-surface">{tenant._count.products}</span></div>
-                    <div>Invoices: <span className="font-bold text-on-surface">{tenant._count.salesInvoices}</span></div>
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-xs text-on-surface-variant">
+                      Users
+                      <div className="mt-2 text-2xl font-black text-on-surface">{tenant._count.members}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-xs text-on-surface-variant">
+                      Branches
+                      <div className="mt-2 text-2xl font-black text-on-surface">{tenant._count.branches}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-xs text-on-surface-variant">
+                      Products
+                      <div className="mt-2 text-2xl font-black text-on-surface">{tenant._count.products}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-xs text-on-surface-variant">
+                      Invoices
+                      <div className="mt-2 text-2xl font-black text-on-surface">{tenant._count.salesInvoices}</div>
+                    </div>
                   </div>
-                  <div className="grid gap-2 text-xs text-on-surface/60 sm:grid-cols-3">
-                    <div>Renewal / expiry: <span className="text-on-surface">{formatDate(tenant.organizationPackage?.customExpiryDate || tenant.subscription?.currentPeriodEnd)}</span></div>
-                    <div>Payment method: <span className="text-on-surface">{tenant.subscription?.manualPaymentMethod || "Manual / Offline"}</span></div>
-                    <div>Payment reference: <span className="text-on-surface">{tenant.subscription?.manualPaymentReference || "Not set"}</span></div>
+                  <div className="grid gap-3 text-xs sm:grid-cols-3">
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-on-surface/65">
+                      Renewal / expiry
+                      <div className="mt-1 text-sm font-bold text-on-surface">{formatDate(tenant.organizationPackage?.customExpiryDate || tenant.subscription?.currentPeriodEnd)}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-on-surface/65">
+                      Payment method
+                      <div className="mt-1 text-sm font-bold text-on-surface">{tenant.subscription?.manualPaymentMethod || "Manual / Offline"}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-on-surface/65">
+                      Payment reference
+                      <div className="mt-1 text-sm font-bold text-on-surface">{tenant.subscription?.manualPaymentReference || "Not set"}</div>
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 lg:grid-cols-2 pt-6">
-                    <form action={updateOrganizationAdminAction} className="space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+                <CardContent className="px-6 pb-6">
+                  <div className="grid gap-4 pt-6 lg:grid-cols-2">
+                    <form action={updateOrganizationAdminAction} className={`space-y-3 ${panelClassName}`}>
                       <input type="hidden" name="organizationId" value={tenant.id} />
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px]">language</span> Locale Controls
@@ -266,7 +296,7 @@ export default async function CommandCenterPage() {
                       </button>
                     </form>
 
-                    <form action={updateTenantBillingFromCommandCenterAction} className="space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 row-span-3">
+                    <form action={updateTenantBillingFromCommandCenterAction} className={`row-span-3 space-y-3 ${panelClassName}`}>
                       <input type="hidden" name="organizationId" value={tenant.id} />
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px]">payments</span> Billing & Overrides
@@ -400,7 +430,7 @@ export default async function CommandCenterPage() {
                       </button>
                     </form>
 
-                    <form action={setOrganizationStatusAction} className="space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+                    <form action={setOrganizationStatusAction} className={`space-y-3 ${panelClassName}`}>
                       <input type="hidden" name="organizationId" value={tenant.id} />
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px]">lock</span> Access Locking
@@ -424,7 +454,7 @@ export default async function CommandCenterPage() {
                       </div>
                     </form>
                     
-                    <div className="space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+                    <div className={`space-y-3 ${panelClassName}`}>
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px]">bolt</span> Actions
                       </p>
@@ -439,7 +469,7 @@ export default async function CommandCenterPage() {
                     </div>
                   </div>
                   
-                  <div className="mt-6 space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+                  <div className={`mt-6 space-y-3 ${panelClassName}`}>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px]">group</span> Organization Members
                     </p>
@@ -454,7 +484,7 @@ export default async function CommandCenterPage() {
                             </div>
                             <div>
                               <p className="text-sm font-black text-on-surface">{member.user.name || "Unnamed User"}</p>
-                              <p className="text-[10px] font-medium text-on-surface-variant uppercase tracking-wider">{member.user.email} • {member.role.name}</p>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-on-surface-variant">{member.user.email} - {member.role.name}</p>
                             </div>
                           </div>
                         ))}
@@ -467,17 +497,17 @@ export default async function CommandCenterPage() {
           </div>
 
           <div className="space-y-6">
-            <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-              <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-4">
-                <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+            <Card className={shellCardClassName}>
+              <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+                <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[20px]">inventory</span> Catalog Limits
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 pt-6">
+              <CardContent className="space-y-4 px-6 pb-6 pt-6">
                 {packages.map((pkg) => {
                   const meta = readPackageMeta(pkg.featureJson);
                   return (
-                    <form key={pkg.id} action={updatePackageFromCommandCenterAction} className="space-y-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+                    <form key={pkg.id} action={updatePackageFromCommandCenterAction} className="space-y-3 rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-sm">
                       <input type="hidden" name="packageId" value={pkg.id} />
                       <p className="text-xs font-black text-on-surface uppercase tracking-widest">{pkg.name}</p>
                       <div className="grid gap-3 grid-cols-2">
@@ -507,35 +537,42 @@ export default async function CommandCenterPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-              <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-4">
-                <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+            <Card className={shellCardClassName}>
+              <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+                <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
                   <span className="material-symbols-outlined text-secondary text-[20px]">terminal</span> System Vault
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6 space-y-2">
-                <div className="rounded-xl bg-surface-container-low border border-outline-variant/30 p-4">
+              <CardContent className="space-y-3 px-6 pb-6 pt-6">
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-2">Demo Seed Context</p>
                   <p className="text-xs font-medium text-on-surface flex justify-between"><span>Org:</span> <span className="font-bold">Al Sadiq Traders</span></p>
                   <p className="text-xs font-medium text-on-surface flex justify-between"><span>User:</span> <span className="font-bold">admin@alsadiq.local</span></p>
                   <p className="text-xs font-medium text-on-surface flex justify-between"><span>Key:</span> <span className="font-bold text-primary">Demo123!</span></p>
                 </div>
+                <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Production posture</p>
+                  <p className="mt-2 text-sm font-bold text-on-surface">{isProduction ? "Live production mode" : "Non-production environment"}</p>
+                  <p className="mt-1 text-xs font-medium leading-5 text-on-surface-variant">
+                    Use this panel for controlled support context only. Tenant-facing workflows remain unchanged.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-              <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-4">
-                <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+            <Card className={shellCardClassName}>
+              <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+                <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
                   <span className="material-symbols-outlined text-error text-[20px]">receipt_long</span> Audit Log
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6 space-y-3">
+              <CardContent className="space-y-3 px-6 pb-6 pt-6">
                 {audits.length === 0 ? (
                   <p className="text-xs text-on-surface-variant font-medium">Clear logs.</p>
                 ) : (
                   audits.slice(0, 8).map((audit) => (
-                    <div key={audit.id} className="p-3 rounded-xl border border-outline-variant/20 bg-surface-container-lowest flex gap-3">
-                      <div className="w-6 h-6 rounded bg-on-surface/5 flex items-center justify-center">
+                    <div key={audit.id} className="flex gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-on-surface/5">
                         <span className="material-symbols-outlined text-[14px] text-on-surface-variant">history</span>
                       </div>
                       <div>
