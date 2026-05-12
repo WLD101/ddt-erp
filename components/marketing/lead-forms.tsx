@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitLeadAction } from "@/modules/leads/actions";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { recommendPackage, type TeamSizeBand } from "@/lib/package-fit";
 
 // --- CONTACT FORM SCHEMA ---
 const contactSchema = z.object({
@@ -96,9 +97,11 @@ export function DemoRequestForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, watch, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(demoSchema),
     });
+    const companySize = watch("companySize");
+    const recommendation = recommendPackage({ teamSize: companySize as TeamSizeBand | undefined });
 
     const onSubmit = async (data: any) => {
         setIsLoading(true);
@@ -148,12 +151,15 @@ export function DemoRequestForm() {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label className="text-white/70">Company Size</Label>
-                    <select {...register("companySize")} className="w-full bg-white/5 border-white/10 rounded-md h-10 px-3 text-sm outline-none focus:ring-1 ring-primary/50">
+                    <select {...register("companySize")} className="marketing-input h-10 w-full rounded-md px-3 text-sm outline-none">
                         <option value="1-10" className="bg-slate-900">1-10 employees</option>
                         <option value="11-50" className="bg-slate-900">11-50 employees</option>
                         <option value="51-200" className="bg-slate-900">51-200 employees</option>
                         <option value="201+" className="bg-slate-900">201+ employees</option>
                     </select>
+                    <p className="text-[11px] leading-relaxed text-slate-400">
+                        Suggested package: <span className="font-bold text-white">{recommendation.planName}</span>. {recommendation.summary}
+                    </p>
                 </div>
                 <div className="space-y-2">
                     <Label className="text-white/70">Preferred Time</Label>

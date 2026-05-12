@@ -1,35 +1,65 @@
-/* Extracted Styles from MainSite for Dark Starlight Edition */
+/* Extracted from the exported WhatsQuery website build and normalized for ERP public surfaces. */
 
 :root {
   --mainsite-bg: #020617;
-  --mainsite-accent: #4f39f6; /* indigo-600 */
+  --mainsite-bg-elevated: rgba(255, 255, 255, 0.03);
+  --mainsite-bg-elevated-strong: rgba(255, 255, 255, 0.05);
+  --mainsite-border: rgba(255, 255, 255, 0.05);
+  --mainsite-border-strong: rgba(255, 255, 255, 0.15);
+  --mainsite-text: #e2e8f0;
+  --mainsite-text-muted: #90a1b9;
+  --mainsite-indigo: #625fff;
+  --mainsite-indigo-strong: #4f39f6;
+  --mainsite-purple: #ac4bff;
+  --mainsite-blue: #3080ff;
 }
 
 .marketing-theme {
-  background-color: var(--mainsite-bg);
-  color: #e2e8f0;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(79, 57, 246, 0.2), transparent 30%),
+    radial-gradient(circle at top right, rgba(172, 75, 255, 0.16), transparent 24%),
+    radial-gradient(circle at bottom center, rgba(48, 128, 255, 0.08), transparent 30%),
+    var(--mainsite-bg);
+  color: var(--mainsite-text);
+  font-family: var(--font-plus-jakarta), system-ui, sans-serif;
 }
 
 .glass-card {
+  transform-style: preserve-3d;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transform-style: preserve-3d;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-top-color: rgba(255, 255, 255, 0.15);
+  background: var(--mainsite-bg-elevated);
+  border: 1px solid var(--mainsite-border);
+  border-top-color: var(--mainsite-border-strong);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(98, 95, 255, 0.18);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 30px 70px -20px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .glass-nav {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   background: rgba(2, 6, 23, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--mainsite-border);
 }
 
 .hero-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-indigo {
+  background: linear-gradient(135deg, #60a5fa 0%, #625fff 45%, #ac4bff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -40,30 +70,86 @@
   overflow: hidden;
 }
 
-.logo-shimmer:after {
+.logo-shimmer::after {
   content: "";
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  animation: 5s infinite shimmer;
-  position: absolute;
-  top: 0;
-  left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 5s infinite;
   transform: translate(-150%) skew(-30deg);
-}
-
-@keyframes shimmer {
-  0% { transform: translate(-150%) skew(-30deg); }
-  50%, 100% { transform: translate(150%) skew(-30deg); }
 }
 
 .logo-glow {
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
+.marketing-button-primary {
+  background: var(--mainsite-indigo);
+  color: white;
+  border-top: 1px solid rgba(164, 179, 255, 0.3);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+}
+
+.marketing-button-primary:hover {
+  background: var(--mainsite-indigo-strong);
+}
+
+.marketing-button-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.marketing-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.marketing-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.marketing-input::placeholder {
+  color: #62748e;
+}
+
+.marketing-input:focus {
+  border-color: rgba(98, 95, 255, 0.5);
+  box-shadow: 0 0 0 1px rgba(98, 95, 255, 0.4);
+}
+
 .reveal {
   opacity: 0;
   animation: revealUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translate(-150%) skew(-30deg);
+  }
+  50%,
+  100% {
+    transform: translate(150%) skew(-30deg);
+  }
 }
 
 @keyframes revealUp {
@@ -74,5 +160,15 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
   }
 }

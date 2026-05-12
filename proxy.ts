@@ -40,6 +40,7 @@ export default async function proxy(req: NextRequest) {
 
   const isPublicRoute =
     pathname === "/" ||
+    pathname === "/book-demo" ||
     pathname === "/pricing" ||
     pathname === "/contact" ||
     pathname === "/about" ||

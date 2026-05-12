@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { isPlatformAdminEmail } from "@/lib/security/access";
 import { shouldShowOnboarding } from "@/modules/onboarding/actions";
+import { PackageFitCalculator } from "@/components/marketing/package-fit-calculator";
 
 export default async function MarketingHomePage() {
   const session = await auth();
@@ -62,6 +63,8 @@ export default async function MarketingHomePage() {
           </div>
         </div>
       </section>
+
+      <PackageFitCalculator />
 
       {/* Feature Grid Section */}
       <section className="relative py-24 px-6 z-10">

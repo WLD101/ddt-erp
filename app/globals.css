@@ -11,9 +11,9 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-plus-jakarta);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-plus-jakarta);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -77,14 +77,14 @@
   --color-secondary-fixed: #6ffbbe;
 
   /* Typography */
-  --font-inter: "Inter", sans-serif;
-  --font-display-lg: "Inter", sans-serif;
-  --font-headline-md: "Inter", sans-serif;
-  --font-headline-sm: "Inter", sans-serif;
-  --font-body-lg: "Inter", sans-serif;
-  --font-body-md: "Inter", sans-serif;
-  --font-label-md: "Inter", sans-serif;
-  --font-data-tabular: "Inter", sans-serif;
+  --font-inter: var(--font-plus-jakarta);
+  --font-display-lg: var(--font-plus-jakarta);
+  --font-headline-md: var(--font-plus-jakarta);
+  --font-headline-sm: var(--font-plus-jakarta);
+  --font-body-lg: var(--font-plus-jakarta);
+  --font-body-md: var(--font-plus-jakarta);
+  --font-label-md: var(--font-plus-jakarta);
+  --font-data-tabular: var(--font-plus-jakarta);
 
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -145,7 +145,7 @@
     @apply bg-background text-on-background font-body-md antialiased;
   }
   html {
-    @apply font-inter;
+    font-family: var(--font-plus-jakarta), system-ui, sans-serif;
   }
   input,
   textarea,
