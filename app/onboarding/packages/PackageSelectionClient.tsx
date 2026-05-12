@@ -47,9 +47,9 @@ export function PackageSelectionClient({ packages }: { packages: PackageItem[] }
       if (result.status === "enterprise_pending") {
         toast.success("Enterprise request sent. Platform admin will activate your account.");
       } else {
-        toast.success("Package selected. Payment is pending.");
+        toast.success("Package selected. Continue to secure billing.");
       }
-      router.push("/settings/billing");
+      router.push(result.redirectTo || "/settings/billing");
     } finally {
       setPendingId(null);
     }

@@ -6,6 +6,7 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { inferPlanIdFromPackage } from "@/lib/billing/catalog";
 import { PLANS } from "@/lib/billing/plans";
 import { getCurrencyForCountry } from "@/lib/country-currency";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
@@ -616,6 +617,16 @@ export async function updateTenantBillingFromCommandCenterAction(formData: FormD
     paymentStatus: input.paymentStatus,
   });
   const customFeatureJson = buildCustomFeatureJson(input.customFeatures);
+  const packageRecord = await prisma.package.findUnique({
+    where: { id: input.packageId },
+    select: { id: true, name: true, featureJson: true, userLimit: true },
+  });
+
+  if (!packageRecord) {
+    throw new Error("Selected package no longer exists.");
+  }
+
+  const planId = inferPlanIdFromPackage(packageRecord);
 
   await prisma.$transaction([
     prisma.organizationPackage.upsert({
@@ -651,7 +662,7 @@ export async function updateTenantBillingFromCommandCenterAction(formData: FormD
       where: { organizationId: input.organizationId },
       data: {
         packageId: input.packageId,
-        planId: input.packageId,
+        planId,
         status: accessState.subscriptionStatus,
         paymentStatus: accessState.paymentStatus,
         accessStatus: accessState.subscriptionAccessStatus,
@@ -666,6 +677,11 @@ export async function updateTenantBillingFromCommandCenterAction(formData: FormD
         blockedAt: ["blocked", "expired"].includes(accessState.organizationAccessStatus) ? now : null,
         expiredAt: accessState.subscriptionStatus === "expired" || accessState.subscriptionStatus === "cancelled" ? now : null,
         graceEndsAt: null,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        stripePriceId: null,
+        stripeCheckoutSessionId: null,
+        cancelAtPeriodEnd: false,
       },
     }),
     prisma.organization.update({

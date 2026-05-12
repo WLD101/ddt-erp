@@ -269,6 +269,20 @@ export default async function CommandCenterPage() {
                       <div className="mt-1 text-sm font-bold text-on-surface">{tenant.subscription?.manualPaymentReference || "Not set"}</div>
                     </div>
                   </div>
+                  <div className="grid gap-3 text-xs sm:grid-cols-3">
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-on-surface/65">
+                      Stripe customer
+                      <div className="mt-1 truncate text-sm font-bold text-on-surface">{tenant.subscription?.stripeCustomerId || "Not linked"}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-on-surface/65">
+                      Stripe subscription
+                      <div className="mt-1 truncate text-sm font-bold text-on-surface">{tenant.subscription?.stripeSubscriptionId || "Not linked"}</div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant/20 bg-surface/90 p-3 text-on-surface/65">
+                      Stripe price
+                      <div className="mt-1 truncate text-sm font-bold text-on-surface">{tenant.subscription?.stripePriceId || "Not linked"}</div>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="px-6 pb-6">
                   <div className="grid gap-4 pt-6 lg:grid-cols-2">

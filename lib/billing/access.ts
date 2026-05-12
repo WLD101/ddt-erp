@@ -56,6 +56,16 @@ export async function getOrganizationAccessState(orgId: string): Promise<{
   const sub = organization.subscription;
   if (!sub) return { status: organization.accessStatus as OrganizationAccessStatus, redirectTo: "/onboarding/packages" };
 
+  if (sub.accessStatus === "grace_period") {
+    return {
+      status: "grace_period",
+      warning: sub.graceEndsAt
+        ? `Your subscription needs attention. Access continues until ${sub.graceEndsAt.toLocaleDateString()}.`
+        : "Your subscription needs attention, but access remains active during the grace period.",
+      graceEndsAt: sub.graceEndsAt,
+    };
+  }
+
   if (sub.paymentStatus === "payment_pending" || sub.status === "payment_pending") {
     if (sub.planId === "unassigned") {
       return { status: "payment_pending", redirectTo: "/onboarding/packages" };
@@ -63,10 +73,13 @@ export async function getOrganizationAccessState(orgId: string): Promise<{
       return { status: "payment_pending", redirectTo: "/settings/billing" };
     }
   }
-  if (sub.paymentStatus === "failed" || sub.status === "failed") {
+  if (sub.paymentStatus === "failed" && sub.accessStatus !== "grace_period") {
     return { status: "blocked", redirectTo: "/settings/billing" };
   }
-  if (sub.status === "cancelled") {
+  if (sub.status === "failed" && sub.accessStatus !== "grace_period") {
+    return { status: "blocked", redirectTo: "/settings/billing" };
+  }
+  if (sub.status === "cancelled" && sub.accessStatus !== "grace_period") {
     return { status: "blocked", redirectTo: "/settings/billing" };
   }
 

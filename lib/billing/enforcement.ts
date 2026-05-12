@@ -1,9 +1,10 @@
 // lib/billing/enforcement.ts
 
 import { prisma } from "@/lib/prisma";
-import { getPlan, PlanConfig } from "./plans";
+import { getPlan, PlanConfig, getPlanPriceForCycle, normalizePlanId } from "./plans";
 import { getTenantUsage } from "./usage";
 import { getOrganizationAccessState } from "./access";
+import { inferPlanIdFromPackage } from "./catalog";
 
 function readJsonObject(value?: string | null) {
   if (!value) return {};
@@ -35,12 +36,22 @@ export async function getSubscriptionContext(orgId: string) {
   ]);
 
   const packageRecord = assignment?.package ?? sub?.Package ?? null;
-  const basePlan = getPlan(packageRecord?.name ?? sub?.planId);
+  const effectivePlanId =
+    normalizePlanId(sub?.planId) ||
+    inferPlanIdFromPackage(packageRecord, sub?.planId) ||
+    "starter";
+  const basePlan = getPlan(effectivePlanId);
   const packageMeta = readJsonObject(packageRecord?.featureJson);
   const customMeta = readJsonObject(assignment?.customFeatureJson);
+  const billingCycle = sub?.billingCycle || assignment?.customBillingCycle || "MONTHLY";
   const monthlyPrice =
     assignment?.customPrice ??
     (typeof packageMeta.monthlyPrice === "number" ? packageMeta.monthlyPrice : basePlan.price.monthly);
+  const yearlyPrice =
+    typeof packageMeta.yearlyPrice === "number"
+      ? packageMeta.yearlyPrice
+      : getPlanPriceForCycle(basePlan.id, "YEARLY");
+  const displayPriceValue = billingCycle === "YEARLY" ? assignment?.customPrice ?? yearlyPrice : monthlyPrice;
   const branchLimit =
     assignment?.customBranchLimit ??
     (typeof packageMeta.branchLimit === "number" ? packageMeta.branchLimit : basePlan.limits.maxBranches);
@@ -59,7 +70,12 @@ export async function getSubscriptionContext(orgId: string) {
     price: {
       ...basePlan.price,
       monthly: monthlyPrice,
-      display: monthlyPrice === null ? "Custom" : `${monthlyPrice.toLocaleString()}`,
+      yearly: assignment?.customPrice ?? yearlyPrice,
+      display:
+        monthlyPrice === null
+          ? "Custom"
+          : `${displayPriceValue?.toLocaleString() ?? ""}`,
+      cadence: billingCycle === "YEARLY" ? "/year" : basePlan.price.cadence,
     },
     limits: {
       ...basePlan.limits,
@@ -102,13 +118,17 @@ export async function getSubscriptionContext(orgId: string) {
     status,
     daysRemaining,
     packageName: effectivePlan.name,
-    billingCycle: sub?.billingCycle || assignment?.customBillingCycle || "MONTHLY",
+    billingCycle,
     billingSource: sub?.billingSource || (sub?.paymentStatus === "demo" ? "demo" : "manual"),
     paymentStatus: sub?.paymentStatus || "payment_pending",
     renewalDate: assignment?.customExpiryDate ?? sub?.currentPeriodEnd ?? null,
     manualPaymentMethod: sub?.manualPaymentMethod ?? null,
     manualPaymentReference: sub?.manualPaymentReference ?? null,
     adminNotes: sub?.adminNotes ?? null,
+    stripeCustomerId: sub?.stripeCustomerId ?? null,
+    stripeSubscriptionId: sub?.stripeSubscriptionId ?? null,
+    stripePriceId: sub?.stripePriceId ?? null,
+    cancelAtPeriodEnd: sub?.cancelAtPeriodEnd ?? false,
     isCustomPackage: assignment?.isCustomPackage ?? false,
     featureList,
   };

@@ -153,6 +153,29 @@ test("expired paid subscription enters 15 day grace and keeps data", async (t) =
   }
 });
 
+test("past_due stripe subscription keeps grace-period access", async (t) => {
+  if (!(await ensureDatabaseOrSkip(t))) return;
+  const org = await createOrg("stripe-past-due", "active");
+  await prisma.subscription.update({
+    where: { organizationId: org.id },
+    data: {
+      status: "past_due",
+      paymentStatus: "failed",
+      accessStatus: "grace_period",
+      billingSource: "stripe",
+      graceEndsAt: addDays(new Date(), 7),
+    },
+  });
+
+  try {
+    const state = await getOrganizationAccessState(org.id);
+    assert.equal(state.status, "grace_period");
+    assert.equal(state.redirectTo, undefined);
+  } finally {
+    await prisma.organization.delete({ where: { id: org.id } });
+  }
+});
+
 test("expired demo is blocked without deleting tenant data", async (t) => {
   if (!(await ensureDatabaseOrSkip(t))) return;
   const org = await createOrg("demo-expired", "active");

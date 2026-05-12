@@ -2,6 +2,7 @@
 
 export type PlanId = "starter" | "business" | "pro" | "enterprise";
 type PlanLookupId = PlanId | "free" | "demo";
+export type BillingCycle = "MONTHLY" | "YEARLY" | "CUSTOM";
 
 export interface PlanConfig {
   id: PlanId;
@@ -10,6 +11,7 @@ export interface PlanConfig {
   audience: string;
   price: {
     monthly: number | null;
+    yearly: number | null;
     currency: "PKR";
     display: string;
     cadence: string;
@@ -53,6 +55,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Small shop or early-stage wholesale desk",
     price: {
       monthly: 3000,
+      yearly: 30000,
       currency: "PKR",
       display: "Rs. 3,000",
       cadence: "/month",
@@ -98,6 +101,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Retail, distribution, and wholesale teams",
     price: {
       monthly: 7000,
+      yearly: 70000,
       currency: "PKR",
       display: "Rs. 7,000",
       cadence: "/month",
@@ -145,6 +149,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Omnichannel sellers and established wholesalers",
     price: {
       monthly: 15000,
+      yearly: 150000,
       currency: "PKR",
       display: "Rs. 15,000",
       cadence: "/month",
@@ -189,6 +194,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Multi-company, custom-process organizations",
     price: {
       monthly: null,
+      yearly: null,
       currency: "PKR",
       display: "Custom",
       cadence: "",
@@ -243,6 +249,17 @@ export function getPlan(id?: string | null): PlanConfig {
   return PLANS[normalized as PlanId] || PLANS[DEFAULT_PLAN_ID];
 }
 
+export function normalizePlanId(id?: string | null): PlanId | null {
+  if (!id) return null;
+  const normalized = PLAN_ALIASES[id.toLowerCase()];
+  return normalized && normalized !== "free" && normalized !== "demo" ? (normalized as PlanId) : null;
+}
+
 export function formatPlanLimit(limit: number) {
   return limit > 9000 ? "Unlimited" : limit.toLocaleString();
+}
+
+export function getPlanPriceForCycle(planId: PlanId, billingCycle: BillingCycle) {
+  const plan = PLANS[planId];
+  return billingCycle === "YEARLY" ? plan.price.yearly : plan.price.monthly;
 }

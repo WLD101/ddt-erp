@@ -1,10 +1,12 @@
-import { getCurrentTenantContext } from "@/lib/tenant";
-import { getSubscriptionContext } from "@/lib/billing/enforcement";
-import { PLAN_ORDER, PLANS, formatPlanLimit } from "@/lib/billing/plans";
-import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { StripeCheckoutLauncher } from "@/components/billing/stripe-checkout-launcher";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { getSubscriptionContext } from "@/lib/billing/enforcement";
+import { PLAN_ORDER, PLANS, formatPlanLimit, normalizePlanId } from "@/lib/billing/plans";
+import { getAvailableStripeBillingCycles } from "@/lib/billing/stripe";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenantContext } from "@/lib/tenant";
 import { cn } from "@/lib/utils";
 
 export default async function BillingSettingsPage() {
@@ -24,14 +26,24 @@ export default async function BillingSettingsPage() {
     manualPaymentReference,
     isCustomPackage,
     featureList,
+    stripeCustomerId,
+    stripeSubscriptionId,
+    stripePriceId,
+    cancelAtPeriodEnd,
   } = subCtx;
+
   const branchCount = await prisma.branch.count({
     where: { organizationId: ctx.organizationId },
   });
 
   const isTrial = status === "trialing";
   const isExpired = status === "expired";
-  
+  const isGrace = status === "grace_period";
+  const normalizedPlanId = normalizePlanId(subCtx.sub?.planId || subCtx.plan.id);
+  const canUseStripeCheckout = Boolean(normalizedPlanId && normalizedPlanId !== "enterprise" && !isCustomPackage);
+  const availableCycles = normalizedPlanId ? getAvailableStripeBillingCycles(normalizedPlanId) : { monthly: false, yearly: false };
+  const canUsePortal = Boolean(stripeCustomerId && stripeSubscriptionId && billingSource === "stripe");
+
   const usageStats = [
     { name: "Users", current: usage.users, limit: plan.limits.maxUsers, icon: "group" },
     { name: "Branches", current: branchCount, limit: plan.limits.maxBranches, icon: "location_on" },
@@ -45,21 +57,22 @@ export default async function BillingSettingsPage() {
         <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline-md uppercase">
           Subscription <span className="text-primary">Architecture</span>
         </h2>
-        <p className="text-on-surface-variant text-sm font-medium mt-1 font-body-md">
-          Manage workspace quotas, system utilization, and organizational scaling protocols.
+        <p className="mt-1 text-sm font-medium text-on-surface-variant font-body-md">
+          Manage workspace quotas, Stripe billing, subscription posture, and renewal timelines.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <Card className="col-span-1 rounded-3xl shadow-soft border-outline-variant/30 overflow-hidden bg-surface">
-          <CardHeader className="bg-surface-container-lowest border-b border-outline-variant/10 pb-6">
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[18px]">credit_card</span> Active Protocol
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
+        <Card className="col-span-1 overflow-hidden rounded-3xl border-outline-variant/30 bg-surface shadow-soft">
+          <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-6">
+            <CardTitle className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">
+              <span className="material-symbols-outlined text-[18px] text-primary">credit_card</span>
+              Active Protocol
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-8 space-y-6">
+          <CardContent className="space-y-6 pt-8">
             <div className="space-y-1">
-              <h2 className="text-3xl font-black tracking-tighter text-on-surface font-headline-lg">{packageName}</h2>
+              <h2 className="font-headline-lg text-3xl font-black tracking-tighter text-on-surface">{packageName}</h2>
               <p className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">System Tier</p>
             </div>
 
@@ -86,64 +99,118 @@ export default async function BillingSettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Payment method</span>
-                <span className="font-black text-on-surface">{manualPaymentMethod || "Manual / Offline Payment"}</span>
+                <span className="font-black text-on-surface">{manualPaymentMethod || (billingSource === "stripe" ? "Stripe subscription" : "Manual / Offline Payment")}</span>
               </div>
               {manualPaymentReference ? (
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <span>Reference</span>
                   <span className="font-black text-on-surface">{manualPaymentReference}</span>
                 </div>
               ) : null}
+              {stripePriceId ? (
+                <div className="flex items-center justify-between gap-4">
+                  <span>Stripe price</span>
+                  <span className="truncate font-black text-on-surface">{stripePriceId}</span>
+                </div>
+              ) : null}
+              {stripeSubscriptionId ? (
+                <div className="flex items-center justify-between gap-4">
+                  <span>Subscription ID</span>
+                  <span className="truncate font-black text-on-surface">{stripeSubscriptionId}</span>
+                </div>
+              ) : null}
             </div>
-            
-            {isTrial && (
-              <div className="flex items-start gap-4 p-5 rounded-2xl border border-amber-500/20 bg-amber-500/5">
-                <span className="material-symbols-outlined text-amber-600 text-[24px] mt-0.5">schedule</span>
-                <div>
-                  <p className="text-[11px] font-black text-amber-600 uppercase tracking-widest">Trial Context</p>
-                  <p className="text-xs font-medium text-on-surface-variant mt-1.5 leading-relaxed">
-                    Utilization window expires in <span className="text-on-surface font-black">{daysRemaining} cycles</span>.
-                  </p>
-                </div>
-              </div>
-            )}
 
-            {isExpired && (
-              <div className="flex items-start gap-4 p-5 rounded-2xl border border-error/20 bg-error/5">
-                <span className="material-symbols-outlined text-error text-[24px] mt-0.5">report_problem</span>
+            {isTrial ? (
+              <div className="flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5">
+                <span className="material-symbols-outlined mt-0.5 text-[24px] text-amber-600">schedule</span>
                 <div>
-                  <p className="text-[11px] font-black text-error uppercase tracking-widest">Protocol Expired</p>
-                  <p className="text-xs font-medium text-on-surface-variant mt-1.5 leading-relaxed">
-                    Workspace is currently locked to read-only telemetry.
+                  <p className="text-[11px] font-black uppercase tracking-widest text-amber-600">Trial Context</p>
+                  <p className="mt-1.5 text-xs font-medium leading-relaxed text-on-surface-variant">
+                    Utilization window expires in <span className="font-black text-on-surface">{daysRemaining} days</span>.
                   </p>
                 </div>
               </div>
-            )}
+            ) : null}
+
+            {isGrace ? (
+              <div className="flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5">
+                <span className="material-symbols-outlined mt-0.5 text-[24px] text-amber-600">warning</span>
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-amber-600">Grace period</p>
+                  <p className="mt-1.5 text-xs font-medium leading-relaxed text-on-surface-variant">
+                    Payment needs attention. Access stays active temporarily while you update billing.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {isExpired ? (
+              <div className="flex items-start gap-4 rounded-2xl border border-error/20 bg-error/5 p-5">
+                <span className="material-symbols-outlined mt-0.5 text-[24px] text-error">report_problem</span>
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-error">Protocol Expired</p>
+                  <p className="mt-1.5 text-xs font-medium leading-relaxed text-on-surface-variant">
+                    Workspace access is restricted until a valid subscription becomes active again.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {cancelAtPeriodEnd ? (
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-xs font-bold uppercase tracking-widest text-amber-100">
+                Cancellation is scheduled at the end of the current billing period.
+              </div>
+            ) : null}
 
             {isCustomPackage && featureList.length > 0 ? (
               <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                 <p className="text-[11px] font-black uppercase tracking-widest text-primary">Custom package features</p>
-                <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">
-                  {featureList.join(", ")}
-                </p>
+                <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">{featureList.join(", ")}</p>
               </div>
             ) : null}
-
           </CardContent>
           <CardFooter className="pb-8">
-            <Button className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">
-              Manage Billing Node
-            </Button>
+            <div className="w-full space-y-3">
+              {canUsePortal ? (
+                <form action="/api/billing/portal" method="post">
+                  <Button type="submit" className="h-12 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+                    Open Stripe Billing Portal
+                  </Button>
+                </form>
+              ) : canUseStripeCheckout && normalizedPlanId ? (
+                <StripeCheckoutLauncher
+                  compact
+                  planId={normalizedPlanId}
+                  planName={plan.name}
+                  initialBillingCycle={billingCycle === "YEARLY" ? "YEARLY" : "MONTHLY"}
+                  availableCycles={availableCycles}
+                />
+              ) : (
+                <Button disabled className="h-12 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+                  Contact admin for billing changes
+                </Button>
+              )}
+              <p className="text-center text-[11px] text-on-surface-variant">
+                {canUsePortal
+                  ? "Manage card details, cancellation, and invoices inside Stripe Customer Portal."
+                  : canUseStripeCheckout
+                    ? "Use secure Stripe checkout to activate or update this workspace plan."
+                    : "Enterprise and custom packages continue through platform-admin approval."}
+              </p>
+            </div>
           </CardFooter>
         </Card>
 
-        <Card className="col-span-1 lg:col-span-2 rounded-3xl shadow-soft border-outline-variant/30 bg-surface">
-          <CardHeader className="bg-surface-container-lowest border-b border-outline-variant/10 pb-6">
+        <Card className="col-span-1 rounded-3xl border-outline-variant/30 bg-surface shadow-soft lg:col-span-2">
+          <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-6">
             <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">System Utilization</CardTitle>
-            <CardDescription className="text-xs font-medium text-on-surface-variant mt-1">Operational telemetry against {plan.name} limits.</CardDescription>
+            <CardDescription className="mt-1 text-xs font-medium text-on-surface-variant">
+              Operational telemetry against {plan.name} limits.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
               {usageStats.map((stat) => {
                 const percent = Math.min(100, Math.round((stat.current / stat.limit) * 100));
                 const isWarning = percent >= 80;
@@ -152,21 +219,24 @@ export default async function BillingSettingsPage() {
                   <div key={stat.name} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-on-surface-variant/40 text-[18px]">{stat.icon}</span>
+                        <span className="material-symbols-outlined text-[18px] text-on-surface-variant/40">{stat.icon}</span>
                         <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{stat.name}</span>
                       </div>
-                      <span className="text-[10px] font-black text-on-surface-variant/60 tracking-widest">
-                        <span className={cn("text-on-surface", isWarning && "text-amber-600", isCritical && "text-error")}>{stat.current}</span> / {formatPlanLimit(stat.limit)}
+                      <span className="text-[10px] font-black tracking-widest text-on-surface-variant/60">
+                        <span className={cn("text-on-surface", isWarning && "text-amber-600", isCritical && "text-error")}>
+                          {stat.current}
+                        </span>{" "}
+                        / {formatPlanLimit(stat.limit)}
                       </span>
                     </div>
                     {stat.limit < 900000 ? (
-                      <Progress 
-                        value={percent} 
-                        className="h-2 bg-surface-container-low" 
+                      <Progress
+                        value={percent}
+                        className="h-2 bg-surface-container-low"
                         indicatorClassName={cn("bg-primary", isWarning && "bg-amber-500", isCritical && "bg-error")}
                       />
                     ) : (
-                       <Progress value={0} className="h-2 bg-surface-container-low" />
+                      <Progress value={0} className="h-2 bg-surface-container-low" />
                     )}
                   </div>
                 );
@@ -177,46 +247,69 @@ export default async function BillingSettingsPage() {
       </div>
 
       <div className="pt-10">
-        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-on-surface-variant mb-8 flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-[20px]">architecture</span>
+        <h3 className="mb-8 flex items-center gap-3 text-sm font-black uppercase tracking-[0.2em] text-on-surface-variant">
+          <span className="material-symbols-outlined text-[20px] text-primary">architecture</span>
           Plan Comparison Matrix
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
           {PLAN_ORDER.map((planId) => {
             const p = PLANS[planId];
-            const isCurrent = (isTrial || isExpired) ? p.id === "pro" : p.name === plan.name || p.id === plan.id;
+            const isCurrent = p.id === plan.id || p.name === plan.name;
+            const canSelfServeThisPlan = p.id !== "enterprise";
+
             return (
-              <Card key={p.id} className={cn(
-                "relative overflow-hidden rounded-3xl border transition-all duration-500 shadow-soft",
-                isCurrent ? "border-primary bg-primary/[0.02] shadow-xl shadow-primary/5" : "border-outline-variant/30 bg-surface"
-              )}>
-                {isCurrent && (
-                  <div className="absolute top-0 left-0 w-full h-1.5 bg-primary" />
+              <Card
+                key={p.id}
+                className={cn(
+                  "relative overflow-hidden rounded-3xl border bg-surface shadow-soft transition-all duration-500",
+                  isCurrent ? "border-primary bg-primary/[0.02] shadow-xl shadow-primary/5" : "border-outline-variant/30",
                 )}
+              >
+                {isCurrent ? <div className="absolute left-0 top-0 h-1.5 w-full bg-primary" /> : null}
                 <CardHeader className="pb-6">
-                  <CardTitle className="text-xl font-black text-on-surface tracking-tight font-headline-sm">{p.name}</CardTitle>
-                  <CardDescription className="text-xs font-black text-primary uppercase tracking-widest">{p.price.display}{p.price.cadence ? ` ${p.price.cadence}` : ""}</CardDescription>
+                  <CardTitle className="font-headline-sm text-xl font-black tracking-tight text-on-surface">{p.name}</CardTitle>
+                  <CardDescription className="text-xs font-black uppercase tracking-widest text-primary">
+                    {p.price.display}
+                    {p.price.cadence ? ` ${p.price.cadence}` : ""}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <div className="space-y-4">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40 border-b border-outline-variant/10 pb-2">Operational Quotas</p>
+                    <p className="border-b border-outline-variant/10 pb-2 text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40">
+                      Operational Quotas
+                    </p>
                     <div className="space-y-2 text-[11px] font-bold text-on-surface-variant">
-                      <div className="flex justify-between"><span>User Seats</span><span className="text-on-surface font-black">{formatPlanLimit(p.limits.maxUsers)}</span></div>
-                      <div className="flex justify-between"><span>Branch Nodes</span><span className="text-on-surface font-black">{formatPlanLimit(p.limits.maxBranches)}</span></div>
-                      <div className="flex justify-between"><span>SKU Repository</span><span className="text-on-surface font-black">{formatPlanLimit(p.limits.maxProducts)}</span></div>
+                      <div className="flex justify-between">
+                        <span>User Seats</span>
+                        <span className="font-black text-on-surface">{formatPlanLimit(p.limits.maxUsers)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Branch Nodes</span>
+                        <span className="font-black text-on-surface">{formatPlanLimit(p.limits.maxBranches)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>SKU Repository</span>
+                        <span className="font-black text-on-surface">{formatPlanLimit(p.limits.maxProducts)}</span>
+                      </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40 border-b border-outline-variant/10 pb-2">Capability Matrix</p>
+                    <p className="border-b border-outline-variant/10 pb-2 text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40">
+                      Capability Matrix
+                    </p>
                     <div className="space-y-3">
                       {[
                         { label: "Advanced Analytics", enabled: p.features.advancedReports, icon: "analytics" },
                         { label: "Data Export Nodes", enabled: p.features.exportData, icon: "ios_share" },
                         { label: "Bulk Manifest Import", enabled: p.features.csvImport, icon: "upload_file" },
-                        { label: "Ecommerce Integration", enabled: p.features.darazIntegration || p.features.shopifyIntegration || p.features.woocommerceIntegration, icon: "hub" },
-                      ].map((feat, idx) => (
-                        <div key={idx} className="flex items-center gap-3 text-[11px] font-bold">
+                        {
+                          label: "Ecommerce Integration",
+                          enabled: p.features.darazIntegration || p.features.shopifyIntegration || p.features.woocommerceIntegration,
+                          icon: "hub",
+                        },
+                      ].map((feat) => (
+                        <div key={feat.label} className="flex items-center gap-3 text-[11px] font-bold">
                           <span className={cn("material-symbols-outlined text-[18px]", feat.enabled ? "text-primary" : "text-on-surface-variant/20")}>
                             {feat.enabled ? "check_circle" : "cancel"}
                           </span>
@@ -227,16 +320,29 @@ export default async function BillingSettingsPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="pb-8">
-                  <Button 
-                    variant={isCurrent ? "outline" : "default"} 
-                    className="w-full h-11 rounded-xl font-black uppercase tracking-widest text-[10px]"
-                    disabled={isCurrent && status === "active"}
-                  >
-                    {isCurrent 
-                      ? (isTrial ? "Initialize Subscription" : (isExpired ? "Reactivate Protocol" : "Current Protocol")) 
-                      : `Upgrade Tier`
-                    }
-                  </Button>
+                  {isCurrent ? (
+                    <Button variant="outline" className="h-11 w-full rounded-xl text-[10px] font-black uppercase tracking-widest" disabled>
+                      Current Protocol
+                    </Button>
+                  ) : canUsePortal ? (
+                    <form action="/api/billing/portal" method="post" className="w-full">
+                      <Button type="submit" variant="outline" className="h-11 w-full rounded-xl text-[10px] font-black uppercase tracking-widest">
+                        Manage In Portal
+                      </Button>
+                    </form>
+                  ) : canSelfServeThisPlan ? (
+                    <StripeCheckoutLauncher
+                      compact
+                      planId={p.id}
+                      planName={p.name}
+                      initialBillingCycle={billingCycle === "YEARLY" ? "YEARLY" : "MONTHLY"}
+                      availableCycles={getAvailableStripeBillingCycles(p.id)}
+                    />
+                  ) : (
+                    <Button variant="outline" className="h-11 w-full rounded-xl text-[10px] font-black uppercase tracking-widest" disabled>
+                      Contact Sales
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             );

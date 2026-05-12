@@ -300,26 +300,44 @@ model Subscription {
   organizationId String       @unique
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  planId             String
-  status             String
-  paymentStatus      String   @default("payment_pending")
-  accessStatus       String   @default("payment_pending")
-  billingCycle       String   @default("MONTHLY")
-  billingSource      String?
-  manualPaymentMethod String?
+  planId                String
+  status                String
+  paymentStatus         String   @default("payment_pending")
+  accessStatus          String   @default("payment_pending")
+  billingCycle          String   @default("MONTHLY")
+  billingSource         String?
+  manualPaymentMethod   String?
   manualPaymentReference String?
-  adminNotes         String?
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
+  adminNotes            String?
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  stripePriceId         String?
+  stripeCheckoutSessionId String?
+  cancelAtPeriodEnd     Boolean  @default(false)
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  Package               Package?  @relation(fields: [packageId], references: [id])
+  packageId             String?
+  activatedAt           DateTime?
+  blockedAt             DateTime?
+  expiredAt             DateTime?
+  graceEndsAt           DateTime?
+}
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  Package     Package?  @relation(fields: [packageId], references: [id])
-  packageId   String?
-  activatedAt DateTime?
-  blockedAt   DateTime?
-  expiredAt   DateTime?
-  graceEndsAt DateTime?
+model StripeWebhookEvent {
+  id             String   @id @default(cuid())
+  eventId        String   @unique
+  type           String
+  organizationId String?
+  status         String   @default("processed")
+  payload        String?
+  processedAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([processedAt])
 }
 
 // -----------------------------------------------------------------------------

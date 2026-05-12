@@ -28,7 +28,7 @@ export default async function PackageSelectionPage() {
           Choose how this ERP goes live
         </h1>
         <p className="max-w-2xl text-slate-400">
-          Access opens after payment is marked active. Enterprise requests stay pending until a platform admin assigns a custom package.
+          Standard plans continue into secure Stripe checkout. Enterprise requests stay pending until a platform admin assigns a custom package.
         </p>
       </section>
       <PackageSelectionClient packages={packages} />

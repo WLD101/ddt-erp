@@ -1,5 +1,6 @@
 "use server";
 
+import { inferPlanIdFromPackage } from "@/lib/billing/catalog";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { requirePlatformAdmin } from "@/lib/security/guards";
@@ -144,6 +145,13 @@ export async function assignPackageAction(data: unknown) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const input = parsed.data;
 
+  const packageRecord = await prisma.package.findUnique({
+    where: { id: input.packageId },
+  });
+  if (!packageRecord) return { error: "Package not found." };
+
+  const planId = inferPlanIdFromPackage(packageRecord);
+
   const assignment = await prisma.organizationPackage.upsert({
     where: { organizationId: input.organizationId },
     update: {
@@ -164,7 +172,7 @@ export async function assignPackageAction(data: unknown) {
 
   await prisma.subscription.update({
     where: { organizationId: input.organizationId },
-    data: { packageId: input.packageId, planId: input.packageId },
+    data: { packageId: input.packageId, planId },
   }).catch(() => null);
 
   await writePlatformAuditLog({
@@ -205,6 +213,7 @@ export async function selectPackageAction(data: unknown) {
   if (!parsed.data.packageId) return { error: "Package is required." };
   const pkg = await prisma.package.findFirst({ where: { id: parsed.data.packageId, isActive: true } });
   if (!pkg) return { error: "Package not found." };
+  const planId = inferPlanIdFromPackage(pkg);
 
   await prisma.$transaction([
     prisma.organizationPackage.upsert({
@@ -220,7 +229,7 @@ export async function selectPackageAction(data: unknown) {
       where: { organizationId: ctx.organizationId },
       data: {
         packageId: pkg.id,
-        planId: pkg.id,
+        planId,
         status: "payment_pending",
         paymentStatus: "payment_pending",
         accessStatus: "payment_pending",
@@ -228,7 +237,7 @@ export async function selectPackageAction(data: unknown) {
     }),
   ]);
 
-  return { success: true, status: "payment_pending" };
+  return { success: true, status: "payment_pending", redirectTo: planId === "enterprise" ? "/settings/billing" : "/checkout" };
 }
 
 export async function markSubscriptionPaymentSuccessAction(orgId: string) {
