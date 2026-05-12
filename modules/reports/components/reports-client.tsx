@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-export function ReportsClient() {
+export function ReportsClient({ canViewAdvancedTrends = true }: { canViewAdvancedTrends?: boolean }) {
   const [interval, setInterval] = useState<"day" | "week" | "month">("day");
   const [dateRange, setDateRange] = useState({
     from: format(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
@@ -39,9 +39,14 @@ export function ReportsClient() {
       const [m, tx, trendResult] = await Promise.all([
         getDashboardMetrics(dateRange.from, dateRange.to),
         getRecentTransactions(10),
-        getFinancialTrends(30, dateRange.from, dateRange.to, interval)
-          .then((data) => ({ ok: true as const, data }))
-          .catch((error) => ({ ok: false as const, error })),
+        canViewAdvancedTrends
+          ? getFinancialTrends(30, dateRange.from, dateRange.to, interval)
+              .then((data) => ({ ok: true as const, data }))
+              .catch((error) => ({ ok: false as const, error }))
+          : Promise.resolve({
+              ok: false as const,
+              error: new Error("Financial trends are only available on Pro and Enterprise plans."),
+            }),
       ]);
       setMetrics(m);
       setTransactions(tx);

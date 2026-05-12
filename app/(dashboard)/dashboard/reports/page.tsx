@@ -7,8 +7,12 @@ import { ReportsClient } from "@/modules/reports/components/reports-client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
 import { PageShell } from "@/components/dashboard/page-shell";
+import { getCurrentTenantContext } from "@/lib/tenant";
+import { canUseFeature } from "@/lib/billing/enforcement";
 
 export default async function ReportsPage() {
+  const ctx = await getCurrentTenantContext();
+  const canViewAdvancedTrends = await canUseFeature(ctx.organizationId, "advancedReports");
   const [balances, topProducts, lowStock] = await Promise.all([
     getOutstandingBalances(),
     getTopProducts(5),
@@ -29,7 +33,7 @@ export default async function ReportsPage() {
     >
 
       {/* Main Interactive Analytics Section */}
-      <ReportsClient />
+      <ReportsClient canViewAdvancedTrends={canViewAdvancedTrends} />
 
       {/* Static Insights Grid */}
       <div className="grid gap-10 lg:grid-cols-3">

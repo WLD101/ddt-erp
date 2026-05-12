@@ -32,7 +32,7 @@ export async function getFinancialTrends(
   // FEATURE GATE (Plan Enforcement)
   const allowed = await canUseFeature(ctx.organizationId, "advancedReports");
   if (!allowed) {
-    throw new Error("Financial trends are only available on Pro and Enterprise plans.");
+    return [];
   }
 
   return service.getFinancialTrends(db, ctx.branchId, days, fromDate, toDate, interval);
@@ -75,6 +75,10 @@ export async function getChartData() {
   const ctx = await getCurrentTenantContext();
   requirePermission(ctx, "reports.view");
   const db = getTenantStore(ctx);
+  const allowed = await canUseFeature(ctx.organizationId, "advancedReports");
+  if (!allowed) {
+    return [];
+  }
   return service.getFinancialTrends(db, ctx.branchId, 30);
 }
 
