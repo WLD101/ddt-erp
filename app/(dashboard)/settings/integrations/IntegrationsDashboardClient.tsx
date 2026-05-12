@@ -119,8 +119,8 @@ const CARD_CONFIGS: IntegrationCardConfig[] = [
     description: "Upload spreadsheet data when physical nodes or marketplaces lack API authorization.",
     icon: "upload_file",
     gradient: "from-amber-500/10 to-transparent",
-    connectHref: "/imports",
-    logsHref: "/imports",
+    connectHref: "/dashboard/imports",
+    logsHref: "/dashboard/imports",
     connectLabel: "Import Center",
     testLabel: "Preview Schema",
     productsLabel: "Import SKU List",
@@ -326,7 +326,7 @@ export function IntegrationsDashboardClient({
                     className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
                     disabled={busy || (!isCsv && !channel?.id)}
                     onClick={() => {
-                      if (isCsv) { router.push("/imports"); return; }
+                      if (isCsv) { router.push("/dashboard/imports"); return; }
                       if (channel?.id)
                         runAction(
                           card.type,
@@ -344,7 +344,7 @@ export function IntegrationsDashboardClient({
                     className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
                     disabled={busy || (!isCsv && !channel?.id)}
                     onClick={() => {
-                       if (isCsv) { router.push("/imports"); return; }
+                       if (isCsv) { router.push("/dashboard/imports"); return; }
                        if (channel?.id)
                         runAction(card.type, "Catalog synchronization initialized", () =>
                           syncSalesChannelProducts({ channelId: channel.id })
@@ -360,7 +360,7 @@ export function IntegrationsDashboardClient({
                     className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
                     disabled={busy || (!isCsv && !channel?.id)}
                     onClick={() => {
-                       if (isCsv) { router.push("/imports"); return; }
+                       if (isCsv) { router.push("/dashboard/imports"); return; }
                        if (channel?.id)
                         runAction(card.type, "Invoice ingestion started", () =>
                           syncSalesChannelOrders({ channelId: channel.id })
@@ -376,7 +376,7 @@ export function IntegrationsDashboardClient({
                     className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
                     disabled={busy || (!isCsv && !channel?.id)}
                     onClick={() => {
-                       if (isCsv) { router.push("/imports"); return; }
+                       if (isCsv) { router.push("/dashboard/imports"); return; }
                        if (channel?.id)
                         runAction(
                           card.type,

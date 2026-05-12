@@ -21,7 +21,7 @@ export default async function InventoryPage() {
             </Button>
           </a>
           <Button asChild className="h-10 rounded-xl px-5 font-bold shadow-lg shadow-primary/20">
-            <Link href="/imports">
+            <Link href="/dashboard/imports">
               <Upload className="w-4 h-4 mr-2" />
               Import Inventory
             </Link>

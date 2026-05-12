@@ -30,18 +30,31 @@ export function ReportsClient() {
   const [metrics, setMetrics] = useState<any>(null);
   const [trends, setTrends] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [trendNotice, setTrendNotice] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
+    setTrendNotice(null);
     try {
-      const [m, t, tx] = await Promise.all([
+      const [m, tx, trendResult] = await Promise.all([
         getDashboardMetrics(dateRange.from, dateRange.to),
-        getFinancialTrends(30, dateRange.from, dateRange.to, interval),
-        getRecentTransactions(10)
+        getRecentTransactions(10),
+        getFinancialTrends(30, dateRange.from, dateRange.to, interval)
+          .then((data) => ({ ok: true as const, data }))
+          .catch((error) => ({ ok: false as const, error })),
       ]);
       setMetrics(m);
-      setTrends(t);
       setTransactions(tx);
+      if (trendResult.ok) {
+        setTrends(trendResult.data);
+      } else {
+        const message =
+          trendResult.error instanceof Error
+            ? trendResult.error.message
+            : "Financial trends are unavailable for the current plan.";
+        setTrends([]);
+        setTrendNotice(message);
+      }
     } catch (error) {
        console.error("Failed to load analytics", error);
     } finally {
@@ -153,7 +166,23 @@ export function ReportsClient() {
             <CardDescription className="text-xs font-medium text-on-surface-variant uppercase tracking-widest">Multi-series telemetry tracking</CardDescription>
           </CardHeader>
           <CardContent className="pt-8 px-6">
-            <FinancialTrendChart data={trends} />
+            {trendNotice ? (
+              <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-3xl border border-outline-variant/20 bg-surface-container-lowest px-8 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                  <span className="material-symbols-outlined text-[30px]">insights</span>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-on-surface">
+                    Advanced analytics locked
+                  </p>
+                  <p className="max-w-md text-sm font-medium leading-6 text-on-surface-variant">
+                    {trendNotice}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <FinancialTrendChart data={trends} />
+            )}
           </CardContent>
         </Card>
 

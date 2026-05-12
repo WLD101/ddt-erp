@@ -141,7 +141,7 @@ export default async function ReportsPage() {
                 <p className="text-xs font-black text-on-surface">{lowStock.length} Supply Exceptions</p>
               </div>
             </div>
-            <Link href="/inventory" className="w-full h-11 bg-error text-on-error rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-error/20 flex items-center justify-center gap-2 group hover:opacity-90">
+            <Link href="/dashboard/inventory" className="w-full h-11 bg-error text-on-error rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-error/20 flex items-center justify-center gap-2 group hover:opacity-90">
               Authorize Replenishment <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_right_alt</span>
             </Link>
           </Card>
