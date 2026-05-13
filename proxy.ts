@@ -57,6 +57,10 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
   }
 
+  if (pathname === "/" && isLoggedIn && isSuperAdmin(userEmail)) {
+    return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
+  }
+
   if (isAuthRoute) {
     if (isLoggedIn) {
       if (isSuperAdmin(userEmail)) {

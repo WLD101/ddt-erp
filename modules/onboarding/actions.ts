@@ -251,12 +251,28 @@ export async function shouldShowOnboarding(): Promise<boolean> {
     const ctx = await getCurrentTenantContext();
     if (!["owner", "admin"].includes(ctx.role)) return false;
 
-    const state = await prisma.onboardingState.findUnique({
-      where: { organizationId: ctx.organizationId },
-    });
+    const [state, organization] = await Promise.all([
+      prisma.onboardingState.findUnique({
+        where: { organizationId: ctx.organizationId },
+      }),
+      prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: {
+          isDemoTenant: true,
+          lifecycleStatus: true,
+          accessStatus: true,
+        },
+      }),
+    ]);
 
-    if (!state) return true; // Never started
-    return !state.isCompleted;
+    if (state?.isCompleted) return false;
+    if (state && !state.isCompleted) return true;
+    if (!organization) return false;
+
+    if (organization.isDemoTenant) return true;
+
+    return ["onboarding", "enterprise_pending"].includes(organization.lifecycleStatus)
+      || ["onboarding", "payment_pending"].includes(organization.accessStatus);
   } catch {
     return false;
   }

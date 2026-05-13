@@ -64,9 +64,9 @@ export function WizardShell({
     <div className="flex min-h-[calc(100vh-73px)] flex-col lg:flex-row">
       <aside className="glass-card flex shrink-0 flex-col gap-8 border-r border-white/8 bg-white/[0.03] p-8 backdrop-blur-sm lg:w-72 lg:rounded-r-[32px] lg:p-10 xl:w-80">
         <div className="space-y-2">
-          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-300">
             <span>Setup Progress</span>
-            <span className="text-indigo-300">{Math.round(progress)}%</span>
+            <span className="text-indigo-200">{Math.round(progress)}%</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
             <div
@@ -88,9 +88,9 @@ export function WizardShell({
                 onClick={() => goToStep(idx)}
                 className={cn(
                   "group flex w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-left transition-all duration-200",
-                  isCurrent && "border border-indigo-400/20 bg-indigo-500/10",
-                  !isCurrent && isDone && "opacity-80 hover:bg-white/6 hover:opacity-100",
-                  !isCurrent && !isDone && "cursor-default opacity-35"
+                  isCurrent && "border border-indigo-400/30 bg-indigo-500/[0.12] shadow-[0_0_0_1px_rgba(129,140,248,0.12)]",
+                  !isCurrent && isDone && "opacity-90 hover:bg-white/6 hover:opacity-100",
+                  !isCurrent && !isDone && "cursor-default opacity-65"
                 )}
                 disabled={!isAccessible}
               >
@@ -110,15 +110,15 @@ export function WizardShell({
                 </div>
                 <div>
                   <p
-                    className={cn(
-                      "text-[11px] font-black uppercase leading-none tracking-widest",
-                      isCurrent ? "text-white" : isDone ? "text-slate-300" : "text-slate-500"
-                    )}
-                  >
-                    {step.label}
-                  </p>
-                  {step.skippable && !isDone && isCurrent ? (
-                    <p className="mt-1 text-[9px] font-medium text-slate-500">Optional</p>
+                  className={cn(
+                    "text-[11px] font-black uppercase leading-none tracking-widest",
+                    isCurrent ? "text-white" : isDone ? "text-slate-200" : "text-slate-300"
+                  )}
+                >
+                  {step.label}
+                </p>
+                {step.skippable && !isDone && isCurrent ? (
+                    <p className="mt-1 text-[9px] font-medium text-slate-300">Optional</p>
                   ) : null}
                 </div>
               </button>
@@ -129,7 +129,7 @@ export function WizardShell({
         <div className="border-t border-white/8 pt-6">
           <a
             href="/"
-            className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition-colors hover:text-white"
+            className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-300 transition-colors hover:text-white"
           >
             <span className="h-px w-4 bg-white/15 transition-all group-hover:w-6" />
             Finish Later

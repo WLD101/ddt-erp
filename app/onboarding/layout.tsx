@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="marketing-theme relative min-h-screen overflow-hidden">
+    <div className="marketing-theme onboarding-theme relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] h-[50vw] w-[50vw] rounded-full bg-indigo-600/20 opacity-40 blur-[120px] mix-blend-screen" />
         <div className="absolute top-[20%] right-[-5%] h-[40vw] w-[40vw] rounded-full bg-purple-600/20 opacity-30 blur-[100px] mix-blend-screen" />
