@@ -421,11 +421,22 @@ export async function syncStripeSubscription(
   ]);
 }
 
-export async function handleStripeInvoicePaid(invoice: Stripe.Invoice) {
-  const subscriptionId =
+export function getSubscriptionIdFromStripeInvoice(invoice: Stripe.Invoice) {
+  const nestedSubscription =
     typeof invoice.parent?.subscription_details?.subscription === "string"
       ? invoice.parent.subscription_details.subscription
       : invoice.parent?.subscription_details?.subscription?.id || null;
+
+  if (nestedSubscription) {
+    return nestedSubscription;
+  }
+
+  const legacySubscription = (invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null }).subscription;
+  return typeof legacySubscription === "string" ? legacySubscription : legacySubscription?.id || null;
+}
+
+export async function handleStripeInvoicePaid(invoice: Stripe.Invoice) {
+  const subscriptionId = getSubscriptionIdFromStripeInvoice(invoice);
   if (!subscriptionId) return;
   const stripe = getStripe();
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -433,10 +444,7 @@ export async function handleStripeInvoicePaid(invoice: Stripe.Invoice) {
 }
 
 export async function handleStripeInvoiceFailed(invoice: Stripe.Invoice) {
-  const subscriptionId =
-    typeof invoice.parent?.subscription_details?.subscription === "string"
-      ? invoice.parent.subscription_details.subscription
-      : invoice.parent?.subscription_details?.subscription?.id || null;
+  const subscriptionId = getSubscriptionIdFromStripeInvoice(invoice);
   if (!subscriptionId) return;
   const stripe = getStripe();
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
