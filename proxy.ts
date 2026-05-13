@@ -74,7 +74,7 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!isLoggedIn && !isPublicRoute && !pathname.startsWith("/onboarding")) {
+  if (!isLoggedIn && !isPublicRoute) {
     return NextResponse.redirect(
       new URL(getUnauthenticatedRedirect(pathname, nextUrl.search), nextUrl)
     );
