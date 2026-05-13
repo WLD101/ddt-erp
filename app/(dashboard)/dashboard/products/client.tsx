@@ -53,9 +53,10 @@ interface ProductWithCategory {
 interface ProductClientProps {
   initialProducts: ProductWithCategory[];
   categories: { id: string; name: string }[];
+  canImport: boolean;
 }
 
-export function ProductClient({ initialProducts, categories }: ProductClientProps) {
+export function ProductClient({ initialProducts, categories, canImport }: ProductClientProps) {
   const [openProduct, setOpenProduct] = useState(false);
   const [openCategory, setOpenCategory] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithCategory | null>(null);
@@ -92,6 +93,15 @@ export function ProductClient({ initialProducts, categories }: ProductClientProp
         description="Maintain your product catalog, category taxonomy, and pricing definitions in one place."
         actions={
           <>
+            {canImport ? (
+              <a
+                href="/dashboard/imports?type=PRODUCTS"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface shadow-sm transition-colors hover:bg-surface-container-low"
+              >
+                <span className="material-symbols-outlined text-[18px] mr-2">upload</span>
+                Import CSV
+              </a>
+            ) : null}
             <Button
               variant="outline"
               className="h-10 rounded-xl px-5 font-bold"

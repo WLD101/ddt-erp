@@ -91,7 +91,7 @@ export function EcommerceIntelligence({ data }: { data: EcommerceIntelligenceDat
                 <Link href="/settings/integrations">Configure Channels</Link>
               </Button>
               <Button asChild className="h-10">
-                <Link href="/imports">Import Data</Link>
+                <Link href="/dashboard/imports">Import Data</Link>
               </Button>
             </div>
           </div>
@@ -133,7 +133,7 @@ export function EcommerceIntelligence({ data }: { data: EcommerceIntelligenceDat
               </Link>
             </Button>
             <Button asChild size="sm" className="h-9">
-              <Link href="/imports">Manual Sync</Link>
+              <Link href="/dashboard/imports">Manual Sync</Link>
             </Button>
           </div>
         </div>

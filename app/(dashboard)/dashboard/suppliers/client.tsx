@@ -43,7 +43,13 @@ interface SupplierWithBalance extends Supplier {
   balance: number;
 }
 
-export function SupplierClient({ initialSuppliers }: { initialSuppliers: SupplierWithBalance[] }) {
+export function SupplierClient({
+  initialSuppliers,
+  canImport,
+}: {
+  initialSuppliers: SupplierWithBalance[];
+  canImport: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<SupplierWithBalance | null>(null);
   const [deletingSupplier, setDeletingSupplier] = useState<SupplierWithBalance | null>(null);
@@ -82,6 +88,15 @@ export function SupplierClient({ initialSuppliers }: { initialSuppliers: Supplie
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {canImport ? (
+            <a
+              href="/dashboard/imports?type=SUPPLIERS"
+              className="inline-flex items-center justify-center rounded-lg border border-outline-variant bg-surface px-4 h-9 text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[18px] mr-2">upload</span>
+              Import CSV
+            </a>
+          ) : null}
           <a 
              href="/api/export/suppliers" 
              download 

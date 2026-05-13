@@ -44,7 +44,13 @@ interface CustomerWithBalance extends Customer {
   balance: number;
 }
 
-export function CustomerClient({ initialCustomers }: { initialCustomers: CustomerWithBalance[] }) {
+export function CustomerClient({
+  initialCustomers,
+  canImport,
+}: {
+  initialCustomers: CustomerWithBalance[];
+  canImport: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<CustomerWithBalance | null>(null);
   const [deletingCustomer, setDeletingCustomer] = useState<CustomerWithBalance | null>(null);
@@ -80,6 +86,15 @@ export function CustomerClient({ initialCustomers }: { initialCustomers: Custome
         description="Manage your customer directory, contact details, and receivable balances in one workspace."
         actions={
           <>
+            {canImport ? (
+              <a
+                href="/dashboard/imports?type=CUSTOMERS"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface shadow-sm transition-colors hover:bg-surface-container-low"
+              >
+                <span className="material-symbols-outlined text-[18px] mr-2">upload</span>
+                Import CSV
+              </a>
+            ) : null}
             <a
               href="/api/export/customers"
               download

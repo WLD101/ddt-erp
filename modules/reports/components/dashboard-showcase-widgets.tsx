@@ -229,7 +229,7 @@ export function DashboardShowcaseWidgets({
             <span className="material-symbols-outlined text-error text-[20px]">warning</span>
             Replenishment Needed
           </CardTitle>
-          <Link href="/inventory" className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1">
+          <Link href="/dashboard/inventory" className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1">
             Audit All <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
           </Link>
         </CardHeader>

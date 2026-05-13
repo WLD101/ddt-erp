@@ -216,10 +216,16 @@ function exportCsv(fileName: string, rows: Array<Record<string, string>>) {
   URL.revokeObjectURL(url);
 }
 
-export function ImportsClient({ initialData }: { initialData: DashboardData }) {
+export function ImportsClient({
+  initialData,
+  initialImportType = "PRODUCTS",
+}: {
+  initialData: DashboardData;
+  initialImportType?: ImportType;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [importType, setImportType] = useState<ImportType>("PRODUCTS");
+  const [importType, setImportType] = useState<ImportType>(initialImportType);
   const [parsedFile, setParsedFile] = useState<ParsedFile | null>(null);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [lastFailures, setLastFailures] = useState<ImportFailure[]>([]);
@@ -305,12 +311,12 @@ export function ImportsClient({ initialData }: { initialData: DashboardData }) {
             Data <span className="text-primary">Recconciliation</span>
           </h2>
           <p className="mt-1 max-w-3xl text-sm font-medium text-on-surface-variant font-body-md">
-            Import products, customers, and inventory from legacy manifests or external nodes.
+            Import products, customers, suppliers, and inventory from legacy manifests or external nodes.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {(["PRODUCTS", "CUSTOMERS", "INVENTORY"] as ImportType[]).map((type) => (
+          {(["PRODUCTS", "CUSTOMERS", "SUPPLIERS"] as ImportType[]).map((type) => (
             <Button key={type} variant="outline" size="sm" onClick={() => downloadTemplate(type)} className="h-9">
               <span className="material-symbols-outlined text-[18px] mr-2">download</span>
               {type} TEMPLATE

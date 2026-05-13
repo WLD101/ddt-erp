@@ -14,23 +14,64 @@ import { EcommerceIntelligence } from "@/modules/reports/components/ecommerce-in
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { triggerNotificationPulse } from "@/modules/notifications/actions";
 import { auth } from "@/lib/auth";
+import { getCurrentTenantContext } from "@/lib/tenant";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const session = await auth();
+  const ctx = await getCurrentTenantContext();
+  const canViewReports = ctx.role === "owner" || ctx.permissions.includes("reports.view");
+  const canCreateSales = ctx.role === "owner" || ctx.permissions.includes("sales.create");
+  const canExportAudit = ctx.role === "owner" || (ctx.permissions.includes("audit.view") && ["owner", "admin"].includes(ctx.role));
 
   triggerNotificationPulse().catch(console.error);
 
-  const [metrics, lowStock, topProducts, chartData, businessHealth, todaySummary, ecommerceSyncSummary, ecommerceIntelligence] = await Promise.all([
-    getDashboardMetrics(),
-    getLowStockAlerts(),
-    getTopProducts(),
-    getChartData(),
-    getBusinessHealthScore(),
-    getTodaysBusinessSummary(),
-    getEcommerceSyncSummary(),
-    getEcommerceIntelligence(),
-  ]);
+  let dashboardData:
+    | {
+        metrics: Awaited<ReturnType<typeof getDashboardMetrics>>;
+        lowStock: Awaited<ReturnType<typeof getLowStockAlerts>>;
+        topProducts: Awaited<ReturnType<typeof getTopProducts>>;
+        chartData: Awaited<ReturnType<typeof getChartData>>;
+        businessHealth: Awaited<ReturnType<typeof getBusinessHealthScore>>;
+        todaySummary: Awaited<ReturnType<typeof getTodaysBusinessSummary>>;
+        ecommerceSyncSummary: Awaited<ReturnType<typeof getEcommerceSyncSummary>>;
+        ecommerceIntelligence: Awaited<ReturnType<typeof getEcommerceIntelligence>>;
+      }
+    | null = null;
+
+  if (canViewReports) {
+    try {
+      const [metrics, lowStock, topProducts, chartData, businessHealth, todaySummary, ecommerceSyncSummary, ecommerceIntelligence] = await Promise.all([
+        getDashboardMetrics(),
+        getLowStockAlerts(),
+        getTopProducts(),
+        getChartData(),
+        getBusinessHealthScore(),
+        getTodaysBusinessSummary(),
+        getEcommerceSyncSummary(),
+        getEcommerceIntelligence(),
+      ]);
+
+      dashboardData = {
+        metrics,
+        lowStock,
+        topProducts,
+        chartData,
+        businessHealth,
+        todaySummary,
+        ecommerceSyncSummary,
+        ecommerceIntelligence,
+      };
+    } catch (error) {
+      console.error("[dashboard] failed to load analytics workspace", {
+        organizationId: ctx.organizationId,
+        userId: ctx.userId,
+        role: ctx.role,
+        error,
+      });
+    }
+  }
 
   return (
     <div className="space-y-8 flex-1 overflow-auto pb-10">
@@ -42,72 +83,112 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 h-10 bg-surface border border-outline-variant text-on-surface font-black text-[11px] uppercase tracking-widest rounded-xl shadow-soft hover:bg-surface-container-low transition-all">
-            <span className="material-symbols-outlined text-[18px]">download</span>
-            Export Audit
-          </button>
-          <button className="flex items-center gap-2 px-6 h-10 bg-primary text-on-primary font-black text-[11px] uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            New Transaction
-          </button>
+          {canExportAudit ? (
+            <a
+              href="/api/export/audit-logs"
+              download
+              className="flex items-center gap-2 px-4 h-10 bg-surface border border-outline-variant text-on-surface font-black text-[11px] uppercase tracking-widest rounded-xl shadow-soft hover:bg-surface-container-low transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Export Audit
+            </a>
+          ) : null}
+          {canCreateSales ? (
+            <Link
+              href="/sales/new"
+              className="flex items-center gap-2 px-6 h-10 bg-primary text-on-primary font-black text-[11px] uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              New Transaction
+            </Link>
+          ) : null}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard 
-          title="Net Treasury" 
-          value={`Rs. ${metrics.totalLiquidity.toLocaleString()}`} 
-          description="Aggregate liquidity across accounts"
-          icon="account_balance_wallet"
-          color="primary"
-        />
+      {dashboardData ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <MetricCard
+              title="Net Treasury"
+              value={`Rs. ${dashboardData.metrics.totalLiquidity.toLocaleString()}`}
+              description="Aggregate liquidity across accounts"
+              icon="account_balance_wallet"
+              color="primary"
+            />
 
-        <MetricCard 
-          title="Est. Gross Profit" 
-          value={`Rs. ${metrics.grossProfit.toLocaleString()}`} 
-          description="Operational margin after COGS"
-          icon="trending_up"
-          color="secondary"
-        />
+            <MetricCard
+              title="Est. Gross Profit"
+              value={`Rs. ${dashboardData.metrics.grossProfit.toLocaleString()}`}
+              description="Operational margin after COGS"
+              icon="trending_up"
+              color="secondary"
+            />
 
-        <MetricCard 
-          title="Total Revenue" 
-          value={`Rs. ${metrics.totalRevenue.toLocaleString()}`} 
-          description="Gross sales performance"
-          icon="payments"
-          color="primary"
-        />
+            <MetricCard
+              title="Total Revenue"
+              value={`Rs. ${dashboardData.metrics.totalRevenue.toLocaleString()}`}
+              description="Gross sales performance"
+              icon="payments"
+              color="primary"
+            />
 
-        <MetricCard 
-          title="Operational Costs" 
-          value={`Rs. ${metrics.totalExpenses.toLocaleString()}`} 
-          description="Sum of all log disbursements"
-          icon="receipt_long"
-          color="error"
-        />
-      </div>
+            <MetricCard
+              title="Operational Costs"
+              value={`Rs. ${dashboardData.metrics.totalExpenses.toLocaleString()}`}
+              description="Sum of all log disbursements"
+              icon="receipt_long"
+              color="error"
+            />
+          </div>
 
-      <DashboardShowcaseWidgets
-        businessHealth={businessHealth}
-        todaySummary={todaySummary}
-        lowStockAlerts={lowStock}
-        ecommerceSyncSummary={ecommerceSyncSummary}
-        topProducts={topProducts}
-      />
+          <DashboardShowcaseWidgets
+            businessHealth={dashboardData.businessHealth}
+            todaySummary={dashboardData.todaySummary}
+            lowStockAlerts={dashboardData.lowStock}
+            ecommerceSyncSummary={dashboardData.ecommerceSyncSummary}
+            topProducts={dashboardData.topProducts}
+          />
 
-      <EcommerceIntelligence data={ecommerceIntelligence as any} />
+          <EcommerceIntelligence data={dashboardData.ecommerceIntelligence as any} />
 
-      <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
-        <CardHeader className="border-b border-outline-variant/10 pb-4 bg-surface-container-lowest">
-          <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[20px]">show_chart</span>
-            Revenue Trajectory
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="h-[400px] w-full pt-8 px-6">
-          <RevenueChart data={chartData} />
-        </CardContent>
-      </Card>
+          <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
+            <CardHeader className="border-b border-outline-variant/10 pb-4 bg-surface-container-lowest">
+              <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">show_chart</span>
+                Revenue Trajectory
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px] w-full pt-8 px-6">
+              <RevenueChart data={dashboardData.chartData} />
+            </CardContent>
+          </Card>
+        </>
+      ) : (
+        <Card className="rounded-3xl border-outline-variant/30 overflow-hidden shadow-soft bg-surface">
+          <CardHeader className="border-b border-outline-variant/10 pb-4 bg-surface-container-lowest">
+            <CardTitle className="text-sm font-black text-on-surface uppercase tracking-[0.1em] flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">monitoring</span>
+              Workspace Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5 p-8">
+            <p className="text-sm font-medium leading-relaxed text-on-surface-variant">
+              Analytics are unavailable for this workspace right now. Core ERP modules like sales, customers, suppliers, and products are still available.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/sales" className="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                Open Sales
+              </Link>
+              <Link href="/dashboard/customers" className="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                Open Customers
+              </Link>
+              <Link href="/dashboard/products" className="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                Open Products
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

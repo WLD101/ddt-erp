@@ -26,9 +26,10 @@ export interface FilterValues {
 interface AuditLogFiltersProps {
   onFilterChange: (filters: FilterValues) => void;
   onExport: () => void;
+  isExporting?: boolean;
 }
 
-export function AuditLogFilters({ onFilterChange, onExport }: AuditLogFiltersProps) {
+export function AuditLogFilters({ onFilterChange, onExport, isExporting = false }: AuditLogFiltersProps) {
   const [metadata, setMetadata] = useState<{
     users: { id: string; name: string }[];
     entityTypes: string[];
@@ -112,9 +113,9 @@ export function AuditLogFilters({ onFilterChange, onExport }: AuditLogFiltersPro
           />
         </div>
         <div className="flex gap-2">
-          <Button onClick={onExport} variant="outline" className="border-white/10 hover:bg-white/5">
+          <Button onClick={onExport} variant="outline" className="border-white/10 hover:bg-white/5" disabled={isExporting}>
             <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
           <Button onClick={handleReset} variant="ghost" size="icon" className="hover:bg-white/5">
             <RotateCcw className="w-4 h-4" />

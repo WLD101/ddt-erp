@@ -20,6 +20,7 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(featureEnabled);
+  const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({
     search: "",
@@ -75,34 +76,44 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
     setPage(1);
   };
 
-  const handleExport = () => {
-    if (logs.length === 0) {
-      toast.error("No logs to export");
-      return;
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.set("search", filters.search);
+      if (filters.userId) params.set("userId", filters.userId);
+      if (filters.entityType) params.set("entityType", filters.entityType);
+      if (filters.action) params.set("action", filters.action);
+
+      const response = await fetch(`/api/export/audit-logs?${params.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        toast.error(payload?.error || "We couldn't export audit logs right now.");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `audit-log-${new Date().toISOString().split("T")[0]}.csv`;
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(logs.length === 0 ? "Empty audit export downloaded." : "Audit export downloaded.");
+    } catch (error) {
+      console.error("[audit-logs] export failed", error);
+      toast.error("We couldn't export audit logs right now.");
+    } finally {
+      setIsExporting(false);
     }
-
-    const headers = ["Timestamp", "Actor", "Action", "Entity Type", "Entity ID", "Details"];
-    const csvRows = logs.map((log) => [
-      new Date(log.createdAt).toISOString(),
-      log.user.name,
-      log.action,
-      log.entityType,
-      log.entityId,
-      `"${(log.details || "").replace(/"/g, '""')}"`,
-    ].join(","));
-
-    const csvContent = [headers.join(","), ...csvRows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `audit-log-${new Date().toISOString().split("T")[0]}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast.success("CSV export started");
   };
 
   return (
@@ -134,7 +145,7 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
         </div>
       ) : (
         <>
-          <AuditLogFilters onFilterChange={handleFilterChange} onExport={handleExport} />
+          <AuditLogFilters onFilterChange={handleFilterChange} onExport={handleExport} isExporting={isExporting} />
 
           {errorMessage ? (
             <div className="rounded-3xl border border-amber-500/20 bg-amber-500/8 p-8">
