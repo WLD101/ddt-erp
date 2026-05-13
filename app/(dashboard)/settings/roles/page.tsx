@@ -18,7 +18,7 @@ export default async function RolesPage() {
     requirePermission(ctx, "rbac.manage");
   } catch (err) {
     if (err instanceof TenantForbiddenError) {
-      redirect("/dashboard");
+      redirect("/dashboard/customers");
     }
     throw err;
   }
