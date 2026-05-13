@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
+import { inferPlanIdFromPackage } from "@/lib/billing/catalog";
+import { getAvailableStripeBillingCycles } from "@/lib/billing/stripe";
 import { getActivePackages } from "@/modules/packages/actions";
 
 import { PackageSelectionClient } from "./PackageSelectionClient";
@@ -18,6 +20,10 @@ export default async function PackageSelectionPage() {
     userLimit: pkg.userLimit,
     featureJson: pkg.featureJson,
     isCustom: pkg.isCustom,
+    planId: inferPlanIdFromPackage(pkg),
+    availableCycles: pkg.isCustom
+      ? { monthly: false, yearly: false }
+      : getAvailableStripeBillingCycles(inferPlanIdFromPackage(pkg)),
   }));
 
   return (

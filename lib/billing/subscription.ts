@@ -224,7 +224,7 @@ export async function createStripeCheckoutSession(input: {
   if (
     existingSubscription?.billingSource === "stripe" &&
     existingSubscription.stripeSubscriptionId &&
-    ["active", "trialing", "past_due", "payment_pending"].includes(existingSubscription.status)
+    ["active", "trialing", "past_due"].includes(existingSubscription.status)
   ) {
     throw new Error("This workspace already has a Stripe subscription. Use the billing portal to manage plan changes.");
   }

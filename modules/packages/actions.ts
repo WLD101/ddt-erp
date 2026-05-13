@@ -207,7 +207,7 @@ export async function selectPackageAction(data: unknown) {
       entityId: ctx.organizationId,
       details: "Tenant selected enterprise/custom package.",
     });
-    return { success: true, status: "enterprise_pending" };
+    return { success: true, status: "enterprise_pending", redirectTo: "/settings/billing" };
   }
 
   if (!parsed.data.packageId) return { error: "Package is required." };

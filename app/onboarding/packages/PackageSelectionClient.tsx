@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { StripeCheckoutLauncher } from "@/components/billing/stripe-checkout-launcher";
 import { selectPackageAction } from "@/modules/packages/actions";
 import { PACKAGE_PROFILE_STORAGE_KEY, recommendPackage, type PackageProfileInput } from "@/lib/package-fit";
-import { PLANS } from "@/lib/billing/plans";
+import { PLANS, type PlanId } from "@/lib/billing/plans";
 
 type PackageItem = {
   id: string;
@@ -17,6 +18,11 @@ type PackageItem = {
   userLimit: number;
   featureJson: string;
   isCustom: boolean;
+  planId: PlanId;
+  availableCycles: {
+    monthly: boolean;
+    yearly: boolean;
+  };
 };
 
 export function PackageSelectionClient({ packages }: { packages: PackageItem[] }) {
@@ -39,15 +45,13 @@ export function PackageSelectionClient({ packages }: { packages: PackageItem[] }
   async function select(pkg: PackageItem) {
     setPendingId(pkg.id);
     try {
-      const result = await selectPackageAction(pkg.isCustom ? { enterprise: true } : { packageId: pkg.id });
+      const result = await selectPackageAction({ enterprise: true });
       if (result.error) {
         toast.error(result.error);
         return;
       }
       if (result.status === "enterprise_pending") {
         toast.success("Enterprise request sent. Platform admin will activate your account.");
-      } else {
-        toast.success("Package selected. Continue to secure billing.");
       }
       router.push(result.redirectTo || "/settings/billing");
     } finally {
@@ -102,14 +106,27 @@ export function PackageSelectionClient({ packages }: { packages: PackageItem[] }
                 : `${pkg.userLimit} users included.`}
             </p>
           </div>
-          <Button
-            className="marketing-button-primary mt-6 h-11 w-full rounded-2xl font-bold"
-            onClick={() => select(pkg)}
-            disabled={pendingId !== null}
-          >
-            {pendingId === pkg.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {pkg.isCustom ? "Request Enterprise" : "Select Package"}
-          </Button>
+          {pkg.isCustom ? (
+            <Button
+              className="marketing-button-primary mt-6 h-11 w-full rounded-2xl font-bold"
+              onClick={() => select(pkg)}
+              disabled={pendingId !== null}
+            >
+              {pendingId === pkg.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Request Enterprise
+            </Button>
+          ) : (
+            <div className="mt-6 space-y-3">
+              <StripeCheckoutLauncher
+                planId={pkg.planId}
+                planName={pkg.name}
+                availableCycles={pkg.availableCycles}
+              />
+              <p className="text-xs leading-relaxed text-slate-400">
+                Package selection and billing are confirmed together. Your workspace activates only after Stripe&apos;s verified webhook completes.
+              </p>
+            </div>
+          )}
         </article>
       ))}
       </div>
