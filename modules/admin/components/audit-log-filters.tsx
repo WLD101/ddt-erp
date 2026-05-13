@@ -34,6 +34,7 @@ export function AuditLogFilters({ onFilterChange, onExport }: AuditLogFiltersPro
     entityTypes: string[];
     actions: string[];
   }>({ users: [], entityTypes: [], actions: [] });
+  const [metadataMessage, setMetadataMessage] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<FilterValues>({
     search: "",
@@ -43,7 +44,25 @@ export function AuditLogFilters({ onFilterChange, onExport }: AuditLogFiltersPro
   });
 
   useEffect(() => {
-    getAuditLogMetadata().then(setMetadata);
+    getAuditLogMetadata()
+      .then((result) => {
+        if (!result.ok) {
+          setMetadata({ users: [], entityTypes: [], actions: [] });
+          setMetadataMessage(result.message || "We couldn’t load audit log filters right now.");
+          return;
+        }
+
+        setMetadata({
+          users: result.users,
+          entityTypes: result.entityTypes,
+          actions: result.actions,
+        });
+        setMetadataMessage(null);
+      })
+      .catch(() => {
+        setMetadata({ users: [], entityTypes: [], actions: [] });
+        setMetadataMessage("We couldn’t load audit log filters right now.");
+      });
   }, []);
 
   const handleFilterUpdate = (key: keyof FilterValues, value: string) => {
@@ -77,6 +96,11 @@ export function AuditLogFilters({ onFilterChange, onExport }: AuditLogFiltersPro
 
   return (
     <div className="space-y-4 p-6 bg-white/5 border border-white/5 rounded-2xl backdrop-blur-md">
+      {metadataMessage ? (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
+          {metadataMessage}
+        </div>
+      ) : null}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

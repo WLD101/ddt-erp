@@ -27,6 +27,7 @@ interface Permission {
   id: string;
   name: string;
   category: string | null;
+  description?: string | null;
 }
 
 interface PermissionsMatrixProps {
@@ -35,6 +36,15 @@ interface PermissionsMatrixProps {
 }
 
 export function PermissionsMatrix({ roles, allPermissions }: PermissionsMatrixProps) {
+  const categoryDescriptions: Record<string, string> = {
+    Admin: "Controls sensitive workspace administration such as billing, branches, roles, settings, and audit visibility.",
+    Customers: "Controls who can view, add, update, export, or permanently remove customer records.",
+    Suppliers: "Controls supplier access and supplier record management.",
+    Inventory: "Controls the product catalog, stock visibility, edits, and inventory exports.",
+    Sales: "Controls quotations, invoices, returns, and other sales actions.",
+    Purchases: "Controls purchase records, supplier returns, and purchase exports.",
+    Finances: "Controls payment records and access to financial information.",
+  };
   const [selectedRole, setSelectedRole] = useState<RoleWithPermissions>(roles[0]);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
     roles[0].permissions.map(p => p.name)
@@ -152,7 +162,16 @@ export function PermissionsMatrix({ roles, allPermissions }: PermissionsMatrixPr
                 {categories.map((category) => (
                   <React.Fragment key={category}>
                     <TableRow className="bg-white/5 border-white/5 hover:bg-white/5">
-                      <TableCell colSpan={2} className="py-2 pl-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">{category || "Uncategorized"}</TableCell>
+                      <TableCell colSpan={2} className="py-3 pl-8">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+                            {category || "Uncategorized"}
+                          </p>
+                          <p className="max-w-3xl text-xs text-muted-foreground">
+                            {categoryDescriptions[category || ""] || "Controls access to this area of the workspace."}
+                          </p>
+                        </div>
+                      </TableCell>
                     </TableRow>
                     {allPermissions
                       .filter(p => p.category === category)
@@ -161,7 +180,12 @@ export function PermissionsMatrix({ roles, allPermissions }: PermissionsMatrixPr
                           <TableCell className="py-4 pl-10">
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-white group-hover:text-primary transition-colors">{permission.name}</span>
-                              <span className="text-[10px] text-muted-foreground italic">Granular key for system-wide {category?.toLowerCase()} control.</span>
+                              <span className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                                {permission.description || "Controls access to this workspace capability."}
+                              </span>
+                              <span className="mt-1 text-[10px] text-muted-foreground/70 italic">
+                                Technical permission key stays visible for administrators and support audits.
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell className="py-4 text-center">

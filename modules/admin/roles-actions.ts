@@ -62,8 +62,21 @@ export const updateRolePermissions = createServerAction({
  * FETCH ALL PERMISSIONS
  */
 export async function getAllPermissions() {
-  return prisma.permission.findMany({
+  const permissions = await prisma.permission.findMany({
     orderBy: { category: "asc" },
+  });
+
+  const manifestByName = new Map(
+    PERMISSIONS_CONFIG.map((permission) => [permission.name, permission]),
+  );
+
+  return permissions.map((permission) => {
+    const manifest = manifestByName.get(permission.name);
+    return {
+      ...permission,
+      category: manifest?.category ?? permission.category,
+      description: manifest?.description ?? "Controls access to this workspace capability.",
+    };
   });
 }
 
