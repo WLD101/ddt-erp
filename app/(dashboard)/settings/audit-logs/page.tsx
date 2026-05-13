@@ -15,7 +15,7 @@ export default async function AuditLogsPage() {
     featureEnabled = await canUseFeature(ctx.organizationId, "auditLogs");
   } catch (error) {
     if (error instanceof TenantForbiddenError) {
-      redirect("/settings");
+      redirect("/dashboard");
     }
     throw error;
   }
