@@ -48,7 +48,8 @@ echo "--------------------------------------------"
 # Step 6: FORCED CLEAN BUILD
 echo "🏗️  Executing Clean Next.js Build..."
 # Remove cached build folder to FORCE a total visual refresh
-rm -rf .next
+# distDir is set to .next-build in next.config.ts
+rm -rf .next-build .next
 npm run build
 
 # Step 7: HARD PM2 RESTART (Deletes old cluster to clear memory)

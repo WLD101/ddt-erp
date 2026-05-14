@@ -17,7 +17,7 @@ export async function GET() {
     status.services.database = "up";
   } catch (e) {
     status.services.database = "down";
-    status.error = e;
+    console.error("[health] database check failed", e);
   }
 
   try {
