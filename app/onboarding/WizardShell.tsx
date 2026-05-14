@@ -10,7 +10,6 @@ import { BranchStep } from "./steps/BranchStep";
 import { ProductStep } from "./steps/ProductStep";
 import { CustomerStep } from "./steps/CustomerStep";
 import { InviteStep } from "./steps/InviteStep";
-import { TransactionStep } from "./steps/TransactionStep";
 import { CompleteStep } from "./steps/CompleteStep";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +31,6 @@ const STEP_COMPONENTS = [
   ProductStep,
   CustomerStep,
   InviteStep,
-  TransactionStep,
   CompleteStep,
 ];
 

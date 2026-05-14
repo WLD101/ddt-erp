@@ -54,7 +54,7 @@ export const createProduct = createServerAction({
   permissions: ["products.create"],
   planGate: { limit: "maxProducts" },
   schema: service.productSchema,
-  revalidatePaths: ["/products", "/inventory"],
+  revalidatePaths: ["/dashboard/products", "/dashboard/inventory"],
   audit: {
     action: "CREATE_PRODUCT",
     entityType: "Product",
@@ -78,7 +78,7 @@ export const updateProduct = createServerAction({
   label: "UpdateProduct",
   permissions: ["products.edit"],
   schema: service.productSchema.partial().extend({ id: z.string() }),
-  revalidatePaths: ["/products", "/inventory"],
+  revalidatePaths: ["/dashboard/products", "/dashboard/inventory"],
   audit: {
     action: "UPDATE_PRODUCT",
     entityType: "Product",
@@ -99,7 +99,7 @@ export const deleteProduct = createServerAction({
   blockInDemoMode: true,
   permissions: ["products.delete"],
   schema: z.object({ id: z.string() }),
-  revalidatePaths: ["/products", "/inventory"],
+  revalidatePaths: ["/dashboard/products", "/dashboard/inventory"],
   audit: {
     action: "DELETE_PRODUCT",
     entityType: "Product",

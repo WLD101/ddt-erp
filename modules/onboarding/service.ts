@@ -10,7 +10,6 @@ export const ONBOARDING_STEPS = [
   { id: "product",     label: "First Product",  skippable: true  },
   { id: "customer",    label: "First Customer", skippable: true  },
   { id: "invite",      label: "Invite Staff",   skippable: true  },
-  { id: "transaction", label: "First Deal",     skippable: true  },
   { id: "complete",    label: "All Set!",       skippable: false },
 ] as const;
 

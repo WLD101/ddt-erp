@@ -221,6 +221,8 @@ export async function completeOnboarding() {
     });
 
     revalidatePath("/");
+    revalidatePath("/onboarding");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     return { success: false, error: (e as any).message };

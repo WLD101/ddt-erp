@@ -58,8 +58,8 @@ export async function createProduct(db: ScopedPrisma, data: ProductInput, branch
     const product = await tx.product.create({
       data: {
         name: data.name,
-        sku: data.sku || null,
-        categoryId: data.categoryId || null,
+        sku: data.sku?.trim() || null,
+        categoryId: data.categoryId?.trim() ? data.categoryId : null,
         unitPrice: data.unitPrice,
         costPrice: data.costPrice,
         lowStockThreshold: data.lowStockThreshold,
@@ -106,18 +106,26 @@ export async function createProduct(db: ScopedPrisma, data: ProductInput, branch
 
 export async function updateProduct(db: ScopedPrisma, id: string, data: Partial<ProductInput>, branchId: string) {
   return db.$transaction(async (tx) => {
+    const updateData: Record<string, unknown> = {
+      name: data.name,
+      unitPrice: data.unitPrice,
+      costPrice: data.costPrice,
+      lowStockThreshold: data.lowStockThreshold,
+      unit: data.unit,
+      unitType: data.unitType,
+    };
+
+    if ("sku" in data) {
+      updateData.sku = data.sku?.trim() || null;
+    }
+
+    if ("categoryId" in data) {
+      updateData.categoryId = data.categoryId?.trim() ? data.categoryId : null;
+    }
+
     const product = await tx.product.update({
       where: { id },
-      data: {
-        name: data.name,
-        sku: data.sku,
-        categoryId: data.categoryId,
-        unitPrice: data.unitPrice,
-        costPrice: data.costPrice,
-        lowStockThreshold: data.lowStockThreshold,
-        unit: data.unit,
-        unitType: data.unitType,
-      },
+      data: updateData,
     });
 
     if (typeof data.openingQuantity === "number") {

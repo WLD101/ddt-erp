@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,6 +61,7 @@ interface ProductClientProps {
 }
 
 export function ProductClient({ initialProducts, categories, canImport }: ProductClientProps) {
+  const router = useRouter();
   const [openProduct, setOpenProduct] = useState(false);
   const [openCategory, setOpenCategory] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithCategory | null>(null);
@@ -198,7 +200,7 @@ export function ProductClient({ initialProducts, categories, canImport }: Produc
       </PageShell>
 
       <Dialog open={openProduct} onOpenChange={setOpenProduct}>
-        <DialogContent className="max-w-3xl bg-surface border-outline-variant rounded-3xl p-8 shadow-2xl overflow-hidden">
+        <DialogContent className="max-w-4xl bg-surface border-outline-variant rounded-3xl p-8 shadow-2xl overflow-hidden lg:max-w-5xl">
           <DialogHeader className="mb-6">
             <DialogTitle className="text-2xl font-black text-on-surface tracking-tight font-headline-sm">
               {editingProduct ? "Modify Product Specs" : "Catalog Integration"}
@@ -211,7 +213,10 @@ export function ProductClient({ initialProducts, categories, canImport }: Produc
             <ProductForm 
               categories={categories}
               initialData={editingProduct} 
-              onSuccess={() => setOpenProduct(false)} 
+              onSuccess={() => {
+                setOpenProduct(false);
+                router.refresh();
+              }} 
             />
           </div>
         </DialogContent>
@@ -228,7 +233,10 @@ export function ProductClient({ initialProducts, categories, canImport }: Produc
             </DialogDescription>
           </DialogHeader>
           <CategoryForm 
-            onSuccess={() => setOpenCategory(false)} 
+            onSuccess={() => {
+              setOpenCategory(false);
+              router.refresh();
+            }} 
           />
         </DialogContent>
       </Dialog>

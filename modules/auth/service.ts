@@ -19,6 +19,7 @@ export const signUpSchema = z.object({
   country: z.string().min(2, "Country is required"),
   referralCode: z.string().optional(),
   industry: z.string().optional(),
+  mode: z.enum(["demo", "trial", "paid"]).optional().default("trial"),
 });
 
 export const joinSchema = z.object({
@@ -35,7 +36,7 @@ export type JoinInput = z.infer<typeof joinSchema>;
  * Note: Uses raw prisma as organization context does not exist yet.
  */
 export async function bootstrapOrganization(data: SignUpInput) {
-  const { name, phone, password, organizationName, city, country, referralCode, industry } = data;
+  const { name, phone, password, organizationName, city, country, referralCode, industry, mode } = data;
   const email = data.email.toLowerCase();
 
   const existingUser = await prisma.user.findUnique({
@@ -80,6 +81,10 @@ export async function bootstrapOrganization(data: SignUpInput) {
     }
   }
 
+  const isDemoOrTrial = mode === "demo" || mode === "trial";
+  const trialDays = 7;
+  const demoExpiresAt = isDemoOrTrial ? new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000) : null;
+
   const { user, organization: org } = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
@@ -90,6 +95,7 @@ export async function bootstrapOrganization(data: SignUpInput) {
         authStatus: "verified",
         verifiedAt: now,
         emailVerified: now,
+        isDemoUser: isDemoOrTrial,
       },
     });
 
@@ -105,17 +111,19 @@ export async function bootstrapOrganization(data: SignUpInput) {
         industry,
         industryType: industry,
         enabledModules: industry ? INDUSTRY_MODULES[industry]?.modules.map(m => m.id).join(",") : null,
-        lifecycleStatus: "onboarding",
-        accessStatus: "onboarding",
+        lifecycleStatus: isDemoOrTrial ? mode : "onboarding",
+        accessStatus: isDemoOrTrial ? "active" : "onboarding",
+        isDemoTenant: isDemoOrTrial,
+        demoExpiresAt,
         referralId,
         subscription: {
           create: {
             planId: "unassigned",
-            status: "payment_pending",
-            paymentStatus: "payment_pending",
-            accessStatus: "payment_pending",
+            status: isDemoOrTrial ? mode : "payment_pending",
+            paymentStatus: isDemoOrTrial ? "free" : "payment_pending",
+            accessStatus: isDemoOrTrial ? "active" : "payment_pending",
             currentPeriodStart: now,
-            currentPeriodEnd: now,
+            currentPeriodEnd: isDemoOrTrial ? demoExpiresAt : now,
           }
         }
       },

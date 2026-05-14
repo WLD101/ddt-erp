@@ -294,7 +294,7 @@ function formatCreateClientError(error: unknown) {
 export async function getCommandCenterSnapshot() {
   await requirePlatformAdmin();
 
-  const [tenants, packages, audits] = await Promise.all([
+  const [tenants, packages, audits, paymentAgg, demoLeadCount, activatedDemoCount, customPackageCount, enterprisePendingCount] = await Promise.all([
     prisma.organization.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -343,14 +343,64 @@ export async function getCommandCenterSnapshot() {
       take: 12,
       orderBy: { createdAt: "desc" },
     }),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+    }),
+    prisma.lead.count({
+      where: { source: "DEMO" },
+    }),
+    prisma.lead.count({
+      where: { source: "DEMO", demoStatus: "ACTIVATED" },
+    }),
+    prisma.organizationPackage.count({
+      where: { isCustomPackage: true },
+    }),
+    prisma.organization.count({
+      where: { lifecycleStatus: "enterprise_pending" },
+    }),
   ]);
 
+  const countryBreakdown = Object.entries(
+    tenants.reduce<Record<string, number>>((acc, tenant) => {
+      const key = tenant.country?.trim() || "Unspecified";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {})
+  )
+    .map(([label, count]) => ({ label, count }))
+    .sort((left, right) => right.count - left.count)
+    .slice(0, 6);
+
+  const businessTypeBreakdown = Object.entries(
+    tenants.reduce<Record<string, number>>((acc, tenant) => {
+      const key = tenant.industryType?.trim() || tenant.industry?.trim() || "Unspecified";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {})
+  )
+    .map(([label, count]) => ({ label, count }))
+    .sort((left, right) => right.count - left.count)
+    .slice(0, 6);
+
+  const collectedRevenue = paymentAgg._sum.amount ?? 0;
+  const demoRegistrationRatio = demoLeadCount > 0 ? Math.round((activatedDemoCount / demoLeadCount) * 100) : 0;
+
   return {
-    tenants,
-    packages,
-    audits,
-  };
-}
+      tenants,
+      packages,
+      audits,
+      insights: {
+        collectedRevenue,
+        erpsOnboarded: tenants.filter((tenant) => !tenant.isDemoTenant).length,
+        demoLeadCount,
+        activatedDemoCount,
+        demoRegistrationRatio,
+        customRequests: customPackageCount + enterprisePendingCount,
+        countryBreakdown,
+        businessTypeBreakdown,
+      },
+    };
+  }
 
 export async function updateOrganizationAdminAction(formData: FormData) {
   const session = await requirePlatformAdmin();
@@ -913,14 +963,14 @@ export async function createClientFromCommandCenterAction(
       },
       update: {
         currentStep: 7,
-        completedSteps: "welcome,industry,profile,branch,product,customer,invite,transaction,complete",
+        completedSteps: "welcome,industry,profile,branch,product,customer,invite,complete",
         isCompleted: true,
         completedAt: now,
       },
       create: {
         organizationId: transaction.organization.id,
         currentStep: 7,
-        completedSteps: "welcome,industry,profile,branch,product,customer,invite,transaction,complete",
+        completedSteps: "welcome,industry,profile,branch,product,customer,invite,complete",
         isCompleted: true,
         completedAt: now,
       },

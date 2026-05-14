@@ -89,7 +89,7 @@ function MetricCard({
 
 export default async function CommandCenterPage() {
   await requirePlatformAdminPage();
-  const { tenants, packages, audits } = await getCommandCenterSnapshot();
+  const { tenants, packages, audits, insights } = await getCommandCenterSnapshot();
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),linear-gradient(180deg,#f8f9ff_0%,#eef4ff_100%)] text-on-surface pb-12">
@@ -152,8 +152,86 @@ export default async function CommandCenterPage() {
 
         <section className="grid gap-6 md:grid-cols-3">
           <MetricCard icon="apartment" label="Total organizations" value={tenants.length} tone="primary" />
-          <MetricCard icon="sell" label="Active packages" value={packages.length} tone="secondary" />
-          <MetricCard icon="history" label="Recent events" value={audits.length} tone="error" />
+          <MetricCard icon="payments" label="Money collected" value={`Rs. ${insights.collectedRevenue.toLocaleString()}`} tone="secondary" />
+          <MetricCard icon="history" label="Demo activation ratio" value={`${insights.demoRegistrationRatio}%`} tone="error" />
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-[1.35fr,1fr,1fr]">
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">monitoring</span>
+                Growth intelligence
+              </CardTitle>
+              <CardDescription className="text-sm font-medium text-on-surface-variant">
+                High-level signals for conversions, customer footprint, and custom deployment demand.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 px-6 pb-6 pt-6 sm:grid-cols-2">
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">ERPs onboarded</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{insights.erpsOnboarded}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Paid and live workspaces currently under management.</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Custom ERP requests</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{insights.customRequests}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Enterprise pending and custom package requests needing follow-up.</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Demo registrations</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{insights.demoLeadCount}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">{insights.activatedDemoCount} converted into approved demo workspaces.</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Recent platform events</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{audits.length}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Latest audited actions across command center operations.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">language</span>
+                Country breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 px-6 pb-6 pt-6">
+              {insights.countryBreakdown.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No country data captured yet.</p>
+              ) : (
+                insights.countryBreakdown.map((entry) => (
+                  <div key={entry.label} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3">
+                    <span className="text-sm font-bold text-on-surface">{entry.label}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-primary">{entry.count}</span>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">category</span>
+                Business types
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 px-6 pb-6 pt-6">
+              {insights.businessTypeBreakdown.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No industry data captured yet.</p>
+              ) : (
+                insights.businessTypeBreakdown.map((entry) => (
+                  <div key={entry.label} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3">
+                    <span className="text-sm font-bold text-on-surface">{entry.label}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-secondary">{entry.count}</span>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.3fr,1fr]">
@@ -559,10 +637,11 @@ export default async function CommandCenterPage() {
               </CardHeader>
               <CardContent className="space-y-3 px-6 pb-6 pt-6">
                 <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-2">Demo Seed Context</p>
-                  <p className="text-xs font-medium text-on-surface flex justify-between"><span>Org:</span> <span className="font-bold">Al Sadiq Traders</span></p>
-                  <p className="text-xs font-medium text-on-surface flex justify-between"><span>User:</span> <span className="font-bold">admin@alsadiq.local</span></p>
-                  <p className="text-xs font-medium text-on-surface flex justify-between"><span>Key:</span> <span className="font-bold text-primary">Demo123!</span></p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Credential posture</p>
+                  <p className="mt-2 text-sm font-bold text-on-surface">Masked integration metadata only</p>
+                  <p className="mt-1 text-xs font-medium leading-5 text-on-surface-variant">
+                    Secrets stay hidden. Use the dedicated vault page to inspect provider status, owner workspace, and last sync state.
+                  </p>
                 </div>
                 <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Production posture</p>
@@ -571,6 +650,12 @@ export default async function CommandCenterPage() {
                     Use this panel for controlled support context only. Tenant-facing workflows remain unchanged.
                   </p>
                 </div>
+                <Link
+                  href="/platform/vault"
+                  className="inline-flex h-11 w-full items-center justify-center rounded-2xl border border-outline-variant/30 bg-surface text-[11px] font-black uppercase tracking-[0.18em] text-on-surface shadow-soft transition-colors hover:bg-surface-container-low"
+                >
+                  Open System Vault
+                </Link>
               </CardContent>
             </Card>
 
@@ -596,6 +681,12 @@ export default async function CommandCenterPage() {
                     </div>
                   ))
                 )}
+                <Link
+                  href="/platform/audit-log"
+                  className="inline-flex h-11 w-full items-center justify-center rounded-2xl border border-outline-variant/30 bg-surface text-[11px] font-black uppercase tracking-[0.18em] text-on-surface shadow-soft transition-colors hover:bg-surface-container-low"
+                >
+                  View Full Audit Log
+                </Link>
               </CardContent>
             </Card>
           </div>

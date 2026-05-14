@@ -16,8 +16,38 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getPlan } from "@/lib/billing/plans";
 
-export default async function PlatformTenantsDirectory() {
+type SearchParams = Promise<{
+  q?: string;
+  status?: string;
+  page?: string;
+}>;
+
+const PAGE_SIZE = 16;
+
+export default async function PlatformTenantsDirectory({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
   const tenants = await getPlatformTenants();
+  const query = params.q?.trim().toLowerCase() || "";
+  const statusFilter = params.status?.trim() || "all";
+
+  const filteredTenants = tenants.filter((tenant: any) => {
+    const matchesQuery =
+      !query ||
+      [tenant.name, tenant.slug, tenant.country, tenant.subscription?.planId, tenant.accessStatus]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    const matchesStatus = statusFilter === "all" || tenant.accessStatus === statusFilter;
+    return matchesQuery && matchesStatus;
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredTenants.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(1, Number(params.page || "1") || 1), totalPages);
+  const paginatedTenants = filteredTenants.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -46,6 +76,35 @@ export default async function PlatformTenantsDirectory() {
         </div>
       </div>
 
+      <form className="grid gap-3 rounded-3xl border border-outline-variant/30 bg-surface p-5 shadow-soft md:grid-cols-[1.3fr,0.7fr,auto]">
+        <input
+          name="q"
+          defaultValue={params.q || ""}
+          placeholder="Search customer, slug, country, plan, or access status"
+          className="h-11 rounded-2xl border border-outline-variant bg-surface-container px-4 text-sm text-on-surface outline-none"
+        />
+        <select
+          name="status"
+          defaultValue={statusFilter}
+          className="h-11 rounded-2xl border border-outline-variant bg-surface-container px-4 text-sm text-on-surface outline-none"
+        >
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="payment_pending">Payment pending</option>
+          <option value="grace_period">Grace period</option>
+          <option value="blocked">Blocked</option>
+          <option value="expired">Expired</option>
+        </select>
+        <div className="flex gap-2">
+          <Button type="submit" className="h-11 rounded-2xl px-5 text-[11px] font-black uppercase tracking-[0.18em]">
+            Apply
+          </Button>
+          <Button asChild variant="outline" className="h-11 rounded-2xl px-5 text-[11px] font-black uppercase tracking-[0.18em]">
+            <a href="/platform/tenants">Reset</a>
+          </Button>
+        </div>
+      </form>
+
       <div className="border border-outline-variant/20 rounded-3xl overflow-hidden bg-surface/40 backdrop-blur-xl shadow-2xl">
         <Table>
           <TableHeader className="bg-surface/[0.02]">
@@ -58,7 +117,7 @@ export default async function PlatformTenantsDirectory() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tenants.length === 0 ? (
+            {paginatedTenants.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-20 text-muted-foreground">
                   <div className="flex flex-col items-center gap-4">
@@ -70,7 +129,7 @@ export default async function PlatformTenantsDirectory() {
                 </TableCell>
               </TableRow>
             ) : (
-              tenants.map((tenant: any) => {
+              paginatedTenants.map((tenant: any) => {
                 const planId = tenant.subscription?.planId || "starter";
                 const plan = getPlan(planId);
                 const isPaid = plan.id !== "starter" && planId !== "demo";
@@ -154,6 +213,26 @@ export default async function PlatformTenantsDirectory() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 ? (
+        <div className="flex items-center justify-between rounded-3xl border border-outline-variant/30 bg-surface p-4 shadow-soft">
+          <p className="text-sm text-on-surface-variant">
+            Page {currentPage} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" className="rounded-2xl">
+              <a href={`/platform/tenants?q=${encodeURIComponent(params.q || "")}&status=${encodeURIComponent(statusFilter)}&page=${Math.max(1, currentPage - 1)}`}>
+                Previous
+              </a>
+            </Button>
+            <Button asChild variant="outline" className="rounded-2xl">
+              <a href={`/platform/tenants?q=${encodeURIComponent(params.q || "")}&status=${encodeURIComponent(statusFilter)}&page=${Math.min(totalPages, currentPage + 1)}`}>
+                Next
+              </a>
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
     </div>
   );

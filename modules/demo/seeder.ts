@@ -16,7 +16,7 @@ export async function seedDemoWorkspace(organizationId: string, authorUserId: st
         currentStep: 7, // Skip onboarding
         isCompleted: true,
         completedAt: new Date(),
-        completedSteps: ["welcome", "profile", "branch", "product", "customer", "invite", "transaction"],
+        completedSteps: ["welcome", "profile", "branch", "product", "customer", "invite"],
         skippedSteps: [],
         demoDataInserted: true,
       },

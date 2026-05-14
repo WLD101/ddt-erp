@@ -9,15 +9,65 @@ import Link from "next/link";
 import { PageShell } from "@/components/dashboard/page-shell";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { canUseFeature } from "@/lib/billing/enforcement";
+import { AlertCircle } from "lucide-react";
 
 export default async function ReportsPage() {
   const ctx = await getCurrentTenantContext();
+  const canViewReports = ctx.role === "owner" || ctx.permissions.includes("reports.view");
+
+  if (!canViewReports) {
+    return (
+      <PageShell
+        title="Reports"
+        description="Review organization performance, inventory exceptions, and revenue insights with one consistent analytics surface."
+        className="pb-20"
+      >
+        <Card className="rounded-3xl border border-outline-variant/30 bg-surface shadow-soft">
+          <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest">
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.1em] text-on-surface">
+              <AlertCircle className="h-4 w-4 text-primary" />
+              Reports unavailable
+            </CardTitle>
+            <CardDescription className="text-sm font-medium text-on-surface-variant">
+              Your current workspace role cannot view reports right now. Contact your workspace administrator if you need access.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 p-6">
+            <p className="text-sm leading-6 text-on-surface-variant">
+              This safe state prevents dashboard crashes while keeping tenant data protected and access rules intact.
+            </p>
+            <Link
+              href="/dashboard"
+              className="inline-flex h-11 items-center justify-center rounded-2xl bg-primary px-5 text-[11px] font-black uppercase tracking-[0.18em] text-on-primary shadow-lg shadow-primary/20 transition-opacity hover:opacity-90"
+            >
+              Return to dashboard
+            </Link>
+          </CardContent>
+        </Card>
+      </PageShell>
+    );
+  }
+
   const canViewAdvancedTrends = await canUseFeature(ctx.organizationId, "advancedReports");
-  const [balances, topProducts, lowStock] = await Promise.all([
-    getOutstandingBalances(),
-    getTopProducts(5),
-    getLowStockAlerts()
-  ]);
+  let balances: Awaited<ReturnType<typeof getOutstandingBalances>> = { customerBalances: [], supplierBalances: [] };
+  let topProducts: Awaited<ReturnType<typeof getTopProducts>> = [];
+  let lowStock: Awaited<ReturnType<typeof getLowStockAlerts>> = [];
+  let loadWarning: string | null = null;
+
+  try {
+    [balances, topProducts, lowStock] = await Promise.all([
+      getOutstandingBalances(),
+      getTopProducts(5),
+      getLowStockAlerts(),
+    ]);
+  } catch (error) {
+    console.error("[reports-page] failed to load static report widgets", {
+      organizationId: ctx.organizationId,
+      userId: ctx.userId,
+      error,
+    });
+    loadWarning = "We couldn't load every report widget right now. Core reporting is still available below.";
+  }
 
   return (
     <PageShell
@@ -31,6 +81,14 @@ export default async function ReportsPage() {
       }
       className="pb-20"
     >
+      {loadWarning ? (
+        <Card className="mb-6 rounded-3xl border border-amber-500/20 bg-amber-500/5 shadow-soft">
+          <CardContent className="flex items-start gap-3 p-5 text-sm text-on-surface">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <p className="font-medium text-on-surface-variant">{loadWarning}</p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Main Interactive Analytics Section */}
       <ReportsClient canViewAdvancedTrends={canViewAdvancedTrends} />

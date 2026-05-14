@@ -29,8 +29,11 @@ export function CompleteStep({ stepId }: Props) {
 
   const handleGoToDashboard = () => {
     startTransition(async () => {
-      await completeOnboarding();
-      router.push("/onboarding/setup");
+      const result = await completeOnboarding();
+      if (!result.success) {
+        return;
+      }
+      router.push("/dashboard");
     });
   };
 
