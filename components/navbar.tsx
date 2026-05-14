@@ -4,7 +4,6 @@ import { getBranches } from "@/modules/admin/branch-actions";
 import { BranchSelector } from "./admin/BranchSelector";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { getCurrentTenantContext } from "@/lib/tenant";
-import { cn } from "@/lib/utils";
 import { CommandPalette } from "./dashboard/CommandPalette";
 
 export async function Navbar() {
@@ -24,7 +23,7 @@ export async function Navbar() {
   }
 
   return (
-    <header className="flex items-center justify-between px-8 sticky top-0 z-30 bg-white/80 backdrop-blur-xl h-20 border-b border-outline-variant/30 transition-all duration-300">
+    <header className="flex items-center justify-between px-8 sticky top-0 z-30 bg-surface/85 backdrop-blur-xl h-20 border-b border-outline-variant/30 transition-all duration-300">
       <div className="flex items-center gap-6 flex-1">
         <div className="relative w-full max-w-lg hidden md:block">
           <CommandPalette />
@@ -54,7 +53,7 @@ export async function Navbar() {
               {role || "Admin"} Node
             </p>
           </div>
-          <div className="p-1 rounded-2xl border border-outline-variant/30 bg-white shadow-soft">
+          <div className="p-1 rounded-2xl border border-outline-variant/30 bg-surface-container-low shadow-soft">
             <UserButton user={{
               name: session?.user?.name,
               email: session?.user?.email,

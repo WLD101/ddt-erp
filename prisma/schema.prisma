@@ -413,6 +413,8 @@ model Product {
   sku        String?
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id])
+  unitType   String?
+  unit       String?
 
   unitPrice         Float
   costPrice         Float
@@ -1052,6 +1054,7 @@ model EmailLog {
   event          String
   subject        String?
   providerId     String?
+  emailType      String?
   sentAt         DateTime @default(now())
 
   @@index([organizationId])
@@ -1063,6 +1066,7 @@ model AnalyticsEvent {
   userId         String?
   name           String
   category       String
+  properties     Json?
   timestamp      DateTime @default(now())
 
   @@index([organizationId])

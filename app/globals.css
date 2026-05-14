@@ -28,7 +28,14 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   
-  /* Custom Palette from WhatsQuery AI */
+  /*
+   * ERP theme contract:
+   * - Use semantic tokens below instead of hardcoded white/black text or arbitrary grays.
+   * - Dashboard cards, tables, and modals share the same contrast rules, so any future palette
+   *   update must keep `.dark` overrides in sync with these token names.
+   * - Never place white text on light cards or dark text on dark glass surfaces; use
+   *   `text-on-surface`, `text-on-surface-variant`, `bg-surface*`, and related tokens instead.
+   */
   --color-on-secondary-container: #00714d;
   --color-inverse-on-surface: #eaf1ff;
   --color-secondary-fixed-dim: #4edea3;
@@ -135,6 +142,41 @@
   --border: #444653;
   --input: #444653;
   --ring: #b8c4ff;
+
+  /*
+   * Semantic dark-mode overrides for ERP surfaces.
+   * Without these, classes like `bg-surface` and `text-on-surface` continue using the light
+   * palette and make modal headings, helper text, labels, and selected states unreadable.
+   */
+  --color-surface-dim: #091728;
+  --color-surface-bright: #17283d;
+  --color-surface: #0f1f33;
+  --color-surface-container-lowest: #081422;
+  --color-surface-container-low: #13263c;
+  --color-surface-container: #182c43;
+  --color-surface-container-high: #1d334d;
+  --color-surface-container-highest: #253d58;
+  --color-surface-variant: #1d3249;
+  --color-on-surface: #f4f8ff;
+  --color-on-background: #f4f8ff;
+  --color-on-surface-variant: #b8c8de;
+  --color-outline: #8da0b9;
+  --color-outline-variant: #314760;
+  --color-primary: #9fb9ff;
+  --color-primary-container: #193b83;
+  --color-on-primary: #081a46;
+  --color-on-primary-container: #d9e3ff;
+  --color-secondary: #63d8a8;
+  --color-secondary-container: #0e4a35;
+  --color-on-secondary: #052116;
+  --color-on-secondary-container: #d3ffe9;
+  --color-error: #ff8f87;
+  --color-on-error: #4f0003;
+  --color-error-container: #742124;
+  --color-on-error-container: #ffd9d6;
+  --color-inverse-surface: #eff4ff;
+  --color-inverse-on-surface: #13263c;
+  --color-inverse-primary: #294eb2;
 }
 
 @layer base {

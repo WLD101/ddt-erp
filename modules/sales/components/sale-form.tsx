@@ -169,7 +169,7 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
                   <SelectValue placeholder="Identify customer..." />
                 </div>
               </SelectTrigger>
-              <SelectContent className="bg-white border-outline-variant shadow-lg rounded-xl">
+              <SelectContent className="border-outline-variant shadow-lg rounded-xl">
                 {customers.map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
@@ -233,7 +233,7 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
                             <SelectValue placeholder="Pick Product" />
                           </div>
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-outline-variant shadow-lg rounded-xl">
+                        <SelectContent className="border-outline-variant shadow-lg rounded-xl">
                           {products.map((p) => (
                             <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                           ))}

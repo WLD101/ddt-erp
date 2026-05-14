@@ -43,7 +43,7 @@ export async function getProducts() {
   const ctx = await getCurrentTenantContext();
   requirePermission(ctx, "products.view");
   const db = getTenantStore(ctx);
-  return service.getProducts(db);
+  return service.getProducts(db, ctx.branchId);
 }
 
 /**
@@ -67,7 +67,7 @@ export const createProduct = createServerAction({
     getProperties: (input) => ({ type: input.type, hasSku: !!input.sku })
   },
   handler: async ({ input, context }) => {
-    return service.createProduct(context.db, input);
+    return service.createProduct(context.db, input, context.branchId);
   },
 });
 
@@ -87,7 +87,7 @@ export const updateProduct = createServerAction({
   },
   handler: async ({ input, context }) => {
     const { id, ...data } = input;
-    return service.updateProduct(context.db, id, data);
+    return service.updateProduct(context.db, id, data, context.branchId);
   },
 });
 

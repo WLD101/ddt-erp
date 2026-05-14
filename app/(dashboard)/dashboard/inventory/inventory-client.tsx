@@ -36,6 +36,8 @@ interface InventoryItem {
     id: string;
     name: string;
     sku: string | null;
+    unit: string | null;
+    unitType: string | null;
     unitPrice: number;
     costPrice: number;
     categoryId: string | null;
@@ -151,7 +153,7 @@ export function InventoryClient({ items, categories }: { items: InventoryItem[],
                         ? "bg-error/10 text-error border-error/20" 
                         : "bg-secondary/10 text-secondary border-secondary/20"
                     )}>
-                      {item.quantity}
+                      {item.quantity} {item.product.unit || "piece"}
                     </span>
                   </TableCell>
                   <TableCell className="px-8 py-6 text-right pr-10">

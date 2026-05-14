@@ -38,7 +38,7 @@ export function FormFieldWrapper<TFieldValues extends FieldValues>({
       render={({ field }) => (
         <FormItem className={cn("space-y-2", className)}>
           {label && (
-            <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80 ml-1">
+            <FormLabel className="ml-1 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
               {label}
             </FormLabel>
           )}
@@ -46,11 +46,11 @@ export function FormFieldWrapper<TFieldValues extends FieldValues>({
             {React.cloneElement(children, field as Record<string, unknown>)}
           </FormControl>
           {description && (
-            <FormDescription className="text-[10px] text-muted-foreground/60 italic ml-1 leading-tight">
+            <FormDescription className="ml-1 text-[10px] italic leading-tight text-on-surface-variant/80">
               {description}
             </FormDescription>
           )}
-          <FormMessage className="text-[10px] font-bold text-rose-500 ml-1" />
+          <FormMessage className="ml-1 text-[10px] font-bold text-error" />
         </FormItem>
       )}
     />

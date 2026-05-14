@@ -5,12 +5,12 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { productSchema, ProductFormValues } from "../schema";
+import { productSchema, ProductFormValues, PRODUCT_UNITS_BY_TYPE, PRODUCT_UNIT_TYPES } from "../schema";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { createProduct, updateProduct } from "../actions";
 import { toast } from "sonner";
 import { FormFieldWrapper } from "@/components/forms/form-field-wrapper";
@@ -35,10 +35,15 @@ export function ProductForm({ categories, initialData, onSuccess }: ProductFormP
       unitPrice: initialData?.unitPrice || 0,
       costPrice: initialData?.costPrice || 0,
       lowStockThreshold: initialData?.lowStockThreshold || 10,
+      openingQuantity: initialData?.openingQuantity ?? initialData?.inventoryItems?.[0]?.quantity ?? 0,
+      unitType: initialData?.unitType || "RETAIL_QUANTITY",
+      unit: initialData?.unit || PRODUCT_UNITS_BY_TYPE.RETAIL_QUANTITY[0],
     },
   });
 
   const { showLimitModal } = usePlanModal();
+  const selectedUnitType = form.watch("unitType");
+  const unitOptions = PRODUCT_UNITS_BY_TYPE[selectedUnitType ?? "RETAIL_QUANTITY"] ?? PRODUCT_UNITS_BY_TYPE.RETAIL_QUANTITY;
 
   function onSubmit(data: ProductFormValues) {
     startTransition(async () => {
@@ -101,7 +106,7 @@ export function ProductForm({ categories, initialData, onSuccess }: ProductFormP
               <SelectTrigger>
                 <SelectValue placeholder="Classify product" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-outline-variant shadow-lg rounded-xl">
+              <SelectContent className="border-outline-variant shadow-lg rounded-xl">
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                 ))}
@@ -140,8 +145,8 @@ export function ProductForm({ categories, initialData, onSuccess }: ProductFormP
 
         <FormSection 
           title="Inventory Controls" 
-          description="Operational safety thresholds"
-          columns={1}
+          description="Operational safety thresholds and stocking rules"
+          columns={3}
         >
           <FormFieldWrapper 
             control={form.control} 
@@ -153,6 +158,70 @@ export function ProductForm({ categories, initialData, onSuccess }: ProductFormP
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-error">warning</span>
               <Input type="number" className="pl-10 md:max-w-[200px]" />
             </div>
+          </FormFieldWrapper>
+
+          <FormFieldWrapper
+            control={form.control}
+            name="openingQuantity"
+            label="Quantity"
+            description="Current stock for the active branch or location."
+          >
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-primary">inventory</span>
+              <Input type="number" min="0" step="0.01" className="pl-10" />
+            </div>
+          </FormFieldWrapper>
+
+          <FormFieldWrapper
+            control={form.control}
+            name="unitType"
+            label="Unit Type"
+            description="Choose the measurement family that matches this product."
+          >
+            <Select
+              onValueChange={(val) => {
+                form.setValue("unitType", val as ProductFormValues["unitType"]);
+                form.setValue("unit", PRODUCT_UNITS_BY_TYPE[val as keyof typeof PRODUCT_UNITS_BY_TYPE][0]);
+              }}
+              defaultValue={form.getValues("unitType")}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Pick a unit type" />
+              </SelectTrigger>
+              <SelectContent className="border-outline-variant shadow-lg rounded-xl">
+                {PRODUCT_UNIT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.toLowerCase().split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
+        </FormSection>
+
+        <FormSection
+          title="Unit Definition"
+          description="Keep retail, textile, weight, length, and volume items understandable for staff."
+          columns={2}
+        >
+          <FormFieldWrapper
+            control={form.control}
+            name="unit"
+            label="Unit"
+            description="Shown throughout the product catalog and inventory views."
+          >
+            <Select onValueChange={(val) => form.setValue("unit", val)} defaultValue={form.getValues("unit")}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a unit" />
+              </SelectTrigger>
+              <SelectContent className="border-outline-variant shadow-lg rounded-xl">
+                {unitOptions.map((unit) => (
+                  <SelectItem key={unit} value={unit}>
+                    {unit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormFieldWrapper>
         </FormSection>
 

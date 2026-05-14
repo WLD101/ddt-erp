@@ -99,13 +99,13 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
             label="Verified Supplier"
           >
             <Select onValueChange={(val) => form.setValue("supplierId", val)} defaultValue={form.getValues("supplierId")}>
-              <SelectTrigger className="bg-white/5 border-white/10 h-11">
+              <SelectTrigger className="h-11">
                 <div className="flex items-center">
                   <Building className="w-4 h-4 mr-2 text-muted-foreground/60" />
                   <SelectValue placeholder="Identify supplier..." />
                 </div>
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10">
+              <SelectContent className="border-outline-variant">
                 {suppliers.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                 ))}
@@ -120,14 +120,14 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
           >
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-              <Input className="pl-10 bg-white/5 border-white/10 h-11 font-mono text-xs uppercase tracking-tighter" />
+              <Input className="pl-10 h-11 font-mono text-xs uppercase tracking-tighter" />
             </div>
           </FormFieldWrapper>
         </FormSection>
 
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
-            <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-sm font-black text-on-surface uppercase tracking-wider flex items-center gap-2">
               <span className="w-1.5 h-4 bg-primary rounded-full inline-block" />
               Manifest Line Items
             </h3>
@@ -145,7 +145,7 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
 
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <Card key={field.id} className="border-white/5 bg-white/5 overflow-hidden group hover:border-emerald-500/20 transition-colors duration-500">
+              <Card key={field.id} className="border-outline-variant/30 bg-surface-container-low overflow-hidden group hover:border-emerald-500/20 transition-colors duration-500">
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
                   <div className="md:col-span-5">
                     <FormFieldWrapper 
@@ -163,13 +163,13 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
                         }} 
                         defaultValue={form.getValues(`items.${index}.productId`)}
                       >
-                        <SelectTrigger className="bg-background/40 border-white/5 h-10">
+                        <SelectTrigger className="h-10">
                           <div className="flex items-center">
                             <Package className="w-4 h-4 mr-2 text-muted-foreground/40" />
                             <SelectValue placeholder="Pick Product" />
                           </div>
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-900 border-white/10">
+                        <SelectContent className="border-outline-variant">
                           {products.map((p) => (
                             <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                           ))}
@@ -183,7 +183,7 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
                       name={`items.${index}.quantity`} 
                       label="Quantity"
                     >
-                      <Input type="number" className="bg-background/40 border-white/5 h-10 text-center font-bold" />
+                      <Input type="number" className="h-10 text-center font-bold" />
                     </FormFieldWrapper>
                   </div>
                   <div className="md:col-span-3">
@@ -194,7 +194,7 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
                     >
                       <div className="relative">
                         <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
-                        <Input type="number" step="0.01" className="pl-9 bg-background/40 border-white/5 h-10" />
+                        <Input type="number" step="0.01" className="pl-9 h-10" />
                       </div>
                     </FormFieldWrapper>
                   </div>
@@ -205,7 +205,7 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
                       size="icon" 
                       onClick={() => remove(index)}
                       disabled={fields.length === 1}
-                      className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-full"
+                      className="text-on-surface-variant hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-full"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -222,7 +222,7 @@ export function PurchaseForm({ suppliers, products, initialData, onSuccess }: Pu
                <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.2em] mb-1 flex items-center justify-end gap-2">
                  <Truck className="w-3 h-3" /> Total Procurement Cost (USD)
                </p>
-               <h2 className="text-5xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+               <h2 className="text-5xl font-black text-on-surface tracking-tighter drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">
                  ${subtotal.toFixed(2)}
                </h2>
              </div>

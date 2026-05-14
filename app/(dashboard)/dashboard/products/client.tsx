@@ -46,8 +46,11 @@ interface ProductWithCategory {
   sku: string | null;
   unitPrice: number;
   costPrice: number;
+  unit: string | null;
+  unitType: string | null;
   categoryId: string | null;
   category: { name: string } | null;
+  inventoryItems: { quantity: number }[];
 }
 
 interface ProductClientProps {
@@ -124,6 +127,7 @@ export function ProductClient({ initialProducts, categories, canImport }: Produc
               <TableHead className="pl-8">SKU / ID</TableHead>
               <TableHead>Commercial Name</TableHead>
               <TableHead>Categorization</TableHead>
+              <TableHead>Quantity / Unit</TableHead>
               <TableHead className="text-right">Unit Rate (Rs.)</TableHead>
               <TableHead className="text-right">Acquisition (Rs.)</TableHead>
               <TableHead className="text-right pr-8">Actions</TableHead>
@@ -141,6 +145,16 @@ export function ProductClient({ initialProducts, categories, canImport }: Produc
                     <span className="material-symbols-outlined text-[16px] text-outline">grid_view</span>
                     <span className="text-xs font-medium text-on-surface-variant">
                       {p.category?.name || "Unclassified"}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-bold text-on-surface">
+                      {(p.inventoryItems?.[0]?.quantity ?? 0).toLocaleString()}
+                    </span>
+                    <span className="text-[11px] text-on-surface-variant">
+                      {p.unit || "piece"} • {(p.unitType || "RETAIL_QUANTITY").toLowerCase().replaceAll("_", " ")}
                     </span>
                   </div>
                 </TableCell>
@@ -173,7 +187,7 @@ export function ProductClient({ initialProducts, categories, canImport }: Produc
             ))}
             {initialProducts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-20 text-on-surface-variant font-medium italic">
+                <TableCell colSpan={7} className="text-center py-20 text-on-surface-variant font-medium italic">
                   Catalog is currently empty.
                 </TableCell>
               </TableRow>

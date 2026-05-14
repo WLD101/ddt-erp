@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MapPin, ChevronDown, Check, Building2, Warehouse } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { setActiveBranch } from "@/modules/admin/branch-actions";
 import { toast } from "sonner";
@@ -30,9 +29,10 @@ interface BranchSelectorProps {
 export function BranchSelector({ branches, activeBranchId }: BranchSelectorProps) {
   const [isPending, startTransition] = useTransition();
   const activeBranch = branches.find(b => b.id === activeBranchId) || branches[0];
+  const hasMultipleBranches = branches.length > 1;
 
   const handleSelect = (id: string) => {
-    if (id === activeBranchId) return;
+    if (!hasMultipleBranches || id === activeBranchId) return;
     
     startTransition(async () => {
       try {
@@ -44,6 +44,36 @@ export function BranchSelector({ branches, activeBranchId }: BranchSelectorProps
     });
   };
 
+  const triggerContent = (
+    <div className="flex items-center gap-3">
+      <span className="material-symbols-outlined text-primary text-[20px]">store</span>
+      <div className="flex flex-col items-start leading-none">
+        <span className="text-[10px] uppercase font-bold tracking-wider text-outline mb-0.5">Location</span>
+        <span className="font-bold text-sm text-on-surface">{activeBranch?.name || "Main Branch"}</span>
+      </div>
+      {hasMultipleBranches ? (
+        <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[18px]">expand_more</span>
+      ) : (
+        <span className="rounded-full bg-surface-container px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
+          Fixed
+        </span>
+      )}
+    </div>
+  );
+
+  if (!hasMultipleBranches) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        disabled
+        className="bg-surface-container-low border border-outline-variant text-on-surface rounded-lg px-4 flex items-center gap-3 shadow-sm h-10 disabled:opacity-100"
+      >
+        {triggerContent}
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -52,20 +82,13 @@ export function BranchSelector({ branches, activeBranchId }: BranchSelectorProps
             variant="outline" 
             size="sm" 
             disabled={isPending}
-            className="bg-white border border-outline-variant hover:bg-surface text-on-surface rounded-lg px-4 flex items-center gap-3 transition-all shadow-sm group h-10"
+            className="bg-surface-container-low border border-outline-variant hover:bg-surface-container text-on-surface rounded-lg px-4 flex items-center gap-3 transition-all shadow-sm group h-10"
           />
         }
       >
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-[20px]">store</span>
-          <div className="flex flex-col items-start leading-none">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-outline mb-0.5">Location</span>
-            <span className="font-bold text-sm text-on-surface">{activeBranch?.name || "Select Branch"}</span>
-          </div>
-          <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[18px]">expand_more</span>
-        </div>
+        {triggerContent}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 bg-white border border-outline-variant rounded-xl shadow-soft p-2">
+      <DropdownMenuContent align="start" className="w-64 bg-surface border border-outline-variant rounded-xl shadow-soft p-2">
         <DropdownMenuLabel className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-outline">
           Switch Location
         </DropdownMenuLabel>
