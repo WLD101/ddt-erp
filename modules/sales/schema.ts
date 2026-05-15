@@ -11,8 +11,8 @@ export const salesInvoiceSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   items: z.array(salesInvoiceItemSchema).min(1, "At least one item is required"),
   discount: z.coerce.number().min(0).optional().default(0),
-  notes: z.string().optional(),
-  quotationId: z.string().optional(),
+  notes: z.string().optional().nullable(),
+  quotationId: z.string().optional().nullable(),
 });
 
 export type SalesInvoiceFormValues = z.input<typeof salesInvoiceSchema>;

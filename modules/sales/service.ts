@@ -13,9 +13,9 @@ export const salesInvoiceSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   items: z.array(salesInvoiceItemSchema).min(1, "At least one item is required"),
-  discount: moneySchema,
-  notes: z.string().nullish(),
-  quotationId: z.string().nullish(),
+  discount: z.coerce.number().min(0).optional().default(0),
+  notes: z.string().optional().nullable(),
+  quotationId: z.string().optional().nullable(),
 });
 
 export type SalesInvoiceInput = z.infer<typeof salesInvoiceSchema>;
@@ -105,7 +105,7 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
         taxAmount,
         totalAmount,
         notes: data.notes,
-        quotationId: data.quotationId,
+        quotationId: data.quotationId || null,
         items: { create: itemsToCreate },
       },
       include: { items: true },
