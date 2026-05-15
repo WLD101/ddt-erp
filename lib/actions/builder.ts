@@ -182,6 +182,27 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
       if (err instanceof DemoModeBlockedError || err.name === "DemoModeBlockedError") {
         return { success: false, error: err.message };
       }
+      if (err.name === "PlanLimitError") {
+        return { success: false, error: err.message };
+      }
+
+      // Surface business-logic errors (thrown intentionally from service layer)
+      // instead of masking them with a generic "system error" message.
+      const msg: string = err.message || "";
+      const isBusinessError =
+        msg.includes("Insufficient stock") ||
+        msg.includes("not found") ||
+        msg.includes("access denied") ||
+        msg.includes("must be") ||
+        msg.includes("already exists") ||
+        msg.includes("at least") ||
+        msg.includes("required") ||
+        msg.includes("cannot") ||
+        msg.includes("Insufficient funds");
+
+      if (isBusinessError) {
+        return { success: false, error: msg };
+      }
 
       console.error(`[Action:${config.label}] Critical Failure:`, err);
       

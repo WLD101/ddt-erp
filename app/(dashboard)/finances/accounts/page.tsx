@@ -1,16 +1,12 @@
 import { getAccounts } from "@/modules/finances/actions";
 import { 
   Wallet, 
-  Plus, 
   Building2, 
-  CreditCard, 
   ChevronRight,
   TrendingUp,
   Landmark,
-  ArrowRightLeft
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Card, 
@@ -18,6 +14,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { AccountsPageActions } from "./accounts-page-actions";
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();
@@ -38,16 +35,7 @@ export default async function AccountsPage() {
           <p className="text-muted-foreground text-sm font-medium">Managing organizational liquidity, bank reconciliations, and cash boxes.</p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <Button className="h-12 px-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface font-black text-xs uppercase tracking-widest rounded-xl flex items-center gap-2 transition-all">
-            <ArrowRightLeft className="w-4 h-4 text-primary" />
-            Transfer Funds
-          </Button>
-          <Button className="h-12 px-6 bg-primary hover:bg-primary/90 text-on-surface font-black text-xs uppercase tracking-widest rounded-xl flex items-center gap-2 transition-transform active:scale-95">
-            <Plus className="w-4 h-4" />
-            New Account
-          </Button>
-        </div>
+        <AccountsPageActions accounts={accounts.map(a => ({ id: a.id, name: a.name }))} />
       </div>
 
       {/* Grid Summary */}

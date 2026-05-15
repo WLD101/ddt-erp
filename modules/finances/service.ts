@@ -72,7 +72,6 @@ export async function createAccount(db: ScopedPrisma, branchId: string, data: Ac
         type: data.type,
         accountNumber: data.accountNumber,
         bankName: data.bankName,
-        initialBalance: data.initialBalance,
         currentBalance: 0, // Will be updated by opening balance entry
       },
     });

@@ -192,11 +192,15 @@ export async function getRecentTransactions(db: ScopedPrisma, branchId: string, 
       number: p.invoiceNumber,
       entity: p.supplier.name,
       amount: p.totalAmount,
-      date: p.date,
+      date: p.issueDate,
       status: p.status,
     })),
   ]
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  .sort((a, b) => {
+    const da = a.date ? new Date(a.date).getTime() : 0;
+    const db = b.date ? new Date(b.date).getTime() : 0;
+    return db - da;
+  })
   .slice(0, limit);
 }
 
