@@ -41,8 +41,17 @@ export async function getSalesInvoiceById(db: ScopedPrisma, branchId: string, id
 
 export async function createSalesInvoice(db: ScopedPrisma, branchId: string, data: SalesInvoiceInput) {
   return db.$transaction(async (tx) => {
+    // 1. Ensure Invoice Number is Unique
+    const existingInvoice = await tx.salesInvoice.findFirst({
+      where: { organizationId: db.organizationId, invoiceNumber: data.invoiceNumber },
+      select: { id: true },
+    });
+    if (existingInvoice) {
+      throw new Error(`Invoice number '${data.invoiceNumber}' already exists.`);
+    }
+
     const customer = await tx.customer.findUnique({
-      where: { id_organizationId: { id: data.customerId, organizationId: db.organizationId } },
+      where: { id: data.customerId },
       select: { id: true },
     });
     if (!customer) throw new Error("Customer not found or access denied.");
@@ -92,14 +101,39 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
       inventoryItemsByProductId.set(productId, { id: inventoryItem.id });
     }
 
-    // 1. Create invoice + line items
+    // 2. Resolve Financial Account for Posting
+    let account = await tx.financialAccount.findFirst({
+      where: { organizationId: db.organizationId, isDefault: true, isActive: true },
+    });
+
+    if (!account) {
+      account = await tx.financialAccount.findFirst({
+        where: { organizationId: db.organizationId, isActive: true },
+      });
+    }
+
+    if (!account) {
+      // Auto-create safe default account for tenant
+      account = await tx.financialAccount.create({
+        data: {
+          organizationId: db.organizationId,
+          name: "Main Cash Account",
+          type: "CASH",
+          currentBalance: 0,
+          isDefault: true,
+          isActive: true,
+        },
+      });
+    }
+
+    // 3. Create invoice + line items
     const invoice = await tx.salesInvoice.create({
       data: {
         organizationId: db.organizationId,
         branchId,
         customerId: data.customerId,
         invoiceNumber: data.invoiceNumber,
-        status: "SENT",
+        status: "PAID", // Auto-marked as PAID since it's immediately posted to ledger
         subtotal,
         discount,
         taxAmount,
@@ -111,15 +145,15 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
       include: { items: true },
     });
 
-    // 1.1 If converted from quotation, update quotation status
+    // 3.1 If converted from quotation, update quotation status
     if (data.quotationId) {
       await tx.quotation.update({
-        where: { id_organizationId: { id: data.quotationId, organizationId: db.organizationId } },
+        where: { id: data.quotationId },
         data: { status: "CONVERTED" },
       });
     }
 
-    // 2. Record stock movements for the items already deducted in this transaction.
+    // 4. Record stock movements
     for (const item of invoice.items) {
       await tx.stockMovement.create({
         data: {
@@ -129,6 +163,27 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
           type: "OUT",
           quantity: item.quantity,
           reason: `Sales Invoice: ${invoice.invoiceNumber}`,
+        },
+      });
+    }
+
+    // 5. Post to Financial Ledger
+    if (totalAmount > 0) {
+      const updatedAccount = await tx.financialAccount.update({
+        where: { id: account.id },
+        data: { currentBalance: { increment: totalAmount } },
+      });
+
+      await tx.ledgerEntry.create({
+        data: {
+          organizationId: db.organizationId,
+          branchId,
+          accountId: account.id,
+          amount: totalAmount,
+          balanceAfter: updatedAccount.currentBalance,
+          description: `Sales Invoice: ${invoice.invoiceNumber}`,
+          referenceType: "PAYMENT", // Using PAYMENT to represent inflow
+          referenceId: invoice.id,
         },
       });
     }
