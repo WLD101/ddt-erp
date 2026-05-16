@@ -19,6 +19,7 @@ export interface InvoiceData {
     address?: string | null;
     email?: string | null;
     phone?: string | null;
+    currency?: string | null;
   };
   customer: {
     name: string;
@@ -58,7 +59,7 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   const pageWidth = doc.internal.pageSize.getWidth();
   let currentY = 20;
 
-  const currency = data.currency || "PKR";
+  const currency = data.currency || data.organization.currency || "PKR";
 
   // 1. Header with WhatsQuery branding
   doc.setFillColor(37, 99, 235);
@@ -74,7 +75,7 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 116, 139);
-  doc.text(`Issued by ${data.organization.name}`, margin + 18, currentY + 10.5);
+  doc.text("Generated for your workspace", margin + 18, currentY + 10.5);
 
   doc.setTextColor(37, 99, 235);
   doc.setFontSize(24);
@@ -265,10 +266,12 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(148, 163, 184);
+  const footerTenant = data.organization.name.trim();
+  doc.text(footerTenant, pageWidth / 2, doc.internal.pageSize.getHeight() - 18, { align: "center" });
   const footerText = "Generated using WhatsQuery.com";
-  doc.text(footerText, pageWidth / 2, doc.internal.pageSize.getHeight() - 15, { align: "center" });
+  doc.text(footerText, pageWidth / 2, doc.internal.pageSize.getHeight() - 13, { align: "center" });
   doc.setFontSize(7);
-  doc.text("Professional invoice generated for A4 printing and digital sharing.", pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
+  doc.text("Professional invoice generated for A4 printing and digital sharing.", pageWidth / 2, doc.internal.pageSize.getHeight() - 9, { align: "center" });
 
   const arrayBuffer = doc.output("arraybuffer");
   return Buffer.from(arrayBuffer);
