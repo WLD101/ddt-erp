@@ -4,6 +4,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function DashboardLoading() {
   return (
     <div className="flex-1 space-y-8 overflow-auto p-8">
+      <Card className="border-outline-variant/20 bg-card/70">
+        <CardContent className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-36 rounded-full" />
+            <Skeleton className="h-9 w-80 max-w-full" />
+            <Skeleton className="h-4 w-[32rem] max-w-full" />
+          </div>
+          <Skeleton className="h-11 w-52 rounded-2xl" />
+        </CardContent>
+      </Card>
+
       <div className="space-y-3">
         <Skeleton className="h-10 w-56" />
         <Skeleton className="h-4 w-80" />

@@ -75,6 +75,33 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 flex-1 overflow-auto pb-10">
+      <Card className="overflow-hidden rounded-3xl border border-primary/15 bg-[linear-gradient(135deg,rgba(21,65,183,0.08),rgba(255,255,255,0.98)_42%,rgba(21,65,183,0.04))] shadow-soft">
+        <CardContent className="flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-primary">
+              <span className="material-symbols-outlined text-[16px]">smart_toy</span>
+              Smart Assistant
+            </div>
+            <div>
+              <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline-md sm:text-[2rem]">
+                Ask anything to your agent here
+              </h2>
+              <p className="mt-1 max-w-3xl text-sm font-medium text-on-surface-variant font-body-md">
+                Create customers, draft invoices, stock updates, and reports with a guided assistant that previews every action before it runs.
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <Link
+              href="/dashboard/assistant"
+              className="inline-flex h-11 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-black tracking-wide text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90"
+            >
+              Open Smart Assistant
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black tracking-tight text-on-surface font-headline-md">Business Intelligence</h2>
