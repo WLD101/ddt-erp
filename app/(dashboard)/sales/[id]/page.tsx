@@ -8,7 +8,9 @@ import {
   Hash,
   ShoppingBag,
   DollarSign,
-  Info as BadgeInfo
+  Info as BadgeInfo,
+  FileDown,
+  Printer
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,8 +26,9 @@ import {
 import { ReturnForm } from "@/components/returns/ReturnForm";
 import { notFound } from "next/navigation";
 
-export default async function SalesInvoiceDetailPage({ params }: { params: { id: string } }) {
-  const invoice = await getSalesInvoiceById(params.id);
+export default async function SalesInvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const invoice = await getSalesInvoiceById(resolvedParams.id);
 
   if (!invoice) return notFound();
 
@@ -44,27 +47,42 @@ export default async function SalesInvoiceDetailPage({ params }: { params: { id:
           </div>
         </div>
 
-        <Dialog>
-          <DialogTrigger
-            render={
-              <Button className="h-14 px-8 bg-surface-container-low hover:bg-primary/20 border border-outline-variant/30 hover:border-primary/50 text-on-surface font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group" />
-            }
-          >
-            <RotateCcw className="w-5 h-5 text-primary group-hover:rotate-180 transition-transform duration-500" />
-            Process Return
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] bg-slate-950/95 backdrop-blur-3xl border-outline-variant/20 rounded-[32px] p-10 overflow-auto max-h-[90vh]">
-            <DialogHeader className="mb-8">
-              <DialogTitle className="text-2xl font-black tracking-tight text-on-surface flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-2xl">
-                  <RotateCcw className="w-6 h-6 text-primary" />
-                </div>
-                Return Workflow
-              </DialogTitle>
-            </DialogHeader>
-            <ReturnForm type="SALES" invoice={invoice} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href={`/sales/${invoice.id}/print`}>
+            <Button className="h-14 px-6 bg-primary text-on-primary font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group">
+              <Printer className="w-5 h-5" />
+              Print Preview
+            </Button>
+          </Link>
+          <a href={`/api/sales/${invoice.id}/pdf`} download>
+            <Button variant="outline" className="h-14 px-6 border-primary/30 text-primary hover:bg-primary/10 font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3">
+              <FileDown className="w-5 h-5" />
+              Download PDF
+            </Button>
+          </a>
+
+          <Dialog>
+            <DialogTrigger
+              render={
+                <Button className="h-14 px-8 bg-surface-container-low hover:bg-primary/20 border border-outline-variant/30 hover:border-primary/50 text-on-surface font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group" />
+              }
+            >
+              <RotateCcw className="w-5 h-5 text-primary group-hover:rotate-180 transition-transform duration-500" />
+              Process Return
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[700px] bg-slate-950/95 backdrop-blur-3xl border-outline-variant/20 rounded-[32px] p-10 overflow-auto max-h-[90vh]">
+              <DialogHeader className="mb-8">
+                <DialogTitle className="text-2xl font-black tracking-tight text-on-surface flex items-center gap-3">
+                  <div className="p-3 bg-primary/20 rounded-2xl">
+                    <RotateCcw className="w-6 h-6 text-primary" />
+                  </div>
+                  Return Workflow
+                </DialogTitle>
+              </DialogHeader>
+              <ReturnForm type="SALES" invoice={invoice} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

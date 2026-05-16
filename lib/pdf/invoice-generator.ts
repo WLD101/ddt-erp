@@ -1,26 +1,24 @@
 // lib/pdf/invoice-generator.ts
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
-
-// Use 'any' for the autotable extension to avoid type conflicts with missing decls
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 export interface InvoiceData {
   invoiceNumber: string;
   issueDate: Date | string;
+  dueDate?: Date | string | null;
   status: string;
   subtotal: number;
   discount: number;
   taxAmount: number;
   totalAmount: number;
   notes?: string | null;
+  currency?: string | null;
   organization: {
     name: string;
+    address?: string | null;
+    email?: string | null;
+    phone?: string | null;
   };
   customer: {
     name: string;
@@ -35,8 +33,18 @@ export interface InvoiceData {
     total: number;
     product: {
       name: string;
+      unit?: string | null;
     };
   }>;
+}
+
+function formatMoney(amount: number, currency = "PKR") {
+  const safeCurrency = currency?.trim() || "PKR";
+  const symbol = safeCurrency.toUpperCase() === "PKR" ? "Rs." : safeCurrency.toUpperCase();
+  return `${symbol} ${amount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function generateInvoicePDF(data: InvoiceData): Buffer {
@@ -50,44 +58,42 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   const pageWidth = doc.internal.pageSize.getWidth();
   let currentY = 20;
 
-  // 1. Header with Logo Placeholder & Org Info
-  // Logo Placeholder
-  doc.setFillColor(37, 99, 235); // Blue-600
-  doc.roundedRect(margin, currentY, 12, 12, 2, 2, "F");
+  const currency = data.currency || "PKR";
+
+  // 1. Header with WhatsQuery branding
+  doc.setFillColor(37, 99, 235);
+  doc.roundedRect(margin, currentY, 14, 14, 3, 3, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("ERP", margin + 2.5, currentY + 7.5);
+  doc.setFontSize(9);
+  doc.text("WQ", margin + 3.1, currentY + 8.4);
 
-  // Org Name
-  doc.setTextColor(15, 23, 42); // Slate-900
-  doc.setFontSize(14);
-  doc.text(data.organization.name, margin + 16, currentY + 5);
+  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(16);
+  doc.text("WhatsQuery Invoice", margin + 18, currentY + 5.5);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 116, 139); // Gray-500
-  doc.text("Professional Business Solutions", margin + 16, currentY + 10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Issued by ${data.organization.name}`, margin + 18, currentY + 10.5);
 
-  // Invoice Text (Right Aligned)
-  doc.setTextColor(37, 99, 235); // Blue-600
+  doc.setTextColor(37, 99, 235);
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   doc.text("INVOICE", pageWidth - margin, currentY + 8, { align: "right" });
   
   currentY += 25;
 
-  // 2. Billing & Invoice Details info
-  doc.setDrawColor(241, 245, 249); // Slate-100
+  // 2. Billing & Invoice Details
+  doc.setDrawColor(241, 245, 249);
   doc.setLineWidth(0.5);
   doc.line(margin, currentY, pageWidth - margin, currentY);
   currentY += 10;
 
-  // Billed To Column
   doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184); // Slate-400
+  doc.setTextColor(148, 163, 184);
   doc.text("BILLED TO", margin, currentY);
+  doc.text("BUSINESS", margin + 70, currentY);
 
-  // Details Column
   doc.text("INVOICE NUMBER", pageWidth - margin - 50, currentY);
   doc.text("ISSUE DATE", pageWidth - margin - 20, currentY, { align: "right" });
 
@@ -96,6 +102,7 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   doc.setTextColor(15, 23, 42); // Slate-900
   doc.setFont("helvetica", "bold");
   doc.text(data.customer.name, margin, currentY);
+  doc.text(data.organization.name, margin + 70, currentY);
 
   doc.setFontSize(10);
   doc.text(data.invoiceNumber, pageWidth - margin - 50, currentY);
@@ -104,39 +111,59 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
 
   currentY += 5;
   doc.setFontSize(9);
-  doc.setTextColor(71, 85, 105); // Slate-600
+  doc.setTextColor(71, 85, 105);
   if (data.customer.email) {
     doc.text(data.customer.email, margin, currentY);
-    currentY += 4;
   }
+  if (data.organization.email) {
+    doc.text(data.organization.email, margin + 70, currentY);
+  }
+  currentY += 4;
   if (data.customer.phone) {
     doc.text(data.customer.phone, margin, currentY);
-    currentY += 4;
   }
+  if (data.organization.phone) {
+    doc.text(data.organization.phone, margin + 70, currentY);
+  }
+  currentY += 4;
   if (data.customer.address) {
     const addressLines = doc.splitTextToSize(data.customer.address, 60);
     doc.text(addressLines, margin, currentY);
-    currentY += (addressLines.length * 4);
+    currentY += addressLines.length * 4;
+  }
+  if (data.organization.address) {
+    const organizationAddressLines = doc.splitTextToSize(data.organization.address, 60);
+    doc.text(organizationAddressLines, margin + 70, currentY - 4);
   }
 
-  currentY += 10;
+  if (data.dueDate) {
+    const dueDateY = currentY - 4;
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text("DUE DATE", pageWidth - margin - 20, dueDateY);
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+    doc.text(format(new Date(data.dueDate), "MMM dd, yyyy"), pageWidth - margin, dueDateY + 4, { align: "right" });
+  }
+
+  currentY += 12;
 
   // 3. Status Badge
   const statusX = pageWidth - margin;
   const statusLabel = data.status.toUpperCase();
-  const isPaid = statusLabel === "PAID";
+  const isPaid = statusLabel === "PAID" || statusLabel === "FINALIZED";
   
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   const statusWidth = doc.getTextWidth(statusLabel) + 6;
   
   if (isPaid) {
-    doc.setFillColor(240, 253, 244); // Green-50
-    doc.setDrawColor(22, 163, 74); // Green-600
+    doc.setFillColor(240, 253, 244);
+    doc.setDrawColor(22, 163, 74);
     doc.setTextColor(22, 163, 74);
   } else {
-    doc.setFillColor(255, 247, 237); // Orange-50
-    doc.setDrawColor(249, 115, 22); // Orange-500
+    doc.setFillColor(255, 247, 237);
+    doc.setDrawColor(249, 115, 22);
     doc.setTextColor(249, 115, 22);
   }
   
@@ -148,28 +175,30 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   // 4. Table
   const tableRows = data.items.map((item) => [
     item.product.name,
+    item.product.unit || "unit",
     item.quantity.toString(),
-    `$${item.unitPrice.toFixed(2)}`,
-    `$${item.total.toFixed(2)}`,
+    formatMoney(item.unitPrice, currency),
+    formatMoney(item.total, currency),
   ]);
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: currentY,
     margin: { left: margin, right: margin },
-    head: [["Item Description", "Qty", "Unit Price", "Total"]],
+    head: [["Item Description", "Unit", "Qty", "Unit Rate", "Line Total"]],
     body: tableRows,
     theme: "plain",
     headStyles: { 
-      fillColor: [37, 99, 235], // Blue-600
+      fillColor: [37, 99, 235],
       textColor: [255, 255, 255],
       fontStyle: "bold",
       halign: "left",
       cellPadding: 4
     },
     columnStyles: {
-      1: { halign: "right" },
-      2: { halign: "right" },
-      3: { halign: "right" },
+      1: { halign: "center", cellWidth: 25 },
+      2: { halign: "right", cellWidth: 18 },
+      3: { halign: "right", cellWidth: 30 },
+      4: { halign: "right", cellWidth: 30 },
     },
     styles: {
       font: "helvetica",
@@ -188,50 +217,46 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   const totalBoxX = pageWidth - margin - totalBoxWidth;
 
   doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139); // Slate-500
+  doc.setTextColor(100, 116, 139);
   
-  // Subtotal
   doc.text("Subtotal", totalBoxX, currentY);
   doc.setTextColor(51, 65, 85);
-  doc.text(`$${data.subtotal.toFixed(2)}`, pageWidth - margin, currentY, { align: "right" });
+  doc.text(formatMoney(data.subtotal, currency), pageWidth - margin, currentY, { align: "right" });
 
-  // Discount (only if > 0)
   if (data.discount > 0) {
     currentY += 6;
     doc.setTextColor(100, 116, 139);
     doc.text("Discount", totalBoxX, currentY);
-    doc.setTextColor(220, 38, 38); // Red-600
-    doc.text(`-$${data.discount.toFixed(2)}`, pageWidth - margin, currentY, { align: "right" });
+    doc.setTextColor(220, 38, 38);
+    doc.text(`-${formatMoney(data.discount, currency)}`, pageWidth - margin, currentY, { align: "right" });
   }
 
-  // Tax
   currentY += 6;
   doc.setTextColor(100, 116, 139);
-  doc.text("Tax Amount", totalBoxX, currentY);
+  doc.text("Tax", totalBoxX, currentY);
   doc.setTextColor(51, 65, 85);
-  doc.text(`$${data.taxAmount.toFixed(2)}`, pageWidth - margin, currentY, { align: "right" });
+  doc.text(formatMoney(data.taxAmount, currency), pageWidth - margin, currentY, { align: "right" });
 
-  // Total Divider
   currentY += 8;
-  doc.setDrawColor(226, 232, 240); // Slate-200
+  doc.setDrawColor(226, 232, 240);
   doc.line(totalBoxX, currentY - 4, pageWidth - margin, currentY - 4);
   
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(15, 23, 42); // Slate-900
-  doc.text("Total", totalBoxX, currentY);
-  doc.text(`$${data.totalAmount.toFixed(2)}`, pageWidth - margin, currentY, { align: "right" });
+  doc.setTextColor(15, 23, 42);
+  doc.text("Final Payable", totalBoxX, currentY);
+  doc.text(formatMoney(data.totalAmount, currency), pageWidth - margin, currentY, { align: "right" });
 
-  // 6. Notes
+  // 6. Notes / payment terms
   if (data.notes) {
     currentY += 20;
     doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184); // Slate-400
+    doc.setTextColor(148, 163, 184);
     doc.setFont("helvetica", "bold");
-    doc.text("NOTES", margin, currentY);
+    doc.text("PAYMENT TERMS / NOTES", margin, currentY);
     currentY += 5;
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(71, 85, 105); // Slate-600
+    doc.setTextColor(71, 85, 105);
     const noteLines = doc.splitTextToSize(data.notes, pageWidth - (margin * 2));
     doc.text(noteLines, margin, currentY);
   }
@@ -240,8 +265,10 @@ export function generateInvoicePDF(data: InvoiceData): Buffer {
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(148, 163, 184);
-  const footerText = "Thank you for your business. For any questions, please contact your account manager.";
+  const footerText = "Generated using WhatsQuery.com";
   doc.text(footerText, pageWidth / 2, doc.internal.pageSize.getHeight() - 15, { align: "center" });
+  doc.setFontSize(7);
+  doc.text("Professional invoice generated for A4 printing and digital sharing.", pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
 
   const arrayBuffer = doc.output("arraybuffer");
   return Buffer.from(arrayBuffer);
