@@ -75,7 +75,7 @@ export default function SetupPage() {
                     isCompleted
                       ? "bg-emerald-500 text-on-surface"
                       : isCurrent
-                        ? "animate-pulse bg-primary text-on-surface"
+                        ? "animate-pulse bg-primary text-on-primary"
                         : "border border-outline-variant/20 bg-surface text-on-surface-variant"
                   )}
                 >

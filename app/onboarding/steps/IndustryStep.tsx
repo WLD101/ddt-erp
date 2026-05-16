@@ -91,7 +91,7 @@ export function IndustryStep({ stepId, onComplete, state }: IndustryStepProps) {
                 className={cn(
                   "mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-500",
                   isSelected
-                    ? "scale-110 bg-primary text-on-surface"
+                    ? "scale-110 bg-primary text-on-primary"
                     : "border border-outline-variant/20 bg-surface text-on-surface-variant"
                 )}
               >
@@ -160,7 +160,7 @@ export function IndustryStep({ stepId, onComplete, state }: IndustryStepProps) {
       <div className="flex justify-end pt-10">
         <Button
           onClick={handleSubmit}
-          className="h-14 rounded-2xl bg-primary px-10 font-black uppercase tracking-widest text-on-surface shadow-lg shadow-primary/20 transition-all group active:scale-95 hover:bg-primary/90"
+          className="h-14 rounded-2xl bg-primary px-10 font-black uppercase tracking-widest text-on-primary shadow-lg shadow-primary/20 transition-all group active:scale-95 hover:bg-primary/90"
           disabled={isLoading}
         >
           {isLoading ? (

@@ -151,7 +151,7 @@ function formatStatus(status: string) {
   switch (status) {
     case 'SENT': return <Badge className={cn(common, "bg-primary/5 text-primary border-primary/20 shadow-primary/5")}>Protocol Sent</Badge>;
     case 'ACCEPTED': return <Badge className={cn(common, "bg-secondary/5 text-secondary border-secondary/20 shadow-secondary/5")}>Approved</Badge>;
-    case 'CONVERTED': return <Badge className={cn(common, "bg-primary text-on-surface border-primary shadow-primary/10")}>Archived</Badge>;
+    case 'CONVERTED': return <Badge className={cn(common, "bg-primary text-on-primary border-primary shadow-primary/10")}>Archived</Badge>;
     case 'REJECTED': return <Badge className={cn(common, "bg-error/5 text-error border-error/20 shadow-error/5")}>Declined</Badge>;
     case 'EXPIRED': return <Badge className={cn(common, "bg-surface-container text-on-surface-variant/40 border-outline-variant/30 shadow-none")}>Stale</Badge>;
     default: return <Badge className={cn(common, "bg-surface-container-low text-on-surface-variant/60 border-outline-variant/20 shadow-none")}>Draft Node</Badge>;

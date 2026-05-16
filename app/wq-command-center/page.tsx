@@ -31,17 +31,31 @@ function formatBillingCycle(value?: string | null) {
 
 function readPackageMeta(featureJson: string) {
   try {
-    const parsed = JSON.parse(featureJson) as Record<string, unknown>;
+    const parsed = JSON.parse(featureJson) as Record<string, any>;
     return {
-      monthlyPrice: typeof parsed.monthlyPrice === "number" ? parsed.monthlyPrice : null,
-      branchLimit: typeof parsed.branchLimit === "number" ? parsed.branchLimit : null,
-      integrationsLimit: typeof parsed.integrationsLimit === "number" ? parsed.integrationsLimit : null,
+      monthlyPrice: parsed.monthlyPrice ?? null,
+      branchLimit: parsed.branchLimit ?? null,
+      integrationsLimit: parsed.integrationsLimit ?? null,
+      originalMonthlyPrice: parsed.originalMonthlyPrice ?? null,
+      discountedMonthlyPrice: parsed.discountedMonthlyPrice ?? null,
+      monthlyDiscountLabel: parsed.monthlyDiscountLabel ?? null,
+      originalYearlyPrice: parsed.originalYearlyPrice ?? null,
+      discountedYearlyPrice: parsed.discountedYearlyPrice ?? null,
+      yearlyDiscountLabel: parsed.yearlyDiscountLabel ?? null,
+      discountEnabled: !!parsed.discountEnabled,
     };
   } catch {
     return {
       monthlyPrice: null,
       branchLimit: null,
       integrationsLimit: null,
+      originalMonthlyPrice: null,
+      discountedMonthlyPrice: null,
+      monthlyDiscountLabel: null,
+      originalYearlyPrice: null,
+      discountedYearlyPrice: null,
+      yearlyDiscountLabel: null,
+      discountEnabled: false,
     };
   }
 }
@@ -599,14 +613,22 @@ export default async function CommandCenterPage() {
                 {packages.map((pkg) => {
                   const meta = readPackageMeta(pkg.featureJson);
                   return (
-                    <form key={pkg.id} action={updatePackageFromCommandCenterAction} className="space-y-3 rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-sm">
+                    <form key={pkg.id} action={updatePackageFromCommandCenterAction} className="space-y-4 rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
                       <input type="hidden" name="packageId" value={pkg.id} />
-                      <p className="text-xs font-black text-on-surface uppercase tracking-widest">{pkg.name}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-black text-on-surface uppercase tracking-widest">{pkg.name}</p>
+                        <div className="flex items-center gap-2">
+                           <input type="checkbox" name="discountEnabled" value="true" defaultChecked={meta.discountEnabled} className="h-4 w-4 rounded border-outline-variant" />
+                           <label className="text-[10px] font-bold text-on-surface-variant uppercase">Discount Enabled</label>
+                        </div>
+                      </div>
+                      
                       <div className="grid gap-3 grid-cols-2">
                         <div className="space-y-1">
                           <label className="text-[9px] font-bold text-on-surface-variant uppercase">Monthly Rate</label>
                           <input
                             name="monthlyPrice"
+                            type="number"
                             defaultValue={meta.monthlyPrice ?? ""}
                             className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
                           />
@@ -615,13 +637,103 @@ export default async function CommandCenterPage() {
                           <label className="text-[9px] font-bold text-on-surface-variant uppercase">Users</label>
                           <input
                             name="userLimit"
+                            type="number"
                             defaultValue={pkg.userLimit}
                             className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
                           />
                         </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-on-surface-variant uppercase">Branches</label>
+                          <input
+                            name="branchLimit"
+                            type="number"
+                            defaultValue={meta.branchLimit ?? ""}
+                            className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-on-surface-variant uppercase">Integrations</label>
+                          <input
+                            name="integrationsLimit"
+                            type="number"
+                            defaultValue={meta.integrationsLimit ?? ""}
+                            className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                          />
+                        </div>
                       </div>
-                      <button type="submit" className="w-full h-9 flex items-center justify-center bg-surface border border-outline-variant text-on-surface font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-surface-container-low transition-all">
-                        Update Global Pricing
+
+                      <div className="border-t border-outline-variant/10 pt-3 space-y-3">
+                        <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Monthly Discount Configuration</p>
+                        <div className="grid gap-3 grid-cols-2">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-on-surface-variant uppercase">Original Price</label>
+                            <input
+                              name="originalMonthlyPrice"
+                              type="number"
+                              defaultValue={meta.originalMonthlyPrice ?? ""}
+                              placeholder="e.g. 5000"
+                              className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-on-surface-variant uppercase">Discounted Price</label>
+                            <input
+                              name="discountedMonthlyPrice"
+                              type="number"
+                              defaultValue={meta.discountedMonthlyPrice ?? ""}
+                              placeholder="e.g. 3000"
+                              className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-on-surface-variant uppercase">Discount Label</label>
+                          <input
+                            name="monthlyDiscountLabel"
+                            defaultValue={meta.monthlyDiscountLabel ?? ""}
+                            placeholder="e.g. 40% OFF"
+                            className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="border-t border-outline-variant/10 pt-3 space-y-3">
+                        <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Yearly Discount Configuration</p>
+                        <div className="grid gap-3 grid-cols-2">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-on-surface-variant uppercase">Original Price</label>
+                            <input
+                              name="originalYearlyPrice"
+                              type="number"
+                              defaultValue={meta.originalYearlyPrice ?? ""}
+                              placeholder="e.g. 50000"
+                              className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-on-surface-variant uppercase">Discounted Price</label>
+                            <input
+                              name="discountedYearlyPrice"
+                              type="number"
+                              defaultValue={meta.discountedYearlyPrice ?? ""}
+                              placeholder="e.g. 30000"
+                              className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-on-surface-variant uppercase">Discount Label</label>
+                          <input
+                            name="yearlyDiscountLabel"
+                            defaultValue={meta.yearlyDiscountLabel ?? ""}
+                            placeholder="e.g. SAVES 40%"
+                            className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <button type="submit" className="w-full h-11 flex items-center justify-center bg-primary text-on-primary font-black text-[10px] uppercase tracking-widest rounded-xl hover:opacity-90 shadow-lg shadow-primary/20 transition-all">
+                        Update Package Profile
                       </button>
                     </form>
                   );

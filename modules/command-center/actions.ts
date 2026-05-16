@@ -68,6 +68,22 @@ const updatePackageSchema = z.object({
   branchLimit: z.coerce.number().int().min(1).max(999999),
   userLimit: z.coerce.number().int().min(1).max(999999),
   integrationsLimit: z.coerce.number().int().min(0).max(999999),
+  originalMonthlyPrice: z.coerce.number().min(0).nullable().optional(),
+  discountedMonthlyPrice: z.coerce.number().min(0).nullable().optional(),
+  monthlyDiscountLabel: z.string().max(50).nullable().optional(),
+  originalYearlyPrice: z.coerce.number().min(0).nullable().optional(),
+  discountedYearlyPrice: z.coerce.number().min(0).nullable().optional(),
+  yearlyDiscountLabel: z.string().max(50).nullable().optional(),
+  discountEnabled: z.boolean().optional().default(false),
+}).superRefine((data, ctx) => {
+  if (data.discountEnabled) {
+    if (data.discountedMonthlyPrice && data.originalMonthlyPrice && data.discountedMonthlyPrice > data.originalMonthlyPrice) {
+      ctx.addIssue({ code: "custom", path: ["discountedMonthlyPrice"], message: "Discounted monthly price cannot exceed original." });
+    }
+    if (data.discountedYearlyPrice && data.originalYearlyPrice && data.discountedYearlyPrice > data.originalYearlyPrice) {
+      ctx.addIssue({ code: "custom", path: ["discountedYearlyPrice"], message: "Discounted yearly price cannot exceed original." });
+    }
+  }
 });
 
 const createClientSchema = z
@@ -592,6 +608,13 @@ export async function updatePackageFromCommandCenterAction(formData: FormData) {
     branchLimit: Number(formData.get("branchLimit")),
     userLimit: Number(formData.get("userLimit")),
     integrationsLimit: Number(formData.get("integrationsLimit")),
+    originalMonthlyPrice: formData.get("originalMonthlyPrice") ? Number(formData.get("originalMonthlyPrice")) : null,
+    discountedMonthlyPrice: formData.get("discountedMonthlyPrice") ? Number(formData.get("discountedMonthlyPrice")) : null,
+    monthlyDiscountLabel: formData.get("monthlyDiscountLabel") || null,
+    originalYearlyPrice: formData.get("originalYearlyPrice") ? Number(formData.get("originalYearlyPrice")) : null,
+    discountedYearlyPrice: formData.get("discountedYearlyPrice") ? Number(formData.get("discountedYearlyPrice")) : null,
+    yearlyDiscountLabel: formData.get("yearlyDiscountLabel") || null,
+    discountEnabled: formData.get("discountEnabled") === "true",
   });
 
   if (!parsed.success) {
@@ -619,6 +642,13 @@ export async function updatePackageFromCommandCenterAction(formData: FormData) {
     displayPrice: parsed.data.monthlyPrice !== null ? `Rs. ${parsed.data.monthlyPrice.toLocaleString()}/month` : "Custom",
     branchLimit: parsed.data.branchLimit,
     integrationsLimit: parsed.data.integrationsLimit,
+    originalMonthlyPrice: parsed.data.originalMonthlyPrice,
+    discountedMonthlyPrice: parsed.data.discountedMonthlyPrice,
+    monthlyDiscountLabel: parsed.data.monthlyDiscountLabel,
+    originalYearlyPrice: parsed.data.originalYearlyPrice,
+    discountedYearlyPrice: parsed.data.discountedYearlyPrice,
+    yearlyDiscountLabel: parsed.data.yearlyDiscountLabel,
+    discountEnabled: parsed.data.discountEnabled,
   });
 
   const result = await updatePackageAction(parsed.data.packageId, {

@@ -8,7 +8,7 @@ import { writePlatformAuditLog } from "@/lib/platform-audit";
 import { PLAN_ORDER, PLANS } from "@/lib/billing/plans";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { addMonths } from "date-fns";
+import { addDays } from "date-fns";
 
 const packageSchema = z.object({
   name: z.string().min(2).max(120),
@@ -28,7 +28,12 @@ const assignPackageSchema = z.object({
 export async function ensureDefaultPackages() {
   for (const planId of PLAN_ORDER) {
     const plan = PLANS[planId];
-    const featureJson = JSON.stringify({
+    
+    const existing = await prisma.package.findFirst({
+      where: { name: plan.name },
+    });
+
+    const defaultMeta = {
       planId: plan.id,
       currency: plan.price.currency,
       monthlyPrice: plan.price.monthly,
@@ -41,20 +46,38 @@ export async function ensureDefaultPackages() {
       features: plan.features,
       supportLabel: plan.supportLabel,
       tagline: plan.tagline,
-    });
-
-    const existing = await prisma.package.findFirst({
-      where: { name: plan.name },
-      select: { id: true },
-    });
+      // New discount fields
+      originalMonthlyPrice: null,
+      discountedMonthlyPrice: null,
+      monthlyDiscountLabel: null,
+      originalYearlyPrice: null,
+      discountedYearlyPrice: null,
+      yearlyDiscountLabel: null,
+      discountEnabled: false,
+    };
 
     if (existing) {
+      let existingMeta: any = {};
+      try {
+        existingMeta = JSON.parse(existing.featureJson);
+      } catch {}
+
+      // Merge: Keep existing editable values, update everything else from static config
+      const mergedMeta = {
+        ...defaultMeta,
+        ...existingMeta,
+        // Always sync these from static config if they change in code
+        modules: plan.includedModules,
+        features: plan.features,
+        supportLabel: plan.supportLabel,
+      };
+
       await prisma.package.update({
         where: { id: existing.id },
         data: {
           businessSize: plan.audience,
           userLimit: plan.limits.maxUsers,
-          featureJson,
+          featureJson: JSON.stringify(mergedMeta),
           isCustom: plan.id === "enterprise",
           isActive: true,
         },
@@ -67,7 +90,7 @@ export async function ensureDefaultPackages() {
         name: plan.name,
         businessSize: plan.audience,
         userLimit: plan.limits.maxUsers,
-        featureJson,
+        featureJson: JSON.stringify(defaultMeta),
         isCustom: plan.id === "enterprise",
       },
     });
@@ -191,119 +214,180 @@ export async function selectPackageAction(data: unknown) {
   const schema = z.object({
     packageId: z.string().optional(),
     enterprise: z.boolean().optional(),
+    demoMode: z.boolean().optional(),
   });
   const parsed = schema.safeParse(data);
   if (!parsed.success) return { error: "Invalid package selection." };
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: ctx.organizationId },
+    select: { isDemoTenant: true, lifecycleStatus: true },
+  });
 
   if (parsed.data.enterprise) {
     await prisma.organization.update({
       where: { id: ctx.organizationId },
       data: { lifecycleStatus: "enterprise_pending", accessStatus: "payment_pending" },
     });
-    await writePlatformAuditLog({
-      actorId: ctx.userId,
-      action: "ENTERPRISE_REQUESTED",
-      entityType: "Organization",
-      entityId: ctx.organizationId,
-      details: "Tenant selected enterprise/custom package.",
-    });
-    return { success: true, status: "enterprise_pending", redirectTo: "/settings/billing" };
+    return { status: "enterprise_pending", redirectTo: "/settings/billing" };
   }
 
-  if (!parsed.data.packageId) return { error: "Package is required." };
-  const pkg = await prisma.package.findFirst({ where: { id: parsed.data.packageId, isActive: true } });
+  if (!parsed.data.packageId) return { error: "No package selected." };
+
+  const pkg = await prisma.package.findUnique({ where: { id: parsed.data.packageId } });
   if (!pkg) return { error: "Package not found." };
+
   const planId = inferPlanIdFromPackage(pkg);
 
-  await prisma.$transaction([
-    prisma.organizationPackage.upsert({
-      where: { organizationId: ctx.organizationId },
-      update: { packageId: pkg.id, assignedAt: new Date() },
-      create: { organizationId: ctx.organizationId, packageId: pkg.id },
-    }),
-    prisma.organization.update({
+  await prisma.organizationPackage.upsert({
+    where: { organizationId: ctx.organizationId },
+    update: { packageId: pkg.id, assignedAt: new Date() },
+    create: { organizationId: ctx.organizationId, packageId: pkg.id },
+  });
+
+  if (parsed.data.demoMode) {
+    const now = new Date();
+    const demoExpiresAt = addDays(now, 7);
+
+    await prisma.organization.update({
       where: { id: ctx.organizationId },
-      data: { accessStatus: "payment_pending", lifecycleStatus: "onboarding" },
-    }),
-    prisma.subscription.update({
-      where: { organizationId: ctx.organizationId },
       data: {
+        isDemoTenant: true,
+        lifecycleStatus: "demo",
+        accessStatus: "active",
+        activatedAt: now,
+        blockedAt: null,
+        graceEndsAt: null,
+        demoExpiresAt,
+      },
+    });
+
+    await prisma.subscription.upsert({
+      where: { organizationId: ctx.organizationId },
+      update: {
         packageId: pkg.id,
         planId,
-        status: "payment_pending",
-        paymentStatus: "payment_pending",
-        accessStatus: "payment_pending",
+        status: "trialing",
+        paymentStatus: "demo",
+        accessStatus: "active",
+        billingSource: "demo",
+        currentPeriodStart: now,
+        currentPeriodEnd: demoExpiresAt,
+        activatedAt: now,
+        blockedAt: null,
+        expiredAt: null,
+        graceEndsAt: null,
       },
-    }),
-  ]);
+      create: {
+        organizationId: ctx.organizationId,
+        packageId: pkg.id,
+        planId,
+        status: "trialing",
+        paymentStatus: "demo",
+        accessStatus: "active",
+        billingSource: "demo",
+        currentPeriodStart: now,
+        currentPeriodEnd: demoExpiresAt,
+        activatedAt: now,
+      },
+    });
 
-  return { success: true, status: "payment_pending", redirectTo: planId === "enterprise" ? "/settings/billing" : "/checkout" };
+    return { status: "demo_activated", redirectTo: "/dashboard" };
+  }
+
+  await prisma.subscription.upsert({
+    where: { organizationId: ctx.organizationId },
+    update: { packageId: pkg.id, planId },
+    create: {
+      organizationId: ctx.organizationId,
+      packageId: pkg.id,
+      planId,
+      status: "payment_pending",
+      paymentStatus: "payment_pending",
+      accessStatus: "payment_pending",
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(),
+    },
+  });
+
+  return { status: "package_selected", redirectTo: "/settings/billing" };
 }
 
-export async function markSubscriptionPaymentSuccessAction(orgId: string) {
+export async function markSubscriptionPaymentSuccessAction(organizationId: string) {
   const session = await requirePlatformAdmin();
   const now = new Date();
-  const existing = await prisma.subscription.findUnique({
-    where: { organizationId: orgId },
-    select: { billingCycle: true, currentPeriodEnd: true, billingSource: true },
-  });
-  const currentPeriodEnd =
-    existing?.currentPeriodEnd && existing.currentPeriodEnd > now
-      ? existing.currentPeriodEnd
-      : existing?.billingCycle === "YEARLY"
-        ? addMonths(now, 12)
-        : addMonths(now, 1);
+
   await prisma.$transaction([
-    prisma.organization.update({
-      where: { id: orgId },
-      data: { accessStatus: "active", lifecycleStatus: "active", activatedAt: now, blockedAt: null, isDemoTenant: false, demoExpiresAt: null },
-    }),
     prisma.subscription.update({
-      where: { organizationId: orgId },
+      where: { organizationId },
       data: {
         status: "active",
         paymentStatus: "paid",
         accessStatus: "active",
-        billingSource: existing?.billingSource === "demo" ? "manual" : existing?.billingSource || "manual",
-        currentPeriodStart: now,
-        currentPeriodEnd,
+        billingSource: "manual",
         activatedAt: now,
         blockedAt: null,
         expiredAt: null,
         graceEndsAt: null,
       },
     }),
+    prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        accessStatus: "active",
+        lifecycleStatus: "active",
+        activatedAt: now,
+        blockedAt: null,
+        graceEndsAt: null,
+        isDemoTenant: false,
+      },
+    }),
   ]);
+
   await writePlatformAuditLog({
     actorId: session.user.id,
-    action: "PAYMENT_SUCCESS",
-    entityType: "Organization",
-    entityId: orgId,
-    details: "Manual payment success recorded.",
+    action: "MANUAL_PAYMENT_APPROVED",
+    entityType: "Subscription",
+    entityId: organizationId,
+    details: `Approved manual payment and activated subscription for organization ${organizationId}.`,
   });
-  revalidatePath("/platform/tenants");
-  return { success: true };
+
+  revalidatePath("/wq-command-center");
+  revalidatePath("/settings/billing");
 }
 
-export async function markSubscriptionPaymentFailedAction(orgId: string) {
+export async function markSubscriptionPaymentFailedAction(organizationId: string) {
   const session = await requirePlatformAdmin();
+  const now = new Date();
+
   await prisma.$transaction([
-    prisma.organization.update({
-      where: { id: orgId },
-      data: { accessStatus: "blocked", lifecycleStatus: "blocked", blockedAt: new Date() },
-    }),
     prisma.subscription.update({
-      where: { organizationId: orgId },
-      data: { status: "failed", paymentStatus: "failed", accessStatus: "blocked", billingSource: "manual", blockedAt: new Date() },
+      where: { organizationId },
+      data: {
+        status: "failed",
+        paymentStatus: "failed",
+        accessStatus: "blocked",
+        blockedAt: now,
+      },
+    }),
+    prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        accessStatus: "blocked",
+        lifecycleStatus: "blocked",
+        blockedAt: now,
+      },
     }),
   ]);
+
   await writePlatformAuditLog({
     actorId: session.user.id,
-    action: "PAYMENT_FAILURE",
-    entityType: "Organization",
-    entityId: orgId,
-    details: "Manual payment failure recorded.",
+    action: "MANUAL_PAYMENT_FAILED",
+    entityType: "Subscription",
+    entityId: organizationId,
+    details: `Marked manual payment as failed for organization ${organizationId}.`,
   });
-  revalidatePath("/platform/tenants");
-  return { success: true };
+
+  revalidatePath("/wq-command-center");
+  revalidatePath("/settings/billing");
 }

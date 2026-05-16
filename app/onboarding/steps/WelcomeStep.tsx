@@ -110,7 +110,7 @@ export function WelcomeStep({ stepId, onComplete }: Props) {
         <Button
           onClick={handleContinue}
           disabled={!selected || isPending}
-          className="h-14 flex-1 rounded-2xl bg-primary text-sm font-black uppercase tracking-widest text-on-surface shadow-[0_10px_30px_rgba(124,58,237,0.22)] transition-all active:scale-95 hover:bg-primary/90"
+          className="h-14 flex-1 rounded-2xl bg-primary text-sm font-black uppercase tracking-widest text-on-primary shadow-[0_10px_30px_rgba(124,58,237,0.22)] transition-all active:scale-95 hover:bg-primary/90"
         >
           {isPending ? (
             <Loader2 className="h-5 w-5 animate-spin" />

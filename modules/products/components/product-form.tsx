@@ -48,7 +48,7 @@ export function ProductForm({ categories, initialData, onSuccess }: ProductFormP
   function onSubmit(data: ProductFormValues) {
     startTransition(async () => {
       const result = initialData 
-        ? await updateProduct(initialData.id, data)
+        ? await updateProduct({ id: initialData.id, ...data })
         : await createProduct(data);
 
       if (result.success) {

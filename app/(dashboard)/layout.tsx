@@ -38,7 +38,7 @@ export default async function DashboardLayout({
               You can still use the WhatsQuery command center, or attach this admin account to an organization before opening tenant ERP routes.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link href="/dashboard" className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-surface">
+              <Link href="/dashboard" className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary">
                 Go to Dashboard
               </Link>
               <Link href="/pricing" className="rounded-xl border border-outline-variant/40 px-4 py-2 text-sm font-bold text-on-surface">

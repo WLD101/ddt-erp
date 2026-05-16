@@ -27,7 +27,7 @@ export default async function BranchesPage() {
         </div>
 
         <Dialog>
-          <DialogTrigger className="h-12 px-8 rounded-2xl shadow-lg shadow-primary/20 bg-primary text-on-surface font-semibold flex items-center justify-center">
+          <DialogTrigger className="h-12 px-8 rounded-2xl shadow-lg shadow-primary/20 bg-primary text-on-primary font-semibold flex items-center justify-center">
             <span className="material-symbols-outlined text-[20px] mr-2">add_location</span>
             Establish New Site
           </DialogTrigger>

@@ -78,7 +78,7 @@ export function CompleteStep({ stepId }: Props) {
       <Button
         onClick={handleGoToDashboard}
         disabled={isPending}
-        className="h-16 w-full rounded-2xl bg-primary text-base font-black uppercase tracking-widest text-on-surface shadow-[0_15px_40px_rgba(124,58,237,0.22)] transition-all active:scale-95 hover:bg-primary/90"
+        className="h-16 w-full rounded-2xl bg-primary text-base font-black uppercase tracking-widest text-on-primary shadow-[0_15px_40px_rgba(124,58,237,0.22)] transition-all active:scale-95 hover:bg-primary/90"
       >
         {isPending ? (
           <Loader2 className="h-6 w-6 animate-spin" />

@@ -208,9 +208,7 @@ export function createServerAction<TInput extends z.ZodTypeAny, TOutput>(
       
       return { 
         success: false, 
-        error: process.env.NODE_ENV === "production" 
-          ? "A system error occurred. Please try again later." 
-          : err.message || "Unknown error" 
+        error: "We couldn't complete this request right now. Please refresh and try again. If the issue continues, contact your workspace administrator."
       };
     }
   };

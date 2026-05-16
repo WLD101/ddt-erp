@@ -70,7 +70,7 @@ export default async function PlatformTenantsDirectory({
                <p className="text-xs font-bold text-on-surface tracking-widest">{tenants.length} Instances</p>
              </div>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 text-on-surface font-black uppercase tracking-tighter h-11 px-6 rounded-xl shadow-lg shadow-primary/20">
+          <Button className="bg-primary hover:bg-primary/90 text-on-primary font-black uppercase tracking-tighter h-11 px-6 rounded-xl shadow-lg shadow-primary/20">
              Provision New Vault
           </Button>
         </div>
