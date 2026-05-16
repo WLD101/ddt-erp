@@ -353,6 +353,7 @@ model Customer {
   email   String?
   phone   String?
   address String?
+  status  String       @default("ACTIVE")
 
   salesInvoices SalesInvoice[]
   payments      Payment[]

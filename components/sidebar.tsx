@@ -64,6 +64,7 @@ export async function Sidebar({ lowStockCount = 0 }: { lowStockCount?: number })
           ) : null}
           <SidebarActiveLink href="/finances/accounts" icon="account_balance_wallet" label="Finance" />
           <SidebarActiveLink href="/dashboard/reports" icon="monitoring" label="Reports" />
+          <SidebarActiveLink href="/dashboard/assistant" icon="smart_toy" label="Smart Assistant" />
           
           <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">System</div>
           <SidebarActiveLink href="/settings/integrations" icon="hub" label="Integrations" />

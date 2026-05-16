@@ -5,6 +5,7 @@ export const customerSchema = z.object({
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
+  status: z.string().optional().or(z.literal("")),
 });
 
 export type CustomerFormValues = z.input<typeof customerSchema>;

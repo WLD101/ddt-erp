@@ -6,6 +6,7 @@ import { contactSchema } from "@/lib/validations/common";
 export const customerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   ...contactSchema,
+  status: z.string().optional(),
 });
 
 export type CustomerInput = z.infer<typeof customerSchema>;
@@ -42,6 +43,7 @@ export async function createCustomer(db: ScopedPrisma, data: CustomerInput) {
     email: data.email || null,
     phone: data.phone || null,
     address: data.address || null,
+    status: data.status?.trim() || "ACTIVE",
   };
 
   return db.customer.create({
@@ -55,6 +57,7 @@ export async function updateCustomer(db: ScopedPrisma, id: string, data: Custome
     email: data.email || null,
     phone: data.phone || null,
     address: data.address || null,
+    ...(typeof data.status !== "undefined" ? { status: data.status?.trim() || "ACTIVE" } : {}),
   };
 
   return db.customer.update({
