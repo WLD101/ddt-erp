@@ -74,9 +74,12 @@ export default async function ReportsPage() {
       title="Reports"
       description="Review organization performance, inventory exceptions, and revenue insights with one consistent analytics surface."
       actions={
-        <button className="flex h-10 items-center gap-2 rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface shadow-soft transition-all hover:bg-surface-container-low">
+        <button
+          disabled
+          className="flex h-10 items-center gap-2 rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface-variant shadow-soft opacity-70"
+        >
           <span className="material-symbols-outlined text-[18px]">print</span>
-          Print Summary
+          Print Summary Soon
         </button>
       }
       className="pb-20"
@@ -106,17 +109,26 @@ export default async function ReportsPage() {
                  <CardDescription className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Top revenue generators</CardDescription>
               </CardHeader>
               <CardContent className="pt-6 space-y-4">
-                  {topProducts.map(p => (
-                    <div key={p.productId} className="flex items-center justify-between p-4 rounded-2xl bg-surface-container-low/20 border border-outline-variant/30 hover:border-primary/30 transition-all group">
-                      <div className="flex flex-col">
-                        <span className="font-black text-sm text-on-surface tracking-tight group-hover:text-primary transition-colors">{p.name}</span>
-                        <span className="text-[10px] uppercase font-black tracking-widest text-on-surface-variant">{p.quantity} Units Shipped</span>
+                  {topProducts.length > 0 ? (
+                    topProducts.map(p => (
+                      <div key={p.productId} className="flex items-center justify-between p-4 rounded-2xl bg-surface-container-low/20 border border-outline-variant/30 hover:border-primary/30 transition-all group">
+                        <div className="flex flex-col">
+                          <span className="font-black text-sm text-on-surface tracking-tight group-hover:text-primary transition-colors">{p.name}</span>
+                          <span className="text-[10px] uppercase font-black tracking-widest text-on-surface-variant">{p.quantity} Units Shipped</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-black text-on-surface">Rs. {p.revenue.toLocaleString()}</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-black text-on-surface">Rs. {p.revenue.toLocaleString()}</p>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="py-10 text-center space-y-3">
+                      <span className="material-symbols-outlined text-primary text-4xl opacity-20">leaderboard</span>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-on-surface-variant italic">
+                        No product revenue data yet.
+                      </p>
                     </div>
-                  ))}
+                  )}
               </CardContent>
            </Card>
 
@@ -167,12 +179,18 @@ export default async function ReportsPage() {
                   <span className="material-symbols-outlined text-[16px]">trending_up</span> Accounts Receivable
                 </p>
                 <div className="space-y-2">
-                  {balances.customerBalances.map((cb, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs p-3 rounded-xl bg-secondary/5 border border-secondary/10">
-                      <span className="text-on-surface-variant font-bold">{cb.name}</span>
-                      <span className="font-black text-secondary">Rs. {cb.balance.toLocaleString()}</span>
-                    </div>
-                  ))}
+                  {balances.customerBalances.length > 0 ? (
+                    balances.customerBalances.map((cb, i) => (
+                      <div key={i} className="flex justify-between items-center text-xs p-3 rounded-xl bg-secondary/5 border border-secondary/10">
+                        <span className="text-on-surface-variant font-bold">{cb.name}</span>
+                        <span className="font-black text-secondary">Rs. {cb.balance.toLocaleString()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-xl border border-secondary/10 bg-secondary/5 px-4 py-3 text-xs font-bold text-on-surface-variant">
+                      No customer balances are outstanding right now.
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -181,12 +199,18 @@ export default async function ReportsPage() {
                   <span className="material-symbols-outlined text-[16px]">trending_down</span> Accounts Payable
                 </p>
                 <div className="space-y-2">
-                  {balances.supplierBalances.map((sb, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs p-3 rounded-xl bg-error/5 border border-error/10">
-                      <span className="text-on-surface-variant font-bold">{sb.name}</span>
-                      <span className="font-black text-error">Rs. {sb.balance.toLocaleString()}</span>
-                    </div>
-                  ))}
+                  {balances.supplierBalances.length > 0 ? (
+                    balances.supplierBalances.map((sb, i) => (
+                      <div key={i} className="flex justify-between items-center text-xs p-3 rounded-xl bg-error/5 border border-error/10">
+                        <span className="text-on-surface-variant font-bold">{sb.name}</span>
+                        <span className="font-black text-error">Rs. {sb.balance.toLocaleString()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-xl border border-error/10 bg-error/5 px-4 py-3 text-xs font-bold text-on-surface-variant">
+                      No supplier balances are outstanding right now.
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>

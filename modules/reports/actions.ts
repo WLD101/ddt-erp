@@ -1,10 +1,55 @@
 "use server";
 
-import { getCurrentTenantContext, requirePermission } from "@/lib/tenant";
+import {
+  getCurrentTenantContext,
+  requirePermission,
+  TenantForbiddenError,
+} from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 import * as service from "./service";
 
 import { canUseFeature } from "@/lib/billing/enforcement";
+
+type ReportInterval = "day" | "week" | "month";
+
+type ReportsWorkspaceInput = {
+  fromDate?: string;
+  toDate?: string;
+  interval?: string;
+};
+
+type ReportsWorkspacePayload = {
+  metrics: Awaited<ReturnType<typeof service.getDashboardMetrics>>;
+  trends: Awaited<ReturnType<typeof service.getFinancialTrends>>;
+  transactions: Awaited<ReturnType<typeof service.getRecentTransactions>>;
+  canViewAdvancedTrends: boolean;
+  trendNotice: string | null;
+};
+
+type ReportsWorkspaceResult =
+  | { success: true; data: ReportsWorkspacePayload }
+  | { success: false; message: string };
+
+function normalizeDateInput(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? trimmed : undefined;
+}
+
+function normalizeInterval(value?: string): ReportInterval {
+  if (value === "week" || value === "month") {
+    return value;
+  }
+
+  return "day";
+}
 
 /**
  * DASHBOARD KPI METRICS
@@ -121,4 +166,65 @@ export async function getOutstandingBalances() {
   requirePermission(ctx, "reports.view");
   const db = getTenantStore(ctx);
   return service.getOutstandingBalances(db);
+}
+
+export async function loadReportsWorkspaceAction(
+  input: ReportsWorkspaceInput = {}
+): Promise<ReportsWorkspaceResult> {
+  try {
+    const ctx = await getCurrentTenantContext();
+    requirePermission(ctx, "reports.view");
+
+    const db = getTenantStore(ctx);
+    const fromDate = normalizeDateInput(input.fromDate);
+    const toDate = normalizeDateInput(input.toDate);
+    const interval = normalizeInterval(input.interval);
+    const canViewAdvancedTrends = await canUseFeature(
+      ctx.organizationId,
+      "advancedReports"
+    );
+
+    const [metrics, transactions, trends] = await Promise.all([
+      service.getDashboardMetrics(db, ctx.branchId, fromDate, toDate),
+      service.getRecentTransactions(db, ctx.branchId, 10),
+      canViewAdvancedTrends
+        ? service.getFinancialTrends(
+            db,
+            ctx.branchId,
+            30,
+            fromDate,
+            toDate,
+            interval
+          )
+        : Promise.resolve([]),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        metrics,
+        transactions,
+        trends,
+        canViewAdvancedTrends,
+        trendNotice: canViewAdvancedTrends
+          ? null
+          : "Financial trends are available on Pro and Enterprise plans.",
+      },
+    };
+  } catch (error) {
+    if (error instanceof TenantForbiddenError) {
+      return {
+        success: false,
+        message:
+          "You do not have permission to view reports for this workspace.",
+      };
+    }
+
+    console.error("[reports-workspace] failed to load", error);
+    return {
+      success: false,
+      message:
+        "We couldn't load reports right now. Please try again in a moment.",
+    };
+  }
 }
