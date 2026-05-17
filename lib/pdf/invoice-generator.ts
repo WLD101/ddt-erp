@@ -2,6 +2,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { formatMoney } from "./document-utils";
 
 export interface InvoiceData {
   invoiceNumber: string;
@@ -37,15 +38,6 @@ export interface InvoiceData {
       unit?: string | null;
     };
   }>;
-}
-
-function formatMoney(amount: number, currency = "PKR") {
-  const safeCurrency = currency?.trim() || "PKR";
-  const symbol = safeCurrency.toUpperCase() === "PKR" ? "Rs." : safeCurrency.toUpperCase();
-  return `${symbol} ${amount.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 }
 
 export function generateInvoicePDF(data: InvoiceData): Buffer {

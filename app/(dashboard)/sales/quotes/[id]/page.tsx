@@ -1,20 +1,17 @@
 import { getQuotationById } from "@/modules/quotations/actions";
 import { 
   ArrowLeft, 
-  Download, 
   Send, 
   ShoppingCart, 
   Calendar, 
   User, 
-  Hash, 
-  Package,
   CheckCircle2,
   Clock,
   Printer,
   Trash2,
-  AlertCircle,
   ArrowRight,
-  AlertTriangle
+  AlertTriangle,
+  FileDown
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -143,10 +140,18 @@ export default async function QuotationDetailPage({ params }: { params: any }) {
            {/* Auxiliary Actions */}
            <div className="bg-surface/[0.03] border border-outline-variant/20 rounded-[32px] p-8 space-y-4">
               <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2 mb-2">Management Toolkit</h4>
-              <Button variant="outline" className="w-full h-12 justify-start gap-3 bg-surface-container-low border-outline-variant/30 hover:bg-surface-container rounded-xl font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">
-                <Printer className="w-4 h-4 text-indigo-400" />
-                Print Proposal
-              </Button>
+              <Link href={`/sales/quotes/${quote.id}/print`}>
+                <Button variant="outline" className="w-full h-12 justify-start gap-3 bg-surface-container-low border-outline-variant/30 hover:bg-surface-container rounded-xl font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">
+                  <Printer className="w-4 h-4 text-indigo-400" />
+                  Print Proposal
+                </Button>
+              </Link>
+              <a href={`/api/quotations/${quote.id}/pdf`} download>
+                <Button variant="outline" className="w-full h-12 justify-start gap-3 bg-surface-container-low border-outline-variant/30 hover:bg-surface-container rounded-xl font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">
+                  <FileDown className="w-4 h-4 text-indigo-400" />
+                  Download PDF
+                </Button>
+              </a>
               <Button variant="outline" className="w-full h-12 justify-start gap-3 bg-surface-container-low border-outline-variant/30 hover:bg-surface-container rounded-xl font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">
                 <Send className="w-4 h-4 text-indigo-400" />
                 Send via Email
