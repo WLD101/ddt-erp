@@ -67,6 +67,23 @@ async function buildRows(exportRequest: any) {
     });
   }
 
+  if (exportRequest.scope === "products") {
+    return prisma.product.findMany({
+      where: { organizationId: exportRequest.organizationId },
+      select: {
+        name: true,
+        sku: true,
+        unitType: true,
+        unit: true,
+        unitPrice: true,
+        costPrice: true,
+        lowStockThreshold: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   if (exportRequest.scope === "sales") {
     const sales = await prisma.salesInvoice.findMany({
       where: { organizationId: exportRequest.organizationId },
