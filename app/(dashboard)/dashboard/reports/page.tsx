@@ -73,15 +73,6 @@ export default async function ReportsPage() {
     <PageShell
       title="Reports"
       description="Review organization performance, inventory exceptions, and revenue insights with one consistent analytics surface."
-      actions={
-        <button
-          disabled
-          className="flex h-10 items-center gap-2 rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface-variant shadow-soft opacity-70"
-        >
-          <span className="material-symbols-outlined text-[18px]">print</span>
-          Print Summary Soon
-        </button>
-      }
       className="pb-20"
     >
       {loadWarning ? (

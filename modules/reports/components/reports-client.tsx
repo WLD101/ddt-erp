@@ -90,6 +90,9 @@ export function ReportsClient({ canViewAdvancedTrends = true }: { canViewAdvance
   const hasTransactions = transactions.length > 0;
   const hasTrends = trends.length > 0;
   const hasVisibleData = hasMetricData || hasTransactions || hasTrends;
+  const summaryPdfHref = `/api/reports/summary/pdf?fromDate=${encodeURIComponent(
+    appliedDateRange.from
+  )}&toDate=${encodeURIComponent(appliedDateRange.to)}&interval=${encodeURIComponent(appliedInterval)}`;
 
   if (!metrics && isLoading) {
     return (
@@ -182,6 +185,17 @@ export function ReportsClient({ canViewAdvancedTrends = true }: { canViewAdvance
           >
             Reset
           </Button>
+          <a href={summaryPdfHref} download>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading || Boolean(loadError)}
+              className="h-10 rounded-xl border-outline-variant/30 bg-surface px-5 text-[11px] font-black uppercase tracking-[0.18em] text-on-surface"
+            >
+              <span className="material-symbols-outlined mr-2 text-[16px]">picture_as_pdf</span>
+              Print Summary
+            </Button>
+          </a>
         </div>
       </div>
 
