@@ -38,6 +38,7 @@ import { deleteSupplier } from "@/modules/suppliers/actions";
 import { toast } from "sonner";
 import { Supplier } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { RequestSuppliersExportButton } from "./request-suppliers-export-button";
 
 interface SupplierWithBalance extends Supplier {
   balance: number;
@@ -97,14 +98,7 @@ export function SupplierClient({
               Import CSV
             </a>
           ) : null}
-          <a 
-             href="/api/export/suppliers" 
-             download 
-             className="inline-flex items-center justify-center rounded-lg border border-outline-variant bg-surface px-4 h-9 text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px] mr-2">download</span>
-            Export CSV
-          </a>
+          <RequestSuppliersExportButton />
           <Button onClick={handleCreate} className="h-9">
             <span className="material-symbols-outlined text-[18px] mr-2">group_add</span>
             Establish Partner
