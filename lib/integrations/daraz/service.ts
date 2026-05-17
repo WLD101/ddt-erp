@@ -2,6 +2,7 @@ import { ChannelAdapterContext } from "../shared/contracts";
 import { ConnectionResult, SyncLogEntry, SyncResult } from "../shared/types";
 import { buildConnectionResult } from "../shared/placeholders";
 import { isDemoModeEnabled } from "@/lib/demo-mode";
+import { parseSafeExternalUrl } from "@/lib/security/outbound-url";
 
 import { DEFAULT_DARAZ_API_BASE_URL, DARAZ_ENDPOINTS } from "./constants";
 import { mapDarazOrderToSalesInvoice, mapDarazProductToProduct } from "./mapper";
@@ -43,7 +44,9 @@ function isDarazMockMode(config: DarazConfig, credentials?: Partial<DarazCredent
 }
 
 function getDarazBaseUrl(config: DarazConfig) {
-  return config.apiBaseUrl || DEFAULT_DARAZ_API_BASE_URL;
+  return parseSafeExternalUrl(config.apiBaseUrl || DEFAULT_DARAZ_API_BASE_URL, {
+    label: "Daraz API base URL",
+  }).toString().replace(/\/$/, "");
 }
 
 function validateDarazCredentials(credentials: DarazCredentials, config: DarazConfig) {

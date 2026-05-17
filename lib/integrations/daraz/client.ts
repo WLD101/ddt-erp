@@ -2,6 +2,7 @@ import "server-only";
 
 import { decryptIntegrationCredentials } from "../shared/encryption";
 import { isDemoModeEnabled } from "@/lib/demo-mode";
+import { parseSafeExternalUrl } from "@/lib/security/outbound-url";
 
 import { DEFAULT_DARAZ_API_BASE_URL } from "./constants";
 import { signDarazRequest } from "./signature";
@@ -83,11 +84,14 @@ function resolveCredentials(encryptedPayload: string | null | undefined): DarazC
 export function resolveDarazChannelContext(channel: DarazChannelRecord) {
   const config = parseConfiguration(channel.configuration);
   const credentials = resolveCredentials(channel.credentialsEncrypted);
+  const safeBaseUrl = parseSafeExternalUrl(config.apiBaseUrl || DEFAULT_DARAZ_API_BASE_URL, {
+    label: "Daraz API base URL",
+  }).toString().replace(/\/$/, "");
 
   return {
     config,
     credentials,
-    baseUrl: config.apiBaseUrl || DEFAULT_DARAZ_API_BASE_URL,
+    baseUrl: safeBaseUrl,
   };
 }
 
@@ -128,6 +132,9 @@ export async function requestDaraz<T = DarazCreateProductResponse>({
   body,
   method = "POST",
 }: DarazRequestOptions): Promise<T> {
+  const safeBaseUrl = parseSafeExternalUrl(baseUrl, {
+    label: "Daraz API base URL",
+  }).toString().replace(/\/$/, "");
   const timestamp = Date.now().toString();
   const signed = signDarazRequest(
     path,
@@ -145,7 +152,7 @@ export async function requestDaraz<T = DarazCreateProductResponse>({
     sign: signed.sign,
   });
 
-  const response = await fetch(`${baseUrl}${path}?${query.toString()}`, {
+  const response = await fetch(`${safeBaseUrl}${path}?${query.toString()}`, {
     method,
     headers: {
       Accept: "application/json",

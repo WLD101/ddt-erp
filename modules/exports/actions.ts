@@ -1,16 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, requirePermission, requireRole } from "@/lib/tenant";
 import { requirePlatformAdmin } from "@/lib/security/guards";
 import { createOpaqueToken, hashToken } from "@/lib/security/tokens";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const exportScopeSchema = z.enum([
-  "leads",
-  "tenant_summary",
+const tenantExportScopeSchema = z.enum([
   "customers",
   "suppliers",
   "products",
@@ -18,13 +16,39 @@ const exportScopeSchema = z.enum([
   "sales",
   "purchases",
   "quotations",
-  "full",
 ]);
+
+function assertTenantExportAccess(
+  ctx: Awaited<ReturnType<typeof getCurrentTenantContext>>,
+  scope: z.infer<typeof tenantExportScopeSchema>
+) {
+  switch (scope) {
+    case "customers":
+      requirePermission(ctx, "customers.export");
+      return;
+    case "suppliers":
+      requirePermission(ctx, "suppliers.export");
+      return;
+    case "products":
+    case "inventory":
+      requirePermission(ctx, "inventory.export");
+      return;
+    case "sales":
+    case "quotations":
+      requirePermission(ctx, "sales.export");
+      return;
+    case "purchases":
+      requirePermission(ctx, "purchases.export");
+      return;
+  }
+}
 
 export async function requestExportAction(scope: unknown) {
   const ctx = await getCurrentTenantContext();
-  const parsed = exportScopeSchema.safeParse(scope);
+  requireRole(ctx, "owner", "admin");
+  const parsed = tenantExportScopeSchema.safeParse(scope);
   if (!parsed.success) return { error: "Invalid export scope." };
+  assertTenantExportAccess(ctx, parsed.data);
 
   const request = await prisma.exportRequest.create({
     data: {

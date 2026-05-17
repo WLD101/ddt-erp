@@ -4,7 +4,8 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { createStripeCheckoutSession } from "@/lib/billing/subscription";
 import { type PlanId, normalizePlanId } from "@/lib/billing/plans";
-import { getCurrentTenantContext, tenantForbiddenResponse, TenantForbiddenError } from "@/lib/tenant";
+import { getCurrentTenantContext, tenantForbiddenResponse, TenantForbiddenError, requirePermission, requireRole } from "@/lib/tenant";
+import { assertTrustedMutationRequest, RequestOriginError } from "@/lib/security/request-origin";
 
 const checkoutSchema = z.object({
   planId: z.string().min(1),
@@ -13,6 +14,7 @@ const checkoutSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    assertTrustedMutationRequest(request);
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
@@ -30,6 +32,8 @@ export async function POST(request: Request) {
     }
 
     const ctx = await getCurrentTenantContext();
+    requireRole(ctx, "owner", "admin");
+    requirePermission(ctx, "billing.manage");
     const stripeSession = await createStripeCheckoutSession({
       organizationId: ctx.organizationId,
       userId: ctx.userId,
@@ -44,8 +48,11 @@ export async function POST(request: Request) {
     if (error instanceof TenantForbiddenError) {
       return tenantForbiddenResponse(error);
     }
+    if (error instanceof RequestOriginError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to start Stripe checkout." },
+      { error: "Unable to start Stripe checkout right now." },
       { status: 500 },
     );
   }

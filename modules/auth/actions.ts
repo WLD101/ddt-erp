@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 import { requestOtp, verifyOtp } from "@/modules/otp/service";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
+import { sanitizeRedirectPath } from "@/lib/security/access";
 import { isProductionEnv } from "@/lib/security/env";
 
 /**
@@ -88,7 +89,7 @@ export async function verifyPaidSignupOtpAction(data: unknown) {
 export async function signInAction(_prevState: unknown, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const callbackUrl = (formData.get("callbackUrl") as string) || "/";
+  const callbackUrl = sanitizeRedirectPath(formData.get("callbackUrl") as string, "/dashboard");
 
   if (!isProductionEnv()) {
     console.log("--> signInAction invoked for email:", email, "and callbackUrl:", callbackUrl);

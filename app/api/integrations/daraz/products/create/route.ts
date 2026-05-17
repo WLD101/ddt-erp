@@ -8,6 +8,7 @@ import {
   requireRole,
   tenantForbiddenResponse,
 } from "@/lib/tenant";
+import { assertTrustedMutationRequest, RequestOriginError } from "@/lib/security/request-origin";
 import { createDarazProduct } from "@/lib/integrations/daraz/product-create";
 
 const createDarazProductSchema = z.object({
@@ -17,6 +18,7 @@ const createDarazProductSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    assertTrustedMutationRequest(request);
     const ctx = await getCurrentTenantContext();
     requireRole(ctx, "owner", "admin");
     requirePermission(ctx, "products.view");
@@ -47,6 +49,15 @@ export async function POST(request: Request) {
 
     if (error instanceof Error && error.name === "TenantForbiddenError") {
       return tenantForbiddenResponse(error);
+    }
+    if (error instanceof RequestOriginError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        { status: error.statusCode }
+      );
     }
 
     return NextResponse.json(

@@ -270,9 +270,14 @@ export async function requestPasswordReset(email: string) {
   const { token, tokenHash } = createOpaqueToken();
   const expires = new Date(Date.now() + 3600000); // 1 hour
 
-  await prisma.passwordResetToken.create({
-    data: { email: normalizedEmail, token: tokenHash, expires }
-  });
+  await prisma.$transaction([
+    prisma.passwordResetToken.deleteMany({
+      where: { email: normalizedEmail },
+    }),
+    prisma.passwordResetToken.create({
+      data: { email: normalizedEmail, token: tokenHash, expires },
+    }),
+  ]);
 
   await triggerLifecycleEmail(user.id, null, "PASSWORD_RESET", { token }).catch((error) => {
     console.error("[PasswordReset] Email dispatch failed:", error);
@@ -298,7 +303,7 @@ export async function resetPassword(token: string, password: string) {
       where: { email: resetToken.email },
       data: { password: hashedPassword }
     }),
-    prisma.passwordResetToken.delete({ where: { id: resetToken.id } })
+    prisma.passwordResetToken.deleteMany({ where: { email: resetToken.email } })
   ]);
 
   return true;

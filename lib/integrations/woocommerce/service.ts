@@ -2,6 +2,7 @@ import { ChannelAdapterContext } from "../shared/contracts";
 import { buildConnectionResult } from "../shared/placeholders";
 import { ConnectionResult, SyncLogEntry, SyncResult } from "../shared/types";
 import { isDemoModeEnabled } from "@/lib/demo-mode";
+import { parseSafeExternalUrl } from "@/lib/security/outbound-url";
 
 import { DEFAULT_WOO_API_SUFFIX, WOO_ENDPOINTS } from "./constants";
 import { mapWooOrderToSalesInvoice, mapWooProductToProduct } from "./mapper";
@@ -43,16 +44,10 @@ function normalizeStoreUrl(storeUrl: string) {
     throw new Error("Store URL is required.");
   }
 
-  let url: URL;
-  try {
-    url = new URL(storeUrl.startsWith("http") ? storeUrl : `https://${storeUrl}`);
-  } catch {
-    throw new Error("Invalid WooCommerce store URL.");
-  }
-
-  if (!["http:", "https:"].includes(url.protocol)) {
-    throw new Error("WooCommerce store URL must use http or https.");
-  }
+  const url = parseSafeExternalUrl(storeUrl, {
+    allowHttp: true,
+    label: "WooCommerce store URL",
+  });
 
   url.pathname = `${url.pathname.replace(/\/$/, "")}${DEFAULT_WOO_API_SUFFIX}`;
   return url.toString().replace(/\/$/, "");
