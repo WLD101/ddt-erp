@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RequestQuotationExportButton } from "./request-quotation-export-button";
 
 export default async function QuotationsPage() {
   const quotes = await getQuotations();
@@ -20,6 +21,7 @@ export default async function QuotationsPage() {
         </div>
         
         <div className="flex items-center gap-3">
+          <RequestQuotationExportButton />
           <Button variant="outline" className="h-11 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest border-outline-variant/30">
             <span className="material-symbols-outlined text-[18px] mr-2">filter_list</span>
             Parameters

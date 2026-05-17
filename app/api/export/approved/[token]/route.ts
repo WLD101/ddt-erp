@@ -74,6 +74,29 @@ async function buildRows(exportRequest: any) {
     }));
   }
 
+  if (exportRequest.scope === "quotations") {
+    const quotations = await prisma.quotation.findMany({
+      where: { organizationId: exportRequest.organizationId },
+      include: { customer: true, items: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return quotations.map((quote) => ({
+      quotation: quote.quotationNumber ?? quote.id,
+      customer: quote.customer.name,
+      customerEmail: quote.customer.email,
+      status: quote.status,
+      issueDate: quote.createdAt.toISOString(),
+      expiryDate: quote.expiryDate?.toISOString() ?? "",
+      itemCount: quote.items.length,
+      discount: quote.discount ?? 0,
+      total: quote.totalAmount,
+      organization: exportRequest.organization.name,
+      city: exportRequest.organization.city,
+      country: exportRequest.organization.country,
+    }));
+  }
+
   return [
     {
       name: exportRequest.requestedBy.name,

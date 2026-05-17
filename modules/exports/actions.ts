@@ -8,7 +8,14 @@ import { writePlatformAuditLog } from "@/lib/platform-audit";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const exportScopeSchema = z.enum(["leads", "tenant_summary", "customers", "sales", "full"]);
+const exportScopeSchema = z.enum([
+  "leads",
+  "tenant_summary",
+  "customers",
+  "sales",
+  "quotations",
+  "full",
+]);
 
 export async function requestExportAction(scope: unknown) {
   const ctx = await getCurrentTenantContext();
