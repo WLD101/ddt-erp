@@ -37,5 +37,10 @@ docker-compose -f docker-compose.local.yml build --no-cache
 - `lib/`: Core utilities (Auth, Security, Database)
 - `prisma/`: Database schema and migrations
 
+## 🧭 AI-First ERP Roadmap
+- Architecture review: [docs/AI_FIRST_ERP_ARCHITECTURE_REVIEW.md](./docs/AI_FIRST_ERP_ARCHITECTURE_REVIEW.md)
+- Delivery roadmap: [docs/AI_FIRST_ERP_ROADMAP.md](./docs/AI_FIRST_ERP_ROADMAP.md)
+- Release playbook: [docs/AI_FIRST_ERP_DELIVERY_PLAYBOOK.md](./docs/AI_FIRST_ERP_DELIVERY_PLAYBOOK.md)
+
 ## 🛡️ Security
 Check the [Security Checklist](./security_checklist.md) for VPS hardening steps.
