@@ -12,6 +12,7 @@ const exportScopeSchema = z.enum([
   "leads",
   "tenant_summary",
   "customers",
+  "suppliers",
   "sales",
   "quotations",
   "full",
