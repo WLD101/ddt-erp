@@ -84,6 +84,41 @@ async function buildRows(exportRequest: any) {
     });
   }
 
+  if (exportRequest.scope === "inventory") {
+    const inventoryItems = await prisma.inventoryItem.findMany({
+      where: { organizationId: exportRequest.organizationId },
+      include: {
+        product: {
+          select: {
+            name: true,
+            sku: true,
+            unitType: true,
+            unit: true,
+            lowStockThreshold: true,
+          },
+        },
+        branch: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: [{ branch: { name: "asc" } }, { product: { name: "asc" } }],
+    });
+
+    return inventoryItems.map((item) => ({
+      branch: item.branch.name,
+      product: item.product.name,
+      sku: item.product.sku,
+      unitType: item.product.unitType,
+      unit: item.product.unit,
+      quantity: item.quantity,
+      lowStockThreshold: item.product.lowStockThreshold,
+      location: item.location,
+      updatedAt: item.updatedAt.toISOString(),
+    }));
+  }
+
   if (exportRequest.scope === "sales") {
     const sales = await prisma.salesInvoice.findMany({
       where: { organizationId: exportRequest.organizationId },
