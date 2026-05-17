@@ -4,11 +4,12 @@ import {
   ArrowLeft,
   Calendar,
   Truck,
-  Hash,
   PackageCheck,
   DollarSign,
   Info,
-  RotateCcw
+  RotateCcw,
+  FileDown,
+  Printer,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -44,27 +45,42 @@ export default async function PurchaseInvoiceDetailPage({ params }: { params: { 
           </div>
         </div>
 
-        <Dialog>
-          <DialogTrigger
-            render={
-              <Button className="h-14 px-8 bg-surface-container-low hover:bg-orange-500/20 border border-outline-variant/30 hover:border-orange-500/50 text-on-surface font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group" />
-            }
-          >
-              <Undo2 className="w-5 h-5 text-orange-400 group-hover:-rotate-90 transition-transform duration-500" />
-              Return to Supplier
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] bg-slate-950/95 backdrop-blur-3xl border-outline-variant/20 rounded-[32px] p-10 overflow-auto max-h-[90vh]">
-            <DialogHeader className="mb-8">
-              <DialogTitle className="text-2xl font-black tracking-tight text-on-surface flex items-center gap-3">
-                <div className="p-3 bg-orange-500/20 rounded-2xl">
-                  <Undo2 className="w-6 h-6 text-orange-500" />
-                </div>
-                Outbound Return Workflow
-              </DialogTitle>
-            </DialogHeader>
-            <ReturnForm type="PURCHASES" invoice={invoice} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href={`/purchases/${invoice.id}/print`}>
+            <Button className="h-14 rounded-2xl bg-primary px-6 text-sm font-black uppercase tracking-widest text-on-primary">
+              <Printer className="mr-3 h-5 w-5" />
+              Print Preview
+            </Button>
+          </Link>
+          <a href={`/api/purchases/${invoice.id}/pdf`} download>
+            <Button variant="outline" className="h-14 rounded-2xl border-primary/30 px-6 text-sm font-black uppercase tracking-widest text-primary hover:bg-primary/10">
+              <FileDown className="mr-3 h-5 w-5" />
+              Download PDF
+            </Button>
+          </a>
+
+          <Dialog>
+            <DialogTrigger
+              render={
+                <Button className="h-14 px-8 bg-surface-container-low hover:bg-orange-500/20 border border-outline-variant/30 hover:border-orange-500/50 text-on-surface font-black text-sm uppercase tracking-widest rounded-2xl flex items-center gap-3 transition-all group" />
+              }
+            >
+                <Undo2 className="w-5 h-5 text-orange-400 group-hover:-rotate-90 transition-transform duration-500" />
+                Return to Supplier
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[700px] bg-slate-950/95 backdrop-blur-3xl border-outline-variant/20 rounded-[32px] p-10 overflow-auto max-h-[90vh]">
+              <DialogHeader className="mb-8">
+                <DialogTitle className="text-2xl font-black tracking-tight text-on-surface flex items-center gap-3">
+                  <div className="p-3 bg-orange-500/20 rounded-2xl">
+                    <Undo2 className="w-6 h-6 text-orange-500" />
+                  </div>
+                  Outbound Return Workflow
+                </DialogTitle>
+              </DialogHeader>
+              <ReturnForm type="PURCHASES" invoice={invoice} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

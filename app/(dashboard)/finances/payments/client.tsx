@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, MoreHorizontal, Pencil, Trash2, Wallet2, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, Wallet2, ArrowUpRight, ArrowDownRight, FileDown, Printer } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +78,14 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
     });
   };
 
+  const handleDownloadReceipt = (paymentId: string) => {
+    window.location.href = `/api/payments/${paymentId}/receipt`;
+  };
+
+  const handlePrintReceipt = (paymentId: string) => {
+    window.location.href = `/finances/payments/${paymentId}/print`;
+  };
+
   return (
     <div className="space-y-6 flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center justify-between">
@@ -143,6 +151,12 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
                       <MoreHorizontal className="w-4 h-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-outline-variant/30">
+                      <DropdownMenuItem onClick={() => handleDownloadReceipt(payment.id)} className="gap-2 cursor-pointer font-bold">
+                        <FileDown className="w-4 h-4 text-primary" /> Download Receipt
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handlePrintReceipt(payment.id)} className="gap-2 cursor-pointer font-bold">
+                        <Printer className="w-4 h-4 text-primary" /> Print Receipt
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleEdit(payment)} className="gap-2 cursor-pointer font-bold">
                         <Pencil className="w-4 h-4 text-primary" /> Synchronize
                       </DropdownMenuItem>
