@@ -119,6 +119,37 @@ async function buildRows(exportRequest: any) {
     }));
   }
 
+  if (exportRequest.scope === "purchases") {
+    const purchases = await prisma.purchaseInvoice.findMany({
+      where: { organizationId: exportRequest.organizationId },
+      include: {
+        supplier: true,
+        items: true,
+        branch: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return purchases.map((purchase) => ({
+      invoice: purchase.invoiceNumber,
+      supplier: purchase.supplier.name,
+      supplierEmail: purchase.supplier.email,
+      branch: purchase.branch?.name ?? "",
+      issueDate: purchase.issueDate.toISOString(),
+      dueDate: purchase.dueDate?.toISOString() ?? "",
+      status: purchase.status,
+      itemCount: purchase.items.length,
+      subtotal: purchase.subtotal,
+      taxAmount: purchase.taxAmount,
+      total: purchase.totalAmount,
+      createdAt: purchase.createdAt.toISOString(),
+    }));
+  }
+
   if (exportRequest.scope === "sales") {
     const sales = await prisma.salesInvoice.findMany({
       where: { organizationId: exportRequest.organizationId },

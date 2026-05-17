@@ -16,6 +16,7 @@ const exportScopeSchema = z.enum([
   "products",
   "inventory",
   "sales",
+  "purchases",
   "quotations",
   "full",
 ]);

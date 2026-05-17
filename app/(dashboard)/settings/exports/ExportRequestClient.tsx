@@ -41,6 +41,7 @@ export function ExportRequestClient() {
           <option value="products">Products</option>
           <option value="inventory">Inventory</option>
           <option value="sales">Sales</option>
+          <option value="purchases">Purchases</option>
           <option value="quotations">Quotations</option>
         </select>
       </div>

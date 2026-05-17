@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { PageShell } from "@/components/dashboard/page-shell";
+import { RequestPurchasesExportButton } from "./request-purchases-export-button";
 
 export default async function PurchasesPage() {
   const invoices = await getPurchaseInvoices();
@@ -21,14 +22,7 @@ export default async function PurchasesPage() {
       description="Track supplier bills, procurement activity, and inventory acquisition from one purchasing ledger."
       actions={
         <>
-          <a
-            href="/api/export/purchases"
-            download
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface shadow-sm transition-colors hover:bg-surface-container-low"
-          >
-            <span className="material-symbols-outlined text-[18px] mr-2">download</span>
-            Export CSV
-          </a>
+          <RequestPurchasesExportButton />
           <Link href="/purchases/new">
             <Button className="h-10 rounded-xl px-5 font-bold shadow-lg shadow-primary/20">
               <span className="material-symbols-outlined text-[18px] mr-2">add_business</span>
