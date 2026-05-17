@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { Customer } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/dashboard/page-shell";
+import { RequestCustomersExportButton } from "./request-customers-export-button";
 
 interface CustomerWithBalance extends Customer {
   balance: number;
@@ -95,14 +96,7 @@ export function CustomerClient({
                 Import CSV
               </a>
             ) : null}
-            <a
-              href="/api/export/customers"
-              download
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-5 text-sm font-bold text-on-surface shadow-sm transition-colors hover:bg-surface-container-low"
-            >
-              <span className="material-symbols-outlined text-[18px] mr-2">download</span>
-              Export CSV
-            </a>
+            <RequestCustomersExportButton />
             <Button onClick={handleCreate} className="h-10 rounded-xl px-5 font-bold shadow-lg shadow-primary/20">
               <span className="material-symbols-outlined text-[18px] mr-2">person_add</span>
               Add Customer
