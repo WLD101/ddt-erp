@@ -10,8 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 
 export default async function BranchesPage() {
+  const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
   const branches = await getBranches();
 
   return (

@@ -158,7 +158,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       maxUsers: 25,
       maxProducts: 10000,
       maxMonthlyInvoices: 15000,
-      maxBranches: 10,
+      maxBranches: 5,
       maxIntegrations: 8,
     },
     features: {

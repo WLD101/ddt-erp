@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createBranch } from "@/modules/admin/branch-actions";
 import { branchSchema } from "@/modules/admin/branch-schemas";
@@ -21,6 +22,7 @@ import { toast } from "sonner";
 import { Building2, Info } from "lucide-react";
 
 export function BranchForm({ onSuccess }: { onSuccess?: () => void }) {
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(branchSchema),
     defaultValues: {
@@ -32,14 +34,17 @@ export function BranchForm({ onSuccess }: { onSuccess?: () => void }) {
   });
 
   const onSubmit = async (values: any) => {
-    try {
-      await createBranch(values);
-      toast.success("Branch established successfully");
-      form.reset();
-      onSuccess?.();
-    } catch (error) {
-      toast.error("Failed to establish branch");
+    const result = await createBranch(values);
+
+    if (!result.success) {
+      toast.error(result.error || "We couldn't establish this branch right now.");
+      return;
     }
+
+    toast.success("Branch established successfully");
+    form.reset();
+    router.refresh();
+    onSuccess?.();
   };
 
   return (

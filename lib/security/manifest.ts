@@ -54,6 +54,7 @@ export const PERMISSIONS_CONFIG: PermissionDefinition[] = [
   // ANALYTICS & ADMIN
   { name: "reports.view", category: "Admin", description: "Can view business reports, dashboards, and analytics." },
   { name: "audit.view", category: "Admin", description: "Can view system activity history and security-related audit logs." },
+  { name: "audit.export", category: "Admin", description: "Can export workspace audit logs in business or developer formats." },
   { name: "settings.manage", category: "Admin", description: "Can change company settings and workspace configuration." },
   { name: "billing.manage", category: "Admin", description: "Can view and manage billing plans, invoices, and subscription settings." },
   { name: "rbac.manage", category: "Admin", description: "Can manage user roles, permissions, and access levels." },
@@ -73,7 +74,7 @@ export const DEFAULT_ROLE_MAPPINGS: Record<string, string[]> = {
     "sales.view", "sales.create", "sales.edit", "sales.export",
     "purchases.view", "purchases.create", "purchases.edit", "purchases.export",
     "finances.view", "payments.manage",
-    "reports.view", "audit.view", "settings.manage", "rbac.manage"
+    "reports.view", "audit.view", "audit.export", "settings.manage", "rbac.manage", "branches.manage"
   ],
   staff: [
     "customers.view", "customers.create",

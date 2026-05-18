@@ -18,7 +18,7 @@ import { branchSchema, userBranchAssignmentSchema } from "./branch-schemas";
  */
 export const createBranch = createServerAction({
   label: "CreateBranch",
-  permissions: ["branches.manage"],
+  roles: ["owner", "admin"],
   planGate: { limit: "maxBranches" },
   schema: branchSchema,
   revalidatePaths: ["/settings/branches"],
@@ -90,7 +90,7 @@ export async function getBranches() {
 export const deleteBranch = createServerAction({
   label: "DeleteBranch",
   blockInDemoMode: true,
-  permissions: ["branches.manage"],
+  roles: ["owner", "admin"],
   schema: z.string(),
   revalidatePaths: ["/settings/branches"],
   audit: {
@@ -119,7 +119,7 @@ export const deleteBranch = createServerAction({
  */
 export const assignUserToBranch = createServerAction({
   label: "AssignUserToBranch",
-  permissions: ["settings.manage"],
+  roles: ["owner", "admin"],
   schema: userBranchAssignmentSchema,
   revalidatePaths: ["/settings/branches"],
   audit: {

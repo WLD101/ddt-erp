@@ -67,6 +67,10 @@ export async function ensureDefaultPackages() {
         ...defaultMeta,
         ...existingMeta,
         // Always sync these from static config if they change in code
+        branchLimit: plan.limits.maxBranches,
+        productLimit: plan.limits.maxProducts,
+        monthlyInvoiceLimit: plan.limits.maxMonthlyInvoices,
+        integrationsLimit: plan.limits.maxIntegrations,
         modules: plan.includedModules,
         features: plan.features,
         supportLabel: plan.supportLabel,
@@ -221,7 +225,7 @@ export async function selectPackageAction(data: unknown) {
 
   const organization = await prisma.organization.findUnique({
     where: { id: ctx.organizationId },
-    select: { isDemoTenant: true, lifecycleStatus: true },
+    select: { isDemoTenant: true, lifecycleStatus: true, demoExpiresAt: true },
   });
 
   if (parsed.data.enterprise) {
@@ -247,7 +251,22 @@ export async function selectPackageAction(data: unknown) {
 
   if (parsed.data.demoMode) {
     const now = new Date();
-    const demoExpiresAt = addDays(now, 7);
+    const isEligibleForDemo =
+      organization?.isDemoTenant === true ||
+      ["demo", "trial"].includes(organization?.lifecycleStatus || "");
+
+    if (!isEligibleForDemo) {
+      return { error: "Only demo or trial workspaces can activate a free trial package." };
+    }
+
+    if (organization?.demoExpiresAt && organization.demoExpiresAt <= now) {
+      return { error: "This trial has already expired. Choose a paid plan to continue." };
+    }
+
+    const demoExpiresAt =
+      organization?.demoExpiresAt && organization.demoExpiresAt > now
+        ? organization.demoExpiresAt
+        : addDays(now, 7);
 
     await prisma.organization.update({
       where: { id: ctx.organizationId },
