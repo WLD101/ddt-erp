@@ -16,6 +16,10 @@ function readJsonObject(value?: string | null) {
   }
 }
 
+function readNumberMeta(meta: Record<string, unknown>, key: string, fallback: number | null) {
+  return typeof meta[key] === "number" ? (meta[key] as number) : fallback;
+}
+
 export class PlanLimitError extends Error {
   constructor(message: string) {
     super(message);
@@ -64,6 +68,29 @@ export async function getSubscriptionContext(orgId: string) {
     : Array.isArray(packageMeta.modules)
       ? packageMeta.modules.filter((item): item is string => typeof item === "string")
       : basePlan.includedModules;
+  const effectiveLimits: PlanConfig["limits"] = {
+    ...basePlan.limits,
+    maxUsers: assignment?.customUserLimit ?? basePlan.limits.maxUsers,
+    maxBranches: branchLimit,
+    maxProducts: readNumberMeta(packageMeta, "productLimit", basePlan.limits.maxProducts) ?? basePlan.limits.maxProducts,
+    maxMonthlyInvoices:
+      readNumberMeta(packageMeta, "monthlyInvoiceLimit", basePlan.limits.maxMonthlyInvoices) ?? basePlan.limits.maxMonthlyInvoices,
+    maxIntegrations:
+      readNumberMeta(packageMeta, "integrationsLimit", basePlan.limits.maxIntegrations) ?? basePlan.limits.maxIntegrations,
+    maxCustomers: readNumberMeta(packageMeta, "customerLimit", basePlan.limits.maxCustomers) ?? basePlan.limits.maxCustomers,
+    maxSuppliers: readNumberMeta(packageMeta, "supplierLimit", basePlan.limits.maxSuppliers) ?? basePlan.limits.maxSuppliers,
+    maxMonthlyPurchases:
+      readNumberMeta(packageMeta, "monthlyPurchaseLimit", basePlan.limits.maxMonthlyPurchases) ?? basePlan.limits.maxMonthlyPurchases,
+    maxMonthlySalesEntries:
+      readNumberMeta(packageMeta, "monthlySalesEntryLimit", basePlan.limits.maxMonthlySalesEntries) ?? basePlan.limits.maxMonthlySalesEntries,
+    maxDailyExports:
+      readNumberMeta(packageMeta, "dailyExportLimit", basePlan.limits.maxDailyExports) ?? basePlan.limits.maxDailyExports,
+    maxMonthlyAssistantActions:
+      readNumberMeta(packageMeta, "monthlyAssistantActionLimit", basePlan.limits.maxMonthlyAssistantActions)
+      ?? basePlan.limits.maxMonthlyAssistantActions,
+    maxStorageGb: readNumberMeta(packageMeta, "storageGbLimit", basePlan.limits.maxStorageGb),
+    maxApiRequestsMonthly: readNumberMeta(packageMeta, "monthlyApiRequestLimit", basePlan.limits.maxApiRequestsMonthly),
+  };
   const effectivePlan: PlanConfig = {
     ...basePlan,
     name: assignment?.customPackageName ?? packageRecord?.name ?? basePlan.name,
@@ -76,12 +103,20 @@ export async function getSubscriptionContext(orgId: string) {
           ? "Custom"
           : `${displayPriceValue?.toLocaleString() ?? ""}`,
       cadence: billingCycle === "YEARLY" ? "/year" : basePlan.price.cadence,
+      annualEquivalent:
+        readNumberMeta(packageMeta, "annualEquivalent", basePlan.price.annualEquivalent) ?? basePlan.price.annualEquivalent,
+      savingsPercent:
+        readNumberMeta(packageMeta, "annualSavingsPercent", basePlan.price.savingsPercent) ?? basePlan.price.savingsPercent,
+      promoLabel:
+        typeof packageMeta.annualPromoLabel === "string" ? packageMeta.annualPromoLabel : basePlan.price.promoLabel,
+      promoEnabled:
+        typeof packageMeta.annualPromoEnabled === "boolean" ? packageMeta.annualPromoEnabled : basePlan.price.promoEnabled,
+      discountCountdownReady:
+        typeof packageMeta.discountCountdownReady === "boolean"
+          ? packageMeta.discountCountdownReady
+          : basePlan.price.discountCountdownReady,
     },
-    limits: {
-      ...basePlan.limits,
-      maxUsers: assignment?.customUserLimit ?? basePlan.limits.maxUsers,
-      maxBranches: branchLimit,
-    },
+    limits: effectiveLimits,
     features: {
       ...basePlan.features,
       ...customFeatures,
@@ -158,7 +193,26 @@ export async function assertPlanLimit(orgId: string, limitType: keyof PlanConfig
   }
 
   const limit = plan.limits[limitType];
-  const current = usage[limitType as keyof typeof usage] || 0;
+  const usageByLimitKey: Record<keyof PlanConfig["limits"], number | null> = {
+    maxUsers: usage.users,
+    maxProducts: usage.products,
+    maxMonthlyInvoices: usage.monthlyInvoices,
+    maxBranches: usage.branches,
+    maxIntegrations: usage.integrations,
+    maxCustomers: usage.customers,
+    maxSuppliers: usage.suppliers,
+    maxMonthlyPurchases: usage.monthlyPurchases,
+    maxMonthlySalesEntries: usage.monthlySalesEntries,
+    maxDailyExports: usage.exportsToday,
+    maxMonthlyAssistantActions: usage.assistantActionsThisMonth,
+    maxStorageGb: usage.storageGb,
+    maxApiRequestsMonthly: usage.apiRequestsThisMonth,
+  };
+  const current = usageByLimitKey[limitType];
+
+  if (limit === null || current === null) {
+    return;
+  }
 
   if (current >= limit) {
     throw new PlanLimitError(

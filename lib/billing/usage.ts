@@ -7,8 +7,16 @@ export interface TenantUsage {
   users: number;
   products: number;
   monthlyInvoices: number;
+  monthlySalesEntries: number;
+  monthlyPurchases: number;
   branches: number;
   integrations: number;
+  customers: number;
+  suppliers: number;
+  exportsToday: number;
+  assistantActionsThisMonth: number;
+  storageGb: number | null;
+  apiRequestsThisMonth: number | null;
 }
 
 /**
@@ -27,7 +35,21 @@ export async function getTenantUsage(
   const start = periodStart || startOfMonth(new Date());
   const end = periodEnd || endOfMonth(new Date());
 
-  const [userCount, productCount, monthInvoiceCount, branchCount, integrationCount] = await Promise.all([
+  const exportDayStart = new Date();
+  exportDayStart.setHours(0, 0, 0, 0);
+
+  const [
+    userCount,
+    productCount,
+    monthInvoiceCount,
+    monthPurchaseCount,
+    branchCount,
+    integrationCount,
+    customerCount,
+    supplierCount,
+    exportCountToday,
+    assistantActionsThisMonth,
+  ] = await Promise.all([
     // Active team members
     prisma.organizationUser.count({ 
       where: { organizationId: orgId } 
@@ -45,6 +67,12 @@ export async function getTenantUsage(
         createdAt: { gte: start, lte: end },
       },
     }),
+    prisma.purchaseInvoice.count({
+      where: {
+        organizationId: orgId,
+        createdAt: { gte: start, lte: end },
+      },
+    }),
     prisma.branch.count({
       where: {
         organizationId: orgId,
@@ -56,13 +84,51 @@ export async function getTenantUsage(
         isActive: true,
       },
     }),
+    prisma.customer.count({
+      where: {
+        organizationId: orgId,
+      },
+    }),
+    prisma.supplier.count({
+      where: {
+        organizationId: orgId,
+      },
+    }),
+    prisma.exportRequest.count({
+      where: {
+        organizationId: orgId,
+        createdAt: { gte: exportDayStart },
+      },
+    }),
+    prisma.analyticsEvent.count({
+      where: {
+        organizationId: orgId,
+        timestamp: { gte: start, lte: end },
+        name: {
+          in: [
+            "ASSISTANT_COMMAND_EXECUTED",
+            "ASSISTANT_CREATE_CUSTOMER",
+            "ASSISTANT_CREATE_INVOICE",
+            "ASSISTANT_QUERY_EXECUTED",
+          ],
+        },
+      },
+    }),
   ]);
 
   return {
     users: userCount,
     products: productCount,
     monthlyInvoices: monthInvoiceCount,
+    monthlySalesEntries: monthInvoiceCount,
+    monthlyPurchases: monthPurchaseCount,
     branches: branchCount,
     integrations: integrationCount,
+    customers: customerCount,
+    suppliers: supplierCount,
+    exportsToday: exportCountToday,
+    assistantActionsThisMonth,
+    storageGb: null,
+    apiRequestsThisMonth: null,
   };
 }

@@ -5,7 +5,6 @@ import { Progress } from "@/components/ui/progress";
 import { getSubscriptionContext } from "@/lib/billing/enforcement";
 import { PLAN_ORDER, PLANS, formatPlanLimit, normalizePlanId } from "@/lib/billing/plans";
 import { getAvailableStripeBillingCycles } from "@/lib/billing/stripe";
-import { prisma } from "@/lib/prisma";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +31,6 @@ export default async function BillingSettingsPage() {
     cancelAtPeriodEnd,
   } = subCtx;
 
-  const branchCount = await prisma.branch.count({
-    where: { organizationId: ctx.organizationId },
-  });
-
   const isTrial = status === "trialing";
   const isExpired = status === "expired";
   const isGrace = status === "grace_period";
@@ -46,9 +41,13 @@ export default async function BillingSettingsPage() {
 
   const usageStats = [
     { name: "Users", current: usage.users, limit: plan.limits.maxUsers, icon: "group" },
-    { name: "Branches", current: branchCount, limit: plan.limits.maxBranches, icon: "location_on" },
+    { name: "Branches", current: usage.branches, limit: plan.limits.maxBranches, icon: "location_on" },
+    { name: "Customers", current: usage.customers, limit: plan.limits.maxCustomers, icon: "contacts" },
     { name: "Products", current: usage.products, limit: plan.limits.maxProducts, icon: "inventory_2" },
-    { name: "Monthly Sales", current: usage.monthlyInvoices, limit: plan.limits.maxMonthlyInvoices, icon: "receipt_long" },
+    { name: "Monthly invoices", current: usage.monthlyInvoices, limit: plan.limits.maxMonthlyInvoices, icon: "receipt_long" },
+    { name: "Monthly purchases", current: usage.monthlyPurchases, limit: plan.limits.maxMonthlyPurchases, icon: "shopping_bag" },
+    { name: "Exports today", current: usage.exportsToday, limit: plan.limits.maxDailyExports, icon: "ios_share" },
+    { name: "Assistant this month", current: usage.assistantActionsThisMonth, limit: plan.limits.maxMonthlyAssistantActions, icon: "auto_awesome" },
   ];
 
   return (
@@ -93,6 +92,20 @@ export default async function BillingSettingsPage() {
                 <span>Billing cycle</span>
                 <span className="font-black uppercase text-on-surface">{billingCycle}</span>
               </div>
+              {plan.price.yearly ? (
+                <div className="flex items-center justify-between">
+                  <span>Annual offer</span>
+                  <span className="font-black text-on-surface">
+                    {plan.price.promoEnabled ? `${plan.price.yearly.toLocaleString()} / year` : "Not active"}
+                  </span>
+                </div>
+              ) : null}
+              {plan.price.savingsPercent ? (
+                <div className="flex items-center justify-between">
+                  <span>Annual savings</span>
+                  <span className="font-black uppercase text-emerald-600">Save {plan.price.savingsPercent}%</span>
+                </div>
+              ) : null}
               <div className="flex items-center justify-between">
                 <span>Renewal / expiry</span>
                 <span className="font-black text-on-surface">{renewalDate ? new Date(renewalDate).toLocaleDateString() : "Not scheduled"}</span>
@@ -169,6 +182,15 @@ export default async function BillingSettingsPage() {
                 <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">{featureList.join(", ")}</p>
               </div>
             ) : null}
+
+            {plan.price.promoEnabled && plan.price.promoLabel ? (
+              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">Online annual payment special</p>
+                <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">
+                  {plan.price.promoLabel}
+                </p>
+              </div>
+            ) : null}
           </CardContent>
           <CardFooter className="pb-8">
             <div className="w-full space-y-3">
@@ -209,7 +231,7 @@ export default async function BillingSettingsPage() {
               Operational telemetry against {plan.name} limits.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-8">
+          <CardContent className="space-y-6 pt-8">
             <div className="grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
               {usageStats.map((stat) => {
                 const percent = Math.min(100, Math.round((stat.current / stat.limit) * 100));
@@ -241,6 +263,19 @@ export default async function BillingSettingsPage() {
                   </div>
                 );
               })}
+            </div>
+            <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-on-surface-variant">Storage metering</p>
+                  <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                    Per-tenant storage usage will appear here once file uploads are fully metered across local and object storage.
+                  </p>
+                </div>
+                <span className="rounded-full border border-outline-variant/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                  {plan.limits.maxStorageGb ? `${plan.limits.maxStorageGb} GB cap` : "Dedicated review"}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -290,6 +325,14 @@ export default async function BillingSettingsPage() {
                       <div className="flex justify-between">
                         <span>SKU Repository</span>
                         <span className="font-black text-on-surface">{formatPlanLimit(p.limits.maxProducts)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Customers</span>
+                        <span className="font-black text-on-surface">{formatPlanLimit(p.limits.maxCustomers)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Exports / day</span>
+                        <span className="font-black text-on-surface">{formatPlanLimit(p.limits.maxDailyExports)}</span>
                       </div>
                     </div>
                   </div>

@@ -15,14 +15,28 @@ export interface PlanConfig {
     currency: "PKR";
     display: string;
     cadence: string;
+    annualEquivalent: number | null;
+    savingsPercent: number | null;
+    promoLabel: string | null;
+    promoEnabled: boolean;
+    discountCountdownReady: boolean;
   };
   highlight?: boolean;
+  dedicatedInfraRequired?: boolean;
   limits: {
     maxUsers: number;
     maxProducts: number;
     maxMonthlyInvoices: number;
     maxBranches: number;
     maxIntegrations: number;
+    maxCustomers: number;
+    maxSuppliers: number;
+    maxMonthlyPurchases: number;
+    maxMonthlySalesEntries: number;
+    maxDailyExports: number;
+    maxMonthlyAssistantActions: number;
+    maxStorageGb: number | null;
+    maxApiRequestsMonthly: number | null;
   };
   features: {
     advancedReports: boolean;
@@ -55,17 +69,30 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Small shop or early-stage wholesale desk",
     price: {
       monthly: 3000,
-      yearly: 30000,
+      yearly: 24000,
       currency: "PKR",
       display: "Rs. 3,000",
       cadence: "/month",
+      annualEquivalent: 36000,
+      savingsPercent: 33,
+      promoLabel: "Limited Time Offer - Pay annually and get 4 months FREE",
+      promoEnabled: true,
+      discountCountdownReady: true,
     },
     limits: {
       maxUsers: 2,
-      maxProducts: 200,
+      maxProducts: 500,
       maxMonthlyInvoices: 300,
       maxBranches: 1,
       maxIntegrations: 1,
+      maxCustomers: 500,
+      maxSuppliers: 250,
+      maxMonthlyPurchases: 150,
+      maxMonthlySalesEntries: 300,
+      maxDailyExports: 5,
+      maxMonthlyAssistantActions: 100,
+      maxStorageGb: 1,
+      maxApiRequestsMonthly: null,
     },
     features: {
       advancedReports: false,
@@ -74,7 +101,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       basicReports: true,
       purchases: false,
       expenses: false,
-      csvImport: false,
+      csvImport: true,
+      // Import/export remains available through lightweight CSV/XLSX flows.
       shopifyIntegration: false,
       woocommerceIntegration: false,
       darazIntegration: false,
@@ -91,8 +119,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       "Inventory",
       "Sales invoices",
       "Basic reports",
+      "CSV/XLSX import",
     ],
-    supportLabel: "Email support",
+    supportLabel: "Standard support",
   },
   business: {
     id: "business",
@@ -101,18 +130,31 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Retail, distribution, and wholesale teams",
     price: {
       monthly: 7000,
-      yearly: 70000,
+      yearly: 56000,
       currency: "PKR",
       display: "Rs. 7,000",
       cadence: "/month",
+      annualEquivalent: 84000,
+      savingsPercent: 33,
+      promoLabel: "Limited Time Offer - Pay annually and get 4 months FREE",
+      promoEnabled: true,
+      discountCountdownReady: true,
     },
     highlight: true,
     limits: {
       maxUsers: 8,
-      maxProducts: 1500,
-      maxMonthlyInvoices: 2500,
+      maxProducts: 2500,
+      maxMonthlyInvoices: 1500,
       maxBranches: 3,
       maxIntegrations: 2,
+      maxCustomers: 3000,
+      maxSuppliers: 1500,
+      maxMonthlyPurchases: 800,
+      maxMonthlySalesEntries: 1500,
+      maxDailyExports: 25,
+      maxMonthlyAssistantActions: 1000,
+      maxStorageGb: 5,
+      maxApiRequestsMonthly: null,
     },
     features: {
       advancedReports: false,
@@ -136,11 +178,11 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       "Purchases",
       "Expenses",
       "Inventory",
-      "Reports",
+      "Standard reports",
       "WooCommerce / Shopify",
-      "CSV import",
+      "CSV/XLSX import/export",
     ],
-    supportLabel: "Business-hours support",
+    supportLabel: "Priority support",
   },
   pro: {
     id: "pro",
@@ -149,17 +191,30 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     audience: "Omnichannel sellers and established wholesalers",
     price: {
       monthly: 15000,
-      yearly: 150000,
+      yearly: 120000,
       currency: "PKR",
       display: "Rs. 15,000",
       cadence: "/month",
+      annualEquivalent: 180000,
+      savingsPercent: 33,
+      promoLabel: "Limited Time Offer - Pay annually and get 4 months FREE",
+      promoEnabled: true,
+      discountCountdownReady: true,
     },
     limits: {
       maxUsers: 25,
       maxProducts: 10000,
-      maxMonthlyInvoices: 15000,
+      maxMonthlyInvoices: 5000,
       maxBranches: 5,
       maxIntegrations: 8,
+      maxCustomers: 10000,
+      maxSuppliers: 5000,
+      maxMonthlyPurchases: 2500,
+      maxMonthlySalesEntries: 5000,
+      maxDailyExports: 100,
+      maxMonthlyAssistantActions: 5000,
+      maxStorageGb: 20,
+      maxApiRequestsMonthly: 50000,
     },
     features: {
       advancedReports: true,
@@ -174,7 +229,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       darazIntegration: true,
       ecommerceSync: true,
       prioritySupport: true,
-      apiAccess: false,
+      apiAccess: true,
       customWorkflows: false,
       dedicatedOnboarding: false,
     },
@@ -184,6 +239,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       "Ecommerce sync",
       "Audit logs",
       "Priority support",
+      "API access (rate limited)",
     ],
     supportLabel: "Priority support",
   },
@@ -198,13 +254,27 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       currency: "PKR",
       display: "Custom",
       cadence: "",
+      annualEquivalent: null,
+      savingsPercent: null,
+      promoLabel: "Dedicated resources available",
+      promoEnabled: false,
+      discountCountdownReady: false,
     },
+    dedicatedInfraRequired: true,
     limits: {
       maxUsers: 9999,
       maxProducts: 999999,
       maxMonthlyInvoices: 999999,
       maxBranches: 999,
       maxIntegrations: 999,
+      maxCustomers: 999999,
+      maxSuppliers: 999999,
+      maxMonthlyPurchases: 999999,
+      maxMonthlySalesEntries: 999999,
+      maxDailyExports: 999999,
+      maxMonthlyAssistantActions: 999999,
+      maxStorageGb: null,
+      maxApiRequestsMonthly: null,
     },
     features: {
       advancedReports: true,
@@ -224,10 +294,11 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       dedicatedOnboarding: true,
     },
     includedModules: [
-      "Unlimited branches and users",
+      "Dedicated resources available",
       "Custom workflows",
       "API access",
       "Dedicated onboarding",
+      "Dedicated DB / backups on review",
     ],
     supportLabel: "Dedicated success manager",
   },
@@ -256,7 +327,7 @@ export function normalizePlanId(id?: string | null): PlanId | null {
 }
 
 export function formatPlanLimit(limit: number) {
-  return limit > 9000 ? "Unlimited" : limit.toLocaleString();
+  return limit > 9000 ? "Custom" : limit.toLocaleString();
 }
 
 export function getPlanPriceForCycle(planId: PlanId, billingCycle: BillingCycle) {

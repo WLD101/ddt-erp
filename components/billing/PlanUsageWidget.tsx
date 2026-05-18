@@ -3,7 +3,7 @@
 import { getSubscriptionContext } from "@/lib/billing/enforcement";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { Progress } from "@/components/ui/progress";
-import { Zap, Users, Package, FileText } from "lucide-react";
+import { Zap, Users, Package, FileText, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { formatPlanLimit } from "@/lib/billing/plans";
 
@@ -23,6 +23,12 @@ export async function PlanUsageWidget() {
       current: usage.products,
       limit: plan.limits.maxProducts,
       icon: <Package className="w-3 h-3" />,
+    },
+    {
+      label: "Customers",
+      current: usage.customers,
+      limit: plan.limits.maxCustomers,
+      icon: <UsersRound className="w-3 h-3" />,
     },
     {
       label: "Monthly Sales",
@@ -78,6 +84,14 @@ export async function PlanUsageWidget() {
         })}
       </div>
       
+      {plan.price.promoEnabled && plan.price.promoLabel ? (
+        <div className="mt-4 pt-4 border-t border-white/5">
+          <p className="text-[10px] leading-relaxed text-emerald-300">
+            {plan.price.promoLabel}
+          </p>
+        </div>
+      ) : null}
+
       {plan.id === "starter" && (
         <div className="mt-4 pt-4 border-t border-white/5">
           <p className="text-[10px] leading-relaxed text-slate-500 italic">

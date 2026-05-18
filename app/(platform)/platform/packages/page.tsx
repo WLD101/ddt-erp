@@ -20,12 +20,22 @@ function readPackageMeta(pkg: { name: string; featureJson: string; userLimit: nu
 
   return {
     price: typeof parsed.displayPrice === "string" ? parsed.displayPrice : matchingPlan ? `${matchingPlan.price.display}${matchingPlan.price.cadence}` : "Custom",
+    annualPrice:
+      typeof parsed.yearlyPrice === "number"
+        ? `PKR ${parsed.yearlyPrice.toLocaleString()}/year`
+        : matchingPlan?.price.yearly
+          ? `PKR ${matchingPlan.price.yearly.toLocaleString()}/year`
+          : "Custom",
     branchLimit:
       typeof parsed.branchLimit === "number"
         ? parsed.branchLimit
         : matchingPlan
           ? matchingPlan.limits.maxBranches
           : 0,
+    customerLimit:
+      typeof parsed.customerLimit === "number"
+        ? parsed.customerLimit
+        : matchingPlan?.limits.maxCustomers ?? 0,
     modules: Array.isArray(parsed.modules)
       ? parsed.modules.filter((item): item is string => typeof item === "string")
       : matchingPlan?.includedModules || [],
@@ -107,6 +117,7 @@ export default async function PlatformPackagesPage() {
             <TableRow className="border-outline-variant/30 hover:bg-transparent">
               <TableHead>Package</TableHead>
               <TableHead>Monthly price</TableHead>
+              <TableHead>Annual price</TableHead>
               <TableHead>Branches</TableHead>
               <TableHead>Users</TableHead>
               <TableHead>Highlights</TableHead>
@@ -128,6 +139,7 @@ export default async function PlatformPackagesPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium text-on-surface/80">{meta.price}</TableCell>
+                  <TableCell className="font-medium text-on-surface/80">{meta.annualPrice}</TableCell>
                   <TableCell>{meta.branchLimit ? formatPlanLimit(meta.branchLimit) : "Custom"}</TableCell>
                   <TableCell>{formatPlanLimit(pkg.userLimit)}</TableCell>
                   <TableCell>

@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 import { assertErpAccess } from "@/lib/billing/access";
+import { assertPlanLimit } from "@/lib/billing/enforcement";
+import { AnalyticCategory, trackEvent } from "@/modules/analytics/service";
 import { parseAssistantCommand } from "./parser";
 import { executeAssistantCommand } from "./service";
 import { assistantCommandSchema, type AssistantExecutionResult, type AssistantParseResult } from "./types";
@@ -31,10 +33,23 @@ export async function executeAssistantCommandAction(rawCommand: unknown): Promis
     const command = assistantCommandSchema.parse(rawCommand);
     const ctx = await getCurrentTenantContext();
     await assertErpAccess(ctx);
+    await assertPlanLimit(ctx.organizationId, "maxMonthlyAssistantActions");
     const db = getTenantStore(ctx);
     const result = await executeAssistantCommand(db, ctx, command);
 
     if (result.success) {
+      void trackEvent({
+        name: "ASSISTANT_COMMAND_EXECUTED",
+        category: AnalyticCategory.BILLING,
+        userId: ctx.userId,
+        organizationId: ctx.organizationId,
+        properties: {
+          entity: command.entity,
+          action: command.action,
+          intent: command.intent,
+          language: command.language,
+        },
+      });
       revalidatePath("/dashboard");
       revalidatePath("/dashboard/customers");
       revalidatePath("/dashboard/products");
