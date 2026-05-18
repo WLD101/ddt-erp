@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export interface BrandLogoProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -26,12 +25,12 @@ export function BrandLogo({ hideText = false, size = "md", dark = false, classNa
           dark ? "backdrop-blur-sm" : "bg-white"
         )}
       >
-        <Image
+        <img
           src="/logo-emblem.png"
           alt="WhatsQuery Logo"
           width={160}
           height={160}
-          priority={size !== "sm"}
+          draggable={false}
           className={cn("object-contain drop-shadow-[0_8px_24px_rgba(21,65,183,0.2)]", dims.image)}
         />
       </div>

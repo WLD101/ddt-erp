@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { PlanUsageWidget } from "./billing/PlanUsageWidget";
 import { getUnreadCount } from "@/modules/notifications/actions";
 import { WhatsNewTrigger } from "./dashboard/whats-new-panel";
@@ -28,13 +27,13 @@ export async function Sidebar({ lowStockCount = 0 }: { lowStockCount?: number })
         <div className="px-7 py-8">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-[24px] border border-primary/15 bg-[linear-gradient(180deg,rgba(21,65,183,0.16),rgba(21,65,183,0.04))] shadow-[0_18px_36px_-22px_rgba(21,65,183,0.6)] ring-1 ring-primary/10">
-              <Image
+              <img
                 src="/logo-emblem.png"
                 alt="WhatsQuery logo"
                 width={56}
                 height={56}
+                draggable={false}
                 className="h-14 w-14 rounded-[20px] object-contain drop-shadow-[0_8px_22px_rgba(21,65,183,0.25)]"
-                priority
               />
             </div>
             <div>
