@@ -40,6 +40,8 @@ type PromptChip = {
   text: string;
 };
 
+type VoiceLanguageOption = "auto" | "en" | "ur" | "roman-ur";
+
 type SpeechRecognitionAlternativeLike = {
   transcript: string;
   confidence: number;
@@ -89,6 +91,8 @@ const quickActionChips: PromptChip[] = [
   { label: "Show unpaid invoices", text: "Show unpaid invoices this month" },
   { label: "Monthly sales report", text: "Generate monthly sales report" },
   { label: "Show low stock", text: "Show low stock" },
+  { label: "Naya customer", text: "Naya customer add karo Ashraf Cloth House" },
+  { label: "اردو کسٹمر", text: "نیا کسٹمر بنائیں اشرف کلاتھ ہاؤس" },
 ];
 
 const examplePrompts = [
@@ -98,7 +102,31 @@ const examplePrompts = [
   "Show unpaid invoices this month",
   "Generate monthly sales report",
   "Mark invoice INV-004 as paid",
+  "Naya customer add karo Ashraf Cloth House",
+  "Ali Traders ke naam invoice banao",
+  "نیا کسٹمر بنائیں اشرف کلاتھ ہاؤس",
+  "کم اسٹاک دکھائیں",
 ];
+
+const voiceLanguageOptions: Array<{ value: VoiceLanguageOption; label: string }> = [
+  { value: "auto", label: "Auto detect" },
+  { value: "en", label: "English" },
+  { value: "roman-ur", label: "Roman Urdu" },
+  { value: "ur", label: "Urdu" },
+];
+
+function resolveRecognitionLanguage(language: VoiceLanguageOption) {
+  switch (language) {
+    case "ur":
+      return "ur-PK";
+    case "roman-ur":
+      return "en-PK";
+    case "en":
+      return "en-US";
+    default:
+      return "ur-PK";
+  }
+}
 
 const unitTypeOptions = [
   "RETAIL_QUANTITY",
@@ -738,6 +766,7 @@ export function AssistantClient() {
   const [transcriptNeedsReview, setTranscriptNeedsReview] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
+  const [voiceLanguage, setVoiceLanguage] = useState<VoiceLanguageOption>("auto");
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   useEffect(() => {
@@ -766,7 +795,7 @@ export function AssistantClient() {
     const recognition = new SpeechRecognitionCtor();
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = "en-US";
+    recognition.lang = resolveRecognitionLanguage("auto");
 
     recognition.onstart = () => {
       setVoiceError(null);
@@ -836,6 +865,14 @@ export function AssistantClient() {
       recognitionRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!recognitionRef.current) {
+      return;
+    }
+
+    recognitionRef.current.lang = resolveRecognitionLanguage(voiceLanguage);
+  }, [voiceLanguage]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -986,21 +1023,21 @@ export function AssistantClient() {
                     AI-style command center
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black tracking-tight text-on-surface sm:text-[2rem]">
+                    <h2 className="wq-page-title text-[1.9rem] sm:text-[2rem] xl:text-[2.15rem]">
                       Ask anything to your agent here
                     </h2>
-                    <p className="mt-1 max-w-3xl text-sm font-medium text-on-surface-variant">
+                    <p className="wq-page-copy mt-2 max-w-3xl">
                       Speak or type a request, review exactly what the assistant understood, then confirm before any ERP action runs.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="min-w-[220px] rounded-2xl border border-primary/15 bg-surface/70 px-4 py-4 backdrop-blur">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Live status</p>
+                <p className="wq-eyebrow text-primary">Live status</p>
                 <p className="mt-2 text-sm font-semibold text-on-surface">
                   {isListening ? "Listening for your command" : isParsing ? "Understanding your request" : "Ready for your next task"}
                 </p>
-                <p className="mt-2 text-xs text-on-surface-variant">
+                <p className="mt-2 text-xs leading-5 text-on-surface-variant">
                   Voice never executes directly. Every action still goes through preview, edit, confirm, or cancel.
                 </p>
               </div>
@@ -1095,7 +1132,7 @@ export function AssistantClient() {
                       <Textarea
                         value={input}
                         onChange={(event) => setInput(event.target.value)}
-                        placeholder="Try: Create invoice for Ali Traders for 5 laptops at 120000 each"
+                        placeholder="Try: Create invoice for Ali Traders for 5 laptops at 120000 each / نیا کسٹمر بنائیں اشرف کلاتھ ہاؤس"
                         className="min-h-[120px] flex-1 resize-none rounded-3xl border-outline-variant/30 bg-surface px-5 py-4 text-sm"
                       />
                       <div className="flex w-full gap-3 sm:w-auto sm:flex-col">
@@ -1120,9 +1157,30 @@ export function AssistantClient() {
                       </div>
                     </div>
 
+                    <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
+                      <div className="space-y-2">
+                        <p className="wq-eyebrow text-on-surface-variant">Voice language</p>
+                        <Select value={voiceLanguage} onValueChange={(value) => setVoiceLanguage(value as VoiceLanguageOption)}>
+                          <SelectTrigger className="rounded-2xl border-outline-variant/30 bg-surface">
+                            <SelectValue placeholder="Choose voice language" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {voiceLanguageOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low/60 px-4 py-3 text-sm leading-6 text-on-surface-variant">
+                        Use <span className="font-semibold text-on-surface">Urdu</span> for Urdu script, <span className="font-semibold text-on-surface">Roman Urdu</span> for spoken Urdu in English letters, or keep <span className="font-semibold text-on-surface">Auto detect</span> for a broader listening mode.
+                      </div>
+                    </div>
+
                     {heardTranscript || interimTranscript ? (
                       <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low/60 px-4 py-3">
-                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Assistant heard</p>
+                        <p className="wq-eyebrow text-primary">Assistant heard</p>
                         <p className="mt-2 text-sm font-medium leading-6 text-on-surface">
                           {heardTranscript || "Listening..."}{" "}
                           {interimTranscript ? <span className="text-on-surface-variant">{interimTranscript}</span> : null}

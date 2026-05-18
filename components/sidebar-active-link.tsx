@@ -31,7 +31,7 @@ export function SidebarActiveLink({
     <Link
       href={href}
       className={cn(
-        "flex items-center justify-between px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 group",
+        "group flex items-center justify-between rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all duration-300",
         active
           ? "bg-primary text-white shadow-lg shadow-primary/20"
           : "text-on-surface-variant/70 hover:bg-primary/5 hover:text-primary"
@@ -46,7 +46,7 @@ export function SidebarActiveLink({
         >
           {icon}
         </span>
-        <span className="font-body-md whitespace-nowrap">{label}</span>
+        <span className="font-body-md whitespace-nowrap text-[0.78rem]">{label}</span>
       </div>
       {badge !== undefined ? (
         <span

@@ -70,6 +70,16 @@ type IntegrationCardConfig = {
   inventoryLabel: string;
 };
 
+type IntegrationAction = {
+  label: string;
+  icon: string;
+  variant?: "outline" | "ghost";
+  href?: string;
+  disabled?: boolean;
+  busyLabel?: string;
+  onClick?: () => void;
+};
+
 const CARD_CONFIGS: IntegrationCardConfig[] = [
   {
     type: "DARAZ",
@@ -313,89 +323,117 @@ export function IntegrationsDashboardClient({
                   </div>
                 ) : null}
 
-                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                  <Button asChild variant="outline" className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4">
-                    <Link href={card.connectHref}>
-                      <span className="material-symbols-outlined text-[18px] mr-2">vpn_key</span>
-                      {card.connectLabel}
-                    </Link>
-                  </Button>
+                {(() => {
+                  const actions: IntegrationAction[] = [
+                    {
+                      label: card.connectLabel,
+                      icon: "vpn_key",
+                      href: card.connectHref,
+                    },
+                    {
+                      label: card.testLabel,
+                      icon: "verified",
+                      busyLabel: "Triaging...",
+                      disabled: busy || (!isCsv && !channel?.id),
+                      onClick: () => {
+                        if (isCsv) {
+                          router.push("/dashboard/imports");
+                          return;
+                        }
+                        if (channel?.id) {
+                          runAction(card.type, "Node connection verified successfully", () =>
+                            testSalesChannelConnection({ channelId: channel.id })
+                          );
+                        }
+                      },
+                    },
+                    {
+                      label: card.productsLabel,
+                      icon: "sync_alt",
+                      disabled: busy || (!isCsv && !channel?.id),
+                      onClick: () => {
+                        if (isCsv) {
+                          router.push("/dashboard/imports");
+                          return;
+                        }
+                        if (channel?.id) {
+                          runAction(card.type, "Catalog synchronization initialized", () =>
+                            syncSalesChannelProducts({ channelId: channel.id })
+                          );
+                        }
+                      },
+                    },
+                    {
+                      label: card.ordersLabel,
+                      icon: "inbox",
+                      disabled: busy || (!isCsv && !channel?.id),
+                      onClick: () => {
+                        if (isCsv) {
+                          router.push("/dashboard/imports");
+                          return;
+                        }
+                        if (channel?.id) {
+                          runAction(card.type, "Invoice ingestion started", () =>
+                            syncSalesChannelOrders({ channelId: channel.id })
+                          );
+                        }
+                      },
+                    },
+                    {
+                      label: card.inventoryLabel,
+                      icon: "upload",
+                      disabled: busy || (!isCsv && !channel?.id),
+                      onClick: () => {
+                        if (isCsv) {
+                          router.push("/dashboard/imports");
+                          return;
+                        }
+                        if (channel?.id) {
+                          runAction(card.type, "Inventory push sequence active", () =>
+                            pushSalesChannelInventory({ channelId: channel.id })
+                          );
+                        }
+                      },
+                    },
+                    {
+                      label: "Node History",
+                      icon: "database",
+                      href: card.logsHref,
+                      variant: "ghost",
+                    },
+                  ];
 
-                  <Button
-                    variant="outline"
-                    className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
-                    disabled={busy || (!isCsv && !channel?.id)}
-                    onClick={() => {
-                      if (isCsv) { router.push("/dashboard/imports"); return; }
-                      if (channel?.id)
-                        runAction(
-                          card.type,
-                          "Node connection verified successfully",
-                          () => testSalesChannelConnection({ channelId: channel.id })
+                  return (
+                    <div className="flex flex-wrap gap-3">
+                      {actions.map((action) =>
+                        action.href ? (
+                          <Button
+                            key={action.label}
+                            asChild
+                            variant={action.variant ?? "outline"}
+                            className="h-10 min-w-[160px] flex-1 justify-start rounded-xl px-4 text-[10px] font-black uppercase tracking-[0.16em] sm:flex-none"
+                          >
+                            <Link href={action.href}>
+                              <span className="material-symbols-outlined mr-2 text-[18px]">{action.icon}</span>
+                              {action.label}
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            key={action.label}
+                            variant={action.variant ?? "outline"}
+                            className="h-10 min-w-[160px] flex-1 justify-start rounded-xl px-4 text-[10px] font-black uppercase tracking-[0.16em] sm:flex-none"
+                            disabled={action.disabled}
+                            onClick={action.onClick}
+                          >
+                            <span className="material-symbols-outlined mr-2 text-[18px]">{action.icon}</span>
+                            {busy && action.busyLabel ? action.busyLabel : action.label}
+                          </Button>
                         )
-                    }}
-                  >
-                    <span className="material-symbols-outlined text-[18px] mr-2">verified</span>
-                    {busy ? "Triaging..." : card.testLabel}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
-                    disabled={busy || (!isCsv && !channel?.id)}
-                    onClick={() => {
-                       if (isCsv) { router.push("/dashboard/imports"); return; }
-                       if (channel?.id)
-                        runAction(card.type, "Catalog synchronization initialized", () =>
-                          syncSalesChannelProducts({ channelId: channel.id })
-                        )
-                    }}
-                  >
-                    <span className="material-symbols-outlined text-[18px] mr-2">sync_alt</span>
-                    {card.productsLabel}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
-                    disabled={busy || (!isCsv && !channel?.id)}
-                    onClick={() => {
-                       if (isCsv) { router.push("/dashboard/imports"); return; }
-                       if (channel?.id)
-                        runAction(card.type, "Invoice ingestion started", () =>
-                          syncSalesChannelOrders({ channelId: channel.id })
-                        )
-                    }}
-                  >
-                    <span className="material-symbols-outlined text-[18px] mr-2">inbox</span>
-                    {card.ordersLabel}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4"
-                    disabled={busy || (!isCsv && !channel?.id)}
-                    onClick={() => {
-                       if (isCsv) { router.push("/dashboard/imports"); return; }
-                       if (channel?.id)
-                        runAction(
-                          card.type,
-                          "Inventory push sequence active",
-                          () => pushSalesChannelInventory({ channelId: channel.id })
-                        )
-                    }}
-                  >
-                    <span className="material-symbols-outlined text-[18px] mr-2">upload</span>
-                    {card.inventoryLabel}
-                  </Button>
-
-                  <Button asChild variant="ghost" className="h-10 rounded-xl justify-start text-[10px] font-black uppercase tracking-widest px-4">
-                    <Link href={card.logsHref}>
-                      <span className="material-symbols-outlined text-[18px] mr-2">database</span>
-                      Node History
-                    </Link>
-                  </Button>
-                </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           );

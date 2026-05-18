@@ -18,14 +18,15 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     { label: "Branch Locations", href: "/settings/branches", icon: MapPin },
     { label: "Users & Teams", href: "/settings/users", icon: Users },
     { label: "Roles & Permissions", href: "/settings/roles", icon: ShieldCheck },
+    { label: "Security", href: "/settings/security", icon: ShieldCheck },
     { label: "Audit Logs", href: "/settings/audit-logs", icon: Receipt },
   ];
 
   return (
-    <div className="flex h-full w-full max-w-7xl mx-auto overflow-hidden">
+    <div className="mx-auto flex h-full w-full max-w-[1500px] overflow-hidden">
       {/* Settings Navigation Sidebar */}
-      <aside className="w-64 flex-shrink-0 border-r border-outline-variant/20 bg-surface-container backdrop-blur-md p-6 overflow-y-auto hidden md:block">
-        <h3 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-6">Workspace Settings</h3>
+      <aside className="hidden w-64 flex-shrink-0 overflow-y-auto border-r border-outline-variant/20 bg-surface-container px-6 py-8 backdrop-blur-md md:block">
+        <h3 className="mb-6 text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground">Workspace Settings</h3>
         <nav className="space-y-1.5">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
@@ -34,9 +35,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 key={item.href} 
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border",
+                  "flex items-center gap-3 rounded-xl border px-3 py-3 text-sm font-semibold transition-all duration-200",
                   isActive 
-                    ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_15px_rgba(124,58,237,0.1)]" 
+                    ? "border-primary/20 bg-primary/10 text-primary shadow-[0_0_15px_rgba(21,65,183,0.12)]" 
                     : "text-muted-foreground hover:text-on-surface hover:bg-surface-container-low border-transparent"
                 )}
               >
@@ -50,7 +51,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
       {/* Settings Content Pane */}
       <main className="flex-1 min-w-0 overflow-y-auto bg-surface-container-low">
-        <div className="p-4 md:p-8">
+        <div className="px-5 py-6 md:px-8 md:py-8 xl:px-10">
           {children}
         </div>
       </main>

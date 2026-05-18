@@ -18,14 +18,14 @@ export function PageShell({
   className,
 }: PageShellProps) {
   return (
-    <div className={cn("flex h-full flex-col overflow-auto p-8 pb-10", className)}>
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col space-y-8">
+    <div className={cn("flex h-full flex-col overflow-auto px-5 py-6 pb-10 md:px-8 md:py-8 xl:px-10", className)}>
+      <div className="wq-shell flex flex-1 flex-col space-y-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-on-surface font-headline-md">
+            <h1 className="wq-page-title">
               {title}
             </h1>
-            <p className="mt-2 text-sm font-medium text-on-surface-variant font-body-md">
+            <p className="wq-page-copy mt-2">
               {description}
             </p>
           </div>

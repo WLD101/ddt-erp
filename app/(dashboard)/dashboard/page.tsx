@@ -74,27 +74,27 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 flex-1 overflow-auto pb-10">
+    <div className="wq-shell flex flex-1 flex-col space-y-8 px-5 py-6 pb-10 md:px-8 xl:px-10">
       <Card className="overflow-hidden rounded-3xl border border-primary/15 bg-[linear-gradient(135deg,rgba(21,65,183,0.08),rgba(255,255,255,0.98)_42%,rgba(21,65,183,0.04))] shadow-soft">
-        <CardContent className="flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <CardContent className="flex flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-primary">
               <span className="material-symbols-outlined text-[16px]">smart_toy</span>
               Smart Assistant
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline-md sm:text-[2rem]">
+              <h2 className="wq-page-title xl:text-[2.2rem]">
                 Ask anything to your agent here
               </h2>
-              <p className="mt-1 max-w-3xl text-sm font-medium text-on-surface-variant font-body-md">
+              <p className="wq-page-copy mt-2 max-w-3xl">
                 Create customers, draft invoices, stock updates, and reports with a guided assistant that previews every action before it runs.
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <div className="flex shrink-0 flex-wrap items-center gap-3 lg:justify-end">
             <Link
               href="/dashboard/assistant"
-              className="inline-flex h-11 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-black tracking-wide text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90"
+              className="inline-flex h-11 min-w-[210px] items-center justify-center rounded-2xl bg-primary px-5 text-sm font-black tracking-wide text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90"
             >
               Open Smart Assistant
             </Link>

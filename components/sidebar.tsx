@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { PlanUsageWidget } from "./billing/PlanUsageWidget";
 import { getUnreadCount } from "@/modules/notifications/actions";
 import { WhatsNewTrigger } from "./dashboard/whats-new-panel";
@@ -22,24 +23,31 @@ export async function Sidebar({ lowStockCount = 0 }: { lowStockCount?: number })
   const isManufacturingOrganization = organization?.industryType === "manufacturing";
   
   return (
-    <aside className="fixed left-0 top-0 h-full z-40 w-[260px] border-r bg-white border-outline-variant/30 shadow-soft flex flex-col justify-between hidden md:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-full w-[260px] flex-col justify-between border-r border-outline-variant/30 bg-white shadow-soft md:flex">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="px-8 py-10">
+        <div className="px-7 py-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center text-white font-black text-2xl tracking-tighter">
-              W
+            <div className="flex h-14 w-14 items-center justify-center rounded-[20px] border border-primary/10 bg-[linear-gradient(180deg,rgba(21,65,183,0.12),rgba(21,65,183,0.03))] shadow-lg shadow-primary/10">
+              <Image
+                src="/logo3.png"
+                alt="WhatsQuery logo"
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-2xl object-cover"
+                priority
+              />
             </div>
             <div>
-              <h1 className="text-on-surface font-black text-xl leading-none tracking-tight font-headline-sm">WhatsQuery</h1>
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1">ERP Platform</p>
+              <h1 className="font-headline-sm text-[1.7rem] font-black leading-none tracking-tight text-on-surface">WhatsQuery</h1>
+              <p className="mt-1 text-[10px] font-black uppercase tracking-[0.28em] text-primary">ERP Platform</p>
             </div>
           </div>
         </div>
-        <div className="px-4 mt-6">
+        <div className="mt-4 px-4">
           <CommandPalette />
         </div>
 
-        <nav className="px-4 space-y-1 mt-6">
+        <nav className="mt-6 space-y-1 px-4">
           <SidebarActiveLink href="/dashboard" icon="dashboard" label="Dashboard" />
           <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">Entities</div>
           <SidebarActiveLink href="/dashboard/customers" icon="groups" label="Customers" />

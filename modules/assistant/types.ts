@@ -19,6 +19,7 @@ export const assistantEntitySchema = z.enum([
 ]);
 
 export const assistantActionSchema = z.enum(["create", "update", "fetch", "generate"]);
+export const assistantLanguageSchema = z.enum(["en", "ur", "roman-ur"]).default("en");
 
 export const assistantOptionSchema = z.object({
   id: z.string(),
@@ -36,6 +37,7 @@ export const assistantCommandSchema = z.object({
   intent: assistantIntentSchema,
   entity: assistantEntitySchema,
   action: assistantActionSchema,
+  language: assistantLanguageSchema,
   operation: z.string(),
   data: z.record(z.string(), z.any()),
   confidence: z.number().min(0).max(1),

@@ -10,6 +10,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getOrganizationAccessState } from "@/lib/billing/access";
+import { getSessionSecurityState, resolveIdleTimeoutForRole } from "@/modules/security/service";
+import { SecuritySessionGuard } from "@/components/security/SecuritySessionGuard";
 
 export default async function DashboardLayout({
   children,
@@ -64,6 +66,21 @@ export default async function DashboardLayout({
     }
   }
 
+  const securityState = await getSessionSecurityState({
+    userId: ctx.userId,
+    organizationId: ctx.organizationId,
+  }).catch(() => null);
+
+  if (
+    session.user.mfaEnrollmentRequired &&
+    pathname !== "/settings/security" &&
+    !pathname.startsWith("/settings/security")
+  ) {
+    redirect("/settings/security?required=1");
+  }
+
+  const idleTimeoutMinutes = resolveIdleTimeoutForRole(securityState?.policy ?? null, ctx.role);
+
   let lowStockItems: Awaited<ReturnType<typeof getLowStockItems>> = [];
 
   let isDemoWorkspace = false;
@@ -92,7 +109,7 @@ export default async function DashboardLayout({
     <PlanProvider>
       <div className="flex min-h-screen w-full bg-surface-container-lowest overflow-hidden">
         <Sidebar lowStockCount={lowStockItems.length} />
-        <div className="flex flex-col flex-1 min-w-0 md:pl-[260px]">
+        <div className="flex min-w-0 flex-1 flex-col md:pl-[276px]">
           
           {isDemoWorkspace ? (
             <div className="w-full bg-primary-container/20 border-b border-outline-variant px-6 py-2.5 flex items-center justify-center gap-3 backdrop-blur-md z-50">
@@ -149,6 +166,7 @@ export default async function DashboardLayout({
           ) : null}
 
           <Navbar />
+          <SecuritySessionGuard idleTimeoutMinutes={idleTimeoutMinutes} />
           <main className="flex-1 overflow-auto bg-surface-container-low/20">
             {children}
           </main>
