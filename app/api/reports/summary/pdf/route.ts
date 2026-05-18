@@ -8,6 +8,7 @@ import {
 import { getTenantStore } from "@/lib/db/client";
 import { canUseFeature } from "@/lib/billing/enforcement";
 import * as reportsService from "@/modules/reports/service";
+import { AnalyticCategory, trackEvent } from "@/modules/analytics/service";
 import { generateReportSummaryPDF } from "@/lib/pdf/report-summary-generator";
 import { sanitizeFilenamePart } from "@/lib/pdf/document-utils";
 
@@ -98,6 +99,19 @@ export async function GET(request: Request) {
     const fromLabel = sanitizeFilenamePart(fromDate || "Last-30-Days", "Range");
     const toLabel = sanitizeFilenamePart(toDate || "Today", "Today");
     const fileName = `Report-Summary-${orgName}-${fromLabel}-to-${toLabel}.pdf`;
+
+    void trackEvent({
+      name: "REPORT_SUMMARY_PDF_GENERATED",
+      category: AnalyticCategory.BILLING,
+      userId: ctx.userId,
+      organizationId: ctx.organizationId,
+      properties: {
+        branchId: ctx.branchId,
+        interval,
+        fromDate: fromDate || null,
+        toDate: toDate || null,
+      },
+    });
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,

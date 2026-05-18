@@ -161,6 +161,18 @@ export default async function CommandCenterPage() {
                 Demo leads
               </Button>
             </Link>
+            <Link href="/wq-command-center/security">
+              <Button variant="outline" className="h-10 rounded-2xl border-outline-variant/40 px-4 text-[11px] font-black uppercase tracking-[0.2em]">
+                <span className="material-symbols-outlined text-[18px]">shield_lock</span>
+                Security
+              </Button>
+            </Link>
+            <Link href="/wq-command-center/system-health">
+              <Button variant="outline" className="h-10 rounded-2xl border-outline-variant/40 px-4 text-[11px] font-black uppercase tracking-[0.2em]">
+                <span className="material-symbols-outlined text-[18px]">monitor_heart</span>
+                System Health
+              </Button>
+            </Link>
           </div>
         </section>
 

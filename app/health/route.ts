@@ -1,33 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
+import { captureOperationalError } from "@/lib/monitoring/error-tracker";
 
 export async function GET() {
-  const status: Record<string, any> = {
-    uptime: process.uptime(),
+  const status = {
+    ok: false,
     timestamp: Date.now(),
-    services: {
-      database: "down",
-      redis: "down",
-    },
   };
+
+  let databaseUp = false;
+  let redisUp = false;
 
   try {
     await prisma.$queryRaw`SELECT 1`;
-    status.services.database = "up";
+    databaseUp = true;
   } catch (e) {
-    status.services.database = "down";
     console.error("[health] database check failed", e);
+    void captureOperationalError("health.database", e);
   }
 
   try {
     const ping = await redis.ping();
-    status.services.redis = ping === "PONG" ? "up" : "down";
+    redisUp = ping === "PONG";
   } catch (e) {
-    status.services.redis = "down";
+    void captureOperationalError("health.redis", e);
   }
 
-  const isUp = status.services.database === "up" && status.services.redis === "up";
+  const isUp = databaseUp && redisUp;
+  status.ok = isUp;
 
   return NextResponse.json(status, { status: isUp ? 200 : 503 });
 }

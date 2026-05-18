@@ -4,13 +4,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress";
 import { getSubscriptionContext } from "@/lib/billing/enforcement";
 import { PLAN_ORDER, PLANS, formatPlanLimit, normalizePlanId } from "@/lib/billing/plans";
+import { getTenantUsageAnalytics } from "@/lib/monitoring/tenant-usage";
 import { getAvailableStripeBillingCycles } from "@/lib/billing/stripe";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { cn } from "@/lib/utils";
 
 export default async function BillingSettingsPage() {
   const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
   const subCtx = await getSubscriptionContext(ctx.organizationId);
+  const tenantUsage = await getTenantUsageAnalytics(ctx.organizationId);
   const {
     plan,
     status,
@@ -48,6 +51,28 @@ export default async function BillingSettingsPage() {
     { name: "Monthly purchases", current: usage.monthlyPurchases, limit: plan.limits.maxMonthlyPurchases, icon: "shopping_bag" },
     { name: "Exports today", current: usage.exportsToday, limit: plan.limits.maxDailyExports, icon: "ios_share" },
     { name: "Assistant this month", current: usage.assistantActionsThisMonth, limit: plan.limits.maxMonthlyAssistantActions, icon: "auto_awesome" },
+  ];
+
+  const activityStats = [
+    { name: "Customers", value: tenantUsage.counts.customers, icon: "contacts" },
+    { name: "Suppliers", value: tenantUsage.counts.suppliers, icon: "local_shipping" },
+    { name: "Products", value: tenantUsage.counts.products, icon: "inventory_2" },
+    { name: "Users", value: tenantUsage.counts.users, icon: "group" },
+    { name: "Branches", value: tenantUsage.counts.branches, icon: "location_on" },
+    { name: "Invoices this month", value: tenantUsage.monthlyActivity.invoicesThisMonth, icon: "receipt_long" },
+    { name: "Purchases this month", value: tenantUsage.monthlyActivity.purchasesThisMonth, icon: "shopping_bag" },
+    { name: "Exports this month", value: tenantUsage.monthlyActivity.exportsThisMonth, icon: "ios_share" },
+    { name: "Reports this month", value: tenantUsage.monthlyActivity.reportActionsThisMonth, icon: "analytics" },
+    { name: "Assistant actions", value: tenantUsage.monthlyActivity.assistantActionsThisMonth, icon: "smart_toy" },
+  ];
+
+  const usageSignalStats = [
+    { label: "Products", current: usage.products, limit: plan.limits.maxProducts },
+    { label: "Customers", current: usage.customers, limit: plan.limits.maxCustomers },
+    { label: "Users", current: usage.users, limit: plan.limits.maxUsers },
+    { label: "Branches", current: usage.branches, limit: plan.limits.maxBranches },
+    { label: "Invoices / month", current: usage.monthlyInvoices, limit: plan.limits.maxMonthlyInvoices },
+    { label: "Assistant / month", current: usage.assistantActionsThisMonth, limit: plan.limits.maxMonthlyAssistantActions },
   ];
 
   return (
@@ -276,6 +301,82 @@ export default async function BillingSettingsPage() {
                   {plan.limits.maxStorageGb ? `${plan.limits.maxStorageGb} GB cap` : "Dedicated review"}
                 </span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-10 xl:grid-cols-[1.2fr,0.8fr]">
+        <Card className="rounded-3xl border-outline-variant/30 bg-surface shadow-soft">
+          <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-6">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">
+              Tenant Activity Analytics
+            </CardTitle>
+            <CardDescription className="mt-1 text-xs font-medium text-on-surface-variant">
+              Workspace-only operational usage. Platform health remains restricted to the command center.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 pt-8 sm:grid-cols-2 xl:grid-cols-3">
+            {activityStats.map((stat) => (
+              <div
+                key={stat.name}
+                className="rounded-2xl border border-outline-variant/20 bg-surface-container-low px-4 py-4 shadow-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-primary">{stat.icon}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                    {stat.name}
+                  </span>
+                </div>
+                <p className="mt-4 text-3xl font-black tracking-tight text-on-surface">{stat.value.toLocaleString()}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-outline-variant/30 bg-surface shadow-soft">
+          <CardHeader className="border-b border-outline-variant/10 bg-surface-container-lowest pb-6">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">
+              Upgrade Signals
+            </CardTitle>
+            <CardDescription className="mt-1 text-xs font-medium text-on-surface-variant">
+              Early-warning telemetry for tenant admins before hard plan blocks apply.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5 pt-8">
+            {usageSignalStats.map((stat) => {
+              const percent = Math.min(100, Math.round((stat.current / stat.limit) * 100));
+              const toneClassName =
+                percent >= 100 ? "text-error" : percent >= 80 ? "text-amber-600" : "text-emerald-600";
+
+              return (
+                <div key={stat.label} className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                      {stat.label}
+                    </span>
+                    <span className={cn("text-[11px] font-black uppercase tracking-widest", toneClassName)}>
+                      {percent}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={percent}
+                    className="h-2 bg-surface-container-low"
+                    indicatorClassName={cn("bg-emerald-600", percent >= 80 && "bg-amber-500", percent >= 100 && "bg-error")}
+                  />
+                  <div className="flex items-center justify-between text-[11px] font-medium text-on-surface-variant">
+                    <span>{stat.current.toLocaleString()} used</span>
+                    <span>{formatPlanLimit(stat.limit)} available</span>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <p className="text-[11px] font-black uppercase tracking-widest text-primary">Usage policy</p>
+              <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">
+                At 80% usage, your team should plan an upgrade. At 100%, protected creation and execution flows will block with an upgrade prompt.
+              </p>
             </div>
           </CardContent>
         </Card>

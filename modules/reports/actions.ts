@@ -9,6 +9,7 @@ import { getTenantStore } from "@/lib/db/client";
 import * as service from "./service";
 
 import { canUseFeature } from "@/lib/billing/enforcement";
+import { AnalyticCategory, trackEvent } from "@/modules/analytics/service";
 
 type ReportInterval = "day" | "week" | "month";
 
@@ -198,6 +199,20 @@ export async function loadReportsWorkspaceAction(
           )
         : Promise.resolve([]),
     ]);
+
+    void trackEvent({
+      name: "REPORT_WORKSPACE_LOADED",
+      category: AnalyticCategory.BILLING,
+      userId: ctx.userId,
+      organizationId: ctx.organizationId,
+      properties: {
+        branchId: ctx.branchId,
+        fromDate: fromDate || null,
+        toDate: toDate || null,
+        interval,
+        advanced: canViewAdvancedTrends,
+      },
+    });
 
     return {
       success: true,
