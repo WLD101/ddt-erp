@@ -29,7 +29,7 @@ export async function Sidebar({ lowStockCount = 0 }: { lowStockCount?: number })
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-[20px] border border-primary/10 bg-[linear-gradient(180deg,rgba(21,65,183,0.12),rgba(21,65,183,0.03))] shadow-lg shadow-primary/10">
               <Image
-                src="/logo3.png"
+                src="/logo-mark.png"
                 alt="WhatsQuery logo"
                 width={44}
                 height={44}
