@@ -27,13 +27,13 @@ export async function Sidebar({ lowStockCount = 0 }: { lowStockCount?: number })
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-7 py-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-[20px] border border-primary/10 bg-[linear-gradient(180deg,rgba(21,65,183,0.12),rgba(21,65,183,0.03))] shadow-lg shadow-primary/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[24px] border border-primary/15 bg-[linear-gradient(180deg,rgba(21,65,183,0.16),rgba(21,65,183,0.04))] shadow-[0_18px_36px_-22px_rgba(21,65,183,0.6)] ring-1 ring-primary/10">
               <Image
-                src="/logo-mark.png"
+                src="/logo-emblem.png"
                 alt="WhatsQuery logo"
-                width={44}
-                height={44}
-                className="h-11 w-11 rounded-2xl object-cover"
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-[20px] object-contain drop-shadow-[0_8px_22px_rgba(21,65,183,0.25)]"
                 priority
               />
             </div>

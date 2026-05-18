@@ -27,7 +27,7 @@ export function BrandLogo({ hideText = false, size = "md", dark = false, classNa
         )}
       >
         <Image
-          src="/logo-mark.png"
+          src="/logo-emblem.png"
           alt="WhatsQuery Logo"
           width={160}
           height={160}

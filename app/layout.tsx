@@ -8,18 +8,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
   icons: {
     icon: [
-      { url: "/favicon.ico?v=2" },
-      { url: "/favicon.png?v=2", type: "image/png" },
-      { url: "/logo-mark.png?v=2", type: "image/png" },
+      { url: "/favicon.ico?v=4" },
+      { url: "/favicon.png?v=4", type: "image/png" },
+      { url: "/logo-emblem.png?v=4", type: "image/png" },
     ],
-    shortcut: ["/favicon.ico?v=2"],
-    apple: [{ url: "/logo-mark.png?v=2" }],
+    shortcut: ["/favicon.ico?v=4"],
+    apple: [{ url: "/logo-emblem.png?v=4" }],
   },
   openGraph: {
     title: "WhatsQuery",
     description:
       "An AI-ready ERP for growing businesses to manage sales, inventory, purchases, expenses, reports, and connected commerce from one workspace.",
-    images: [{ url: "/logo-mark.png", width: 512, height: 512 }],
+    images: [{ url: "/logo-emblem.png", width: 512, height: 512 }],
   },
 };
 
