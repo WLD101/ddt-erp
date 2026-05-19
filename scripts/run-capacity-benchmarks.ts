@@ -116,17 +116,17 @@ async function main() {
       await Promise.all([
         prisma.salesInvoice.aggregate({
           where: { organizationId: organization.id },
-          _sum: { total: true },
+          _sum: { totalAmount: true },
           _count: { _all: true },
         }),
         prisma.purchaseInvoice.aggregate({
           where: { organizationId: organization.id },
-          _sum: { total: true },
+          _sum: { totalAmount: true },
           _count: { _all: true },
         }),
         prisma.salesInvoice.findMany({
           where: { organizationId: organization.id },
-          select: { id: true, invoiceNumber: true, total: true, createdAt: true },
+          select: { id: true, invoiceNumber: true, totalAmount: true, createdAt: true },
           orderBy: { createdAt: "desc" },
           take: Math.min(actualRows, 1000),
         }),
