@@ -7,6 +7,7 @@ function resolveLogPath(envKey: string, fallbackName: string) {
 export const MONITORING_PATHS = {
   slowQueryLog: resolveLogPath("MONITORING_SLOW_QUERY_LOG_PATH", "slow-queries.jsonl"),
   errorLog: resolveLogPath("MONITORING_ERROR_LOG_PATH", "app-errors.jsonl"),
+  benchmarkResults: resolveLogPath("MONITORING_BENCHMARK_RESULTS_PATH", "capacity-benchmarks.json"),
   backupHealth: process.env.MONITORING_BACKUP_HEALTH_PATH || path.join(process.cwd(), "runtime-logs", "backup-health.json"),
   nginxAccessLog:
     process.env.MONITORING_NGINX_ACCESS_LOG_PATH ||
