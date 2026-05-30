@@ -39,6 +39,12 @@ const TENANT_MODELS = [
   "AccountTransfer",
   "AuditLog",
   "Notification",
+  "VoiceBusinessProfile",
+  "VoiceReceptionistSettings",
+  "VoiceLead",
+  "VoiceCallLog",
+  "VoiceKnowledgeBaseItem",
+  "VoiceIntegrationSettings",
 ];
 
 /**

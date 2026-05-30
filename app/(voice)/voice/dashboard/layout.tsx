@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { VoiceDashboardShell } from "@/components/voice/voice-dashboard-shell";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
+import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 
 const navItems = [
   {
@@ -48,6 +49,9 @@ export default async function VoiceDashboardLayout({
   if (!session?.user?.id) {
     redirect(toVoiceExternalPath("/login", host));
   }
+
+  const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
 
   return (
     <VoiceDashboardShell

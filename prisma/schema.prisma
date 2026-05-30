@@ -8,8 +8,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -38,15 +38,21 @@ model User {
   notifications Notification[]
   importJobs    ImportJob[]
 
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
-  deletedAt        DateTime?
-  Partner          Partner?
-  assignedLeads    Lead[]                @relation("LeadAssignee")
-  EmailLog         EmailLog[]
-  assignedPackages OrganizationPackage[] @relation("PackageAssigner")
-  approvedExports  ExportRequest[]       @relation("ExportApprover")
-  requestedExports ExportRequest[]       @relation("ExportRequester")
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  deletedAt               DateTime?
+  Partner                 Partner?
+  assignedLeads           Lead[]                       @relation("LeadAssignee")
+  EmailLog                EmailLog[]
+  assignedPackages        OrganizationPackage[]        @relation("PackageAssigner")
+  approvedExports         ExportRequest[]              @relation("ExportApprover")
+  requestedExports        ExportRequest[]              @relation("ExportRequester")
+  securityProfile         UserSecurityProfile?
+  recoveryCodes           RecoveryCode[]
+  trustedDevices          TrustedDevice[]
+  authChallenges          AuthChallenge[]
+  securityEvents          SecurityEvent[]
+  updatedSecurityPolicies OrganizationSecurityPolicy[] @relation("SecurityPolicyUpdater")
 }
 
 model Account {
@@ -201,8 +207,8 @@ model Organization {
   dyeingBatches    DyeingBatch[]
   stitchingBatches StitchingBatch[]
 
-  machines       Machine[]
-  qualityChecks  QualityCheck[]
+  machines      Machine[]
+  qualityChecks QualityCheck[]
 
   posRegisters    POSRegister[]
   posSales        POSSale[]
@@ -210,16 +216,26 @@ model Organization {
   customerLoyalty CustomerLoyalty[]
 
   // Growth & Partnerships
-  referralId          String?               @unique
-  referral            Referral?             @relation(fields: [referralId], references: [id])
-  Invitation          Invitation[]
-  AccountTransfer     AccountTransfer[]
-  SalesReturn         SalesReturn[]
-  PurchaseReturn      PurchaseReturn[]
-  organizationPackage OrganizationPackage?
-  exportRequests      ExportRequest[]
-  importJobs          ImportJob[]
-  SalesChannelSyncLog SalesChannelSyncLog[]
+  referralId                String?                     @unique
+  referral                  Referral?                   @relation(fields: [referralId], references: [id])
+  Invitation                Invitation[]
+  AccountTransfer           AccountTransfer[]
+  SalesReturn               SalesReturn[]
+  PurchaseReturn            PurchaseReturn[]
+  organizationPackage       OrganizationPackage?
+  exportRequests            ExportRequest[]
+  securityPolicy            OrganizationSecurityPolicy?
+  securityEvents            SecurityEvent[]
+  trustedDevices            TrustedDevice[]
+  authChallenges            AuthChallenge[]
+  importJobs                ImportJob[]
+  SalesChannelSyncLog       SalesChannelSyncLog[]
+  voiceBusinessProfile      VoiceBusinessProfile?
+  voiceReceptionistSettings VoiceReceptionistSettings?
+  voiceLeads                VoiceLead[]
+  voiceCallLogs             VoiceCallLog[]
+  voiceKnowledgeBaseItems   VoiceKnowledgeBaseItem[]
+  voiceIntegrationSettings  VoiceIntegrationSettings?
 }
 
 model OrganizationUser {
@@ -300,30 +316,137 @@ model Subscription {
   organizationId String       @unique
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  planId                String
-  status                String
-  paymentStatus         String   @default("payment_pending")
-  accessStatus          String   @default("payment_pending")
-  billingCycle          String   @default("MONTHLY")
-  billingSource         String?
-  manualPaymentMethod   String?
-  manualPaymentReference String?
-  adminNotes            String?
-  stripeCustomerId      String?
-  stripeSubscriptionId  String?
-  stripePriceId         String?
+  planId                  String
+  status                  String
+  paymentStatus           String    @default("payment_pending")
+  accessStatus            String    @default("payment_pending")
+  billingCycle            String    @default("MONTHLY")
+  billingSource           String?
+  manualPaymentMethod     String?
+  manualPaymentReference  String?
+  adminNotes              String?
+  stripeCustomerId        String?
+  stripeSubscriptionId    String?
+  stripePriceId           String?
   stripeCheckoutSessionId String?
-  cancelAtPeriodEnd     Boolean  @default(false)
-  currentPeriodStart    DateTime
-  currentPeriodEnd      DateTime
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  Package               Package?  @relation(fields: [packageId], references: [id])
-  packageId             String?
-  activatedAt           DateTime?
-  blockedAt             DateTime?
-  expiredAt             DateTime?
-  graceEndsAt           DateTime?
+  cancelAtPeriodEnd       Boolean   @default(false)
+  currentPeriodStart      DateTime
+  currentPeriodEnd        DateTime
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  Package                 Package?  @relation(fields: [packageId], references: [id])
+  packageId               String?
+  activatedAt             DateTime?
+  blockedAt               DateTime?
+  expiredAt               DateTime?
+  graceEndsAt             DateTime?
+}
+
+model UserSecurityProfile {
+  id                         String    @id @default(cuid())
+  userId                     String    @unique
+  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totpEnabled                Boolean   @default(false)
+  totpSecretEncrypted        String?
+  pendingTotpSecretEncrypted String?
+  recoveryCodeVersion        Int       @default(0)
+  sessionVersion             Int       @default(1)
+  lastRecoveryGeneratedAt    DateTime?
+  passkeyEnabled             Boolean   @default(false)
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+}
+
+model RecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model TrustedDevice {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tokenHash      String        @unique
+  label          String?
+  userAgent      String?
+  ipAddress      String?
+  lastUsedAt     DateTime?
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@index([userId, expiresAt])
+  @@index([organizationId])
+}
+
+model AuthChallenge {
+  id                   String        @id @default(cuid())
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId       String?
+  organization         Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tokenHash            String        @unique
+  purpose              String
+  redirectTo           String?
+  trustDeviceRequested Boolean       @default(false)
+  verifiedAt           DateTime?
+  completedAt          DateTime?
+  expiresAt            DateTime
+  createdAt            DateTime      @default(now())
+
+  @@index([userId, purpose, expiresAt])
+  @@index([organizationId])
+}
+
+model OrganizationSecurityPolicy {
+  id                             String       @id @default(cuid())
+  organizationId                 String       @unique
+  organization                   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requireTwoFactorForAllUsers    Boolean      @default(false)
+  requireTwoFactorForPrivileged  Boolean      @default(true)
+  enforcePasskeysForAdmins       Boolean      @default(false)
+  restrictConcurrentSessions     Boolean      @default(false)
+  maxActiveDevices               Int?
+  idleTimeoutMinutes             Int          @default(480)
+  absoluteSessionLifetimeMinutes Int?
+  staffIdleTimeoutMinutes        Int?
+  managerIdleTimeoutMinutes      Int?
+  accountantIdleTimeoutMinutes   Int?
+  adminIdleTimeoutMinutes        Int?
+  superAdminIdleTimeoutMinutes   Int?
+  forcePasswordReset             Boolean      @default(false)
+  emergencyLockEnabled           Boolean      @default(false)
+  updatedById                    String?
+  updatedBy                      User?        @relation("SecurityPolicyUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt                      DateTime     @default(now())
+  updatedAt                      DateTime     @updatedAt
+}
+
+model SecurityEvent {
+  id             String        @id @default(cuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           String
+  status         String        @default("info")
+  ipAddress      String?
+  userAgent      String?
+  details        String?
+  metadataJson   String?
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([type, createdAt(sort: Desc)])
 }
 
 model StripeWebhookEvent {
@@ -340,6 +463,110 @@ model StripeWebhookEvent {
   @@index([processedAt])
 }
 
+model VoiceBusinessProfile {
+  id                    String       @id @default(cuid())
+  organizationId        String       @unique
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessName          String
+  industry              String?
+  website               String?
+  businessPhone         String?
+  preferredLanguage     String       @default("AUTO_DETECT")
+  openingHours          String?
+  mainGoal              String
+  fallbackContactMethod String?
+  greetingMessage       String?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+model VoiceReceptionistSettings {
+  id                 String       @id @default(cuid())
+  organizationId     String       @unique
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  receptionistName   String       @default("WhatsQuery Receptionist")
+  greetingMessage    String?
+  fallbackMessage    String?
+  languageMode       String       @default("AUTO_DETECT")
+  businessHours      String?
+  afterHoursBehavior String       @default("TAKE_MESSAGE")
+  leadCaptureFields  String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+model VoiceLead {
+  id                   String       @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                 String?
+  phone                String?
+  email                String?
+  reasonForCall        String?
+  status               String       @default("NEW")
+  notes                String?
+  source               String       @default("MANUAL")
+  appointmentRequested Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@unique([id, organizationId])
+  @@index([organizationId, createdAt(sort: Desc)])
+}
+
+model VoiceCallLog {
+  id                    String       @id @default(cuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  callerNumber          String
+  callStatus            String
+  callDirection         String
+  summary               String?
+  transcriptPlaceholder String?
+  durationSeconds       Int?
+  appointmentRequested  Boolean      @default(false)
+  isMissed              Boolean      @default(false)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@unique([id, organizationId])
+  @@index([organizationId, createdAt(sort: Desc)])
+}
+
+model VoiceKnowledgeBaseItem {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  question       String
+  answer         String
+  category       String?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([id, organizationId])
+  @@index([organizationId, createdAt(sort: Desc)])
+}
+
+model VoiceIntegrationSettings {
+  id                     String       @id @default(cuid())
+  organizationId         String       @unique
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vapiStatus             String       @default("NOT_CONNECTED")
+  twilioStatus           String       @default("NOT_CONNECTED")
+  googleCalendarStatus   String       @default("NOT_CONNECTED")
+  whatsappFollowUpStatus String       @default("NOT_CONNECTED")
+  providerConfigNotes    String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
 // -----------------------------------------------------------------------------
 // Core ERP Domain Models
 // -----------------------------------------------------------------------------
@@ -353,7 +580,7 @@ model Customer {
   email   String?
   phone   String?
   address String?
-  status  String       @default("ACTIVE")
+  status  String  @default("ACTIVE")
 
   salesInvoices SalesInvoice[]
   payments      Payment[]
@@ -430,12 +657,12 @@ model Product {
   bomItems           BOMItem[]
   workOrderMaterials WorkOrderMaterial[]
 
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  deletedAt          DateTime?
-  SalesReturnItem    SalesReturnItem[]
-  PurchaseReturnItem PurchaseReturnItem[]
-  QuotationItem      QuotationItem[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  SalesReturnItem     SalesReturnItem[]
+  PurchaseReturnItem  PurchaseReturnItem[]
+  QuotationItem       QuotationItem[]
   externalProductMaps ExternalProductMap[]
 
   @@unique([id, organizationId])
@@ -1242,34 +1469,34 @@ model ExportRequest {
 }
 
 model OrganizationPackage {
-  id                String       @id @default(cuid())
-  organizationId    String       @unique
-  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  packageId         String
-  package           Package      @relation(fields: [packageId], references: [id])
-  assignedById      String?
-  assignedBy        User?        @relation("PackageAssigner", fields: [assignedById], references: [id])
-  customUserLimit   Int?
-  customBranchLimit Int?
-  customPackageName String?
-  customPrice       Float?
+  id                 String       @id @default(cuid())
+  organizationId     String       @unique
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  packageId          String
+  package            Package      @relation(fields: [packageId], references: [id])
+  assignedById       String?
+  assignedBy         User?        @relation("PackageAssigner", fields: [assignedById], references: [id])
+  customUserLimit    Int?
+  customBranchLimit  Int?
+  customPackageName  String?
+  customPrice        Float?
   customBillingCycle String?
-  customExpiryDate  DateTime?
-  isCustomPackage   Boolean      @default(false)
-  customFeatureJson String?
-  assignedAt        DateTime     @default(now())
+  customExpiryDate   DateTime?
+  isCustomPackage    Boolean      @default(false)
+  customFeatureJson  String?
+  assignedAt         DateTime     @default(now())
 }
 
 model Package {
-  id            String                @id @default(cuid())
-  name          String
-  businessSize  String?
-  userLimit     Int                   @default(1)
-  featureJson   String                @default("{}")
-  isCustom      Boolean               @default(false)
-  isActive      Boolean               @default(true)
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  businessSize String?
+  userLimit    Int      @default(1)
+  featureJson  String   @default("{}")
+  isCustom     Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   subscriptions Subscription[]
   assignments   OrganizationPackage[]

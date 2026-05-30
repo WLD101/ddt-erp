@@ -84,6 +84,7 @@ VOICE_TWILIO_WEBHOOK_SECRET=
 
 VOICE_CALENDAR_PROVIDER=
 VOICE_CRM_WEBHOOK_URL=
+VOICE_WHATSAPP_FOLLOW_UP_WEBHOOK_URL=
 ```
 
 Do not set fake secrets. Leave unused integrations blank.
