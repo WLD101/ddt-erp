@@ -42,6 +42,21 @@ export default async function VoiceIntegrationsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-[28px] border border-amber-400/30 bg-amber-500/10 p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-black uppercase tracking-[0.28em] text-amber-200">Production warning</div>
+            <h2 className="mt-2 text-2xl font-black text-white">Calling is not live yet</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">
+              Vapi, Twilio, Google Calendar, and WhatsApp follow-up remain placeholder configurations in this phase. The dashboard can store readiness status, but no real phone calls, webhook ingestion, booking sync, or follow-up automation is active yet.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3 text-sm font-semibold text-slate-200">
+            Status: foundation only
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 text-sm leading-7 text-slate-300">
         These are config placeholders only. This phase checks environment readiness and stores integration status separately from the ERP. It does not make live provider calls yet.
       </div>

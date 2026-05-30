@@ -47,7 +47,9 @@ export default async function VoiceDashboardLayout({
   const host = await getVoiceRequestHost();
 
   if (!session?.user?.id) {
-    redirect(toVoiceExternalPath("/login", host));
+    const loginHref = toVoiceExternalPath("/login", host);
+    const dashboardHref = toVoiceExternalPath("/dashboard", host);
+    redirect(`${loginHref}?callbackUrl=${encodeURIComponent(dashboardHref)}`);
   }
 
   const ctx = await getCurrentTenantContext();

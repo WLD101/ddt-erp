@@ -5,15 +5,34 @@ import { auth } from "@/lib/auth";
 import { VoiceMarketingShell } from "@/components/voice/voice-marketing-shell";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 
-export default async function VoiceLoginPage() {
+type SearchParams = Promise<{
+  callbackUrl?: string;
+}>;
+
+function getSafeVoiceCallback(path: string | undefined, fallback: string) {
+  if (!path) return fallback;
+  if (!path.startsWith("/")) return fallback;
+  if (path.startsWith("//") || path.includes("\\") || path.includes("\n") || path.includes("\r")) {
+    return fallback;
+  }
+  return path;
+}
+
+export default async function VoiceLoginPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const session = await auth();
   const host = await getVoiceRequestHost();
   const homeHref = toVoiceExternalPath("/", host);
   const onboardingHref = toVoiceExternalPath("/onboarding", host);
   const dashboardHref = toVoiceExternalPath("/dashboard", host);
+  const params = await searchParams;
+  const callbackUrl = getSafeVoiceCallback(params.callbackUrl, dashboardHref);
 
   if (session?.user?.id) {
-    redirect(dashboardHref);
+    redirect(callbackUrl);
   }
 
   return (
@@ -28,7 +47,7 @@ export default async function VoiceLoginPage() {
 
           <div className="mt-8 grid gap-4 rounded-3xl border border-white/10 bg-slate-950/35 p-5">
             <Link
-              href={`/auth/signin?callbackUrl=${encodeURIComponent(dashboardHref)}`}
+              href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
               className="rounded-2xl bg-cyan-400 px-5 py-3 text-center text-sm font-black text-slate-950 shadow-[0_16px_32px_rgba(34,211,238,0.35)] transition hover:bg-cyan-300"
             >
               Continue with WhatsQuery sign-in

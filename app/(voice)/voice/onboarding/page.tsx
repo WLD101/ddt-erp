@@ -15,7 +15,7 @@ export default async function VoiceOnboardingPage() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect(loginHref);
+    redirect(`${loginHref}?callbackUrl=${encodeURIComponent(toVoiceExternalPath("/onboarding", host))}`);
   }
 
   const ctx = await getCurrentTenantContext();
