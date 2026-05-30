@@ -6,10 +6,13 @@ import {
   stripSensitiveSearchParams,
   isSuperAdmin,
 } from "@/lib/security/access";
+import { isVoiceHost, toVoiceInternalPath } from "@/lib/voice/routing";
 
 export default async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const voiceHost = isVoiceHost(host);
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
@@ -19,6 +22,7 @@ export default async function proxy(req: NextRequest) {
   const userEmail = typeof token?.email === "string" ? token.email : undefined;
   const organizationId =
     typeof token?.organizationId === "string" ? token.organizationId : undefined;
+  const forceSignOut = token?.forceSignOut === true;
 
   const preserveSensitiveAuthParams =
     pathname.startsWith("/auth/verify-otp") ||
@@ -40,14 +44,39 @@ export default async function proxy(req: NextRequest) {
 
   const isPublicRoute =
     pathname === "/" ||
+    pathname === "/voice" ||
     pathname === "/book-demo" ||
     pathname === "/pricing" ||
     pathname === "/contact" ||
     pathname === "/about" ||
     pathname === "/features" ||
     pathname === "/partners" ||
+    pathname === "/voice/login" ||
+    pathname === "/voice/onboarding" ||
     pathname.startsWith("/auth/verify") ||
     pathname.startsWith("/industries");
+
+  if (
+    voiceHost &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/auth") &&
+    !pathname.startsWith("/_next") &&
+    pathname !== "/favicon.ico" &&
+    !pathname.includes(".")
+  ) {
+    const rewriteUrl = nextUrl.clone();
+    rewriteUrl.pathname = toVoiceInternalPath(pathname);
+
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-pathname", rewriteUrl.pathname);
+    requestHeaders.set("x-whatsquery-surface", "voice");
+
+    return NextResponse.rewrite(rewriteUrl, {
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
 
   if (isApiRoute) {
     return NextResponse.next();
@@ -63,6 +92,9 @@ export default async function proxy(req: NextRequest) {
 
   if (isAuthRoute) {
     if (isLoggedIn) {
+      if (forceSignOut && pathname !== "/auth/force-signout") {
+        return NextResponse.redirect(new URL("/auth/force-signout", nextUrl));
+      }
       if (isSuperAdmin(userEmail)) {
         return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
       }
@@ -78,6 +110,10 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(
       new URL(getUnauthenticatedRedirect(pathname, nextUrl.search), nextUrl)
     );
+  }
+
+  if (forceSignOut && pathname !== "/auth/force-signout") {
+    return NextResponse.redirect(new URL("/auth/force-signout", nextUrl));
   }
 
   if (isLoggedIn && !isSuperAdmin(userEmail) && !organizationId && !pathname.startsWith("/onboarding") && !isPublicRoute) {
