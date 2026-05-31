@@ -64,12 +64,18 @@ export default async function proxy(req: NextRequest) {
     pathname !== "/favicon.ico" &&
     !pathname.includes(".")
   ) {
-    const rewriteUrl = nextUrl.clone();
-    rewriteUrl.pathname = toVoiceInternalPath(pathname);
-
+    const rewritePath = toVoiceInternalPath(pathname);
     const requestHeaders = new Headers(req.headers);
-    requestHeaders.set("x-pathname", rewriteUrl.pathname);
+    requestHeaders.set("x-pathname", rewritePath);
     requestHeaders.set("x-whatsquery-surface", "voice");
+
+    const rewriteUrl = new URL(rewritePath, req.url);
+    // Force http for internal rewrite to prevent Next.js from trying to fetch https://localhost:3000
+    if (rewriteUrl.hostname === 'localhost' || rewriteUrl.hostname === '127.0.0.1' || req.headers.get("x-forwarded-proto") === "https") {
+      rewriteUrl.protocol = 'http:';
+      rewriteUrl.hostname = '127.0.0.1';
+      rewriteUrl.port = '3000';
+    }
 
     return NextResponse.rewrite(rewriteUrl, {
       request: {
