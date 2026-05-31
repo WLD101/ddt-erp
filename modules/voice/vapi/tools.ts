@@ -129,7 +129,7 @@ async function getFallbackContact(organizationId: string) {
   });
 
   return {
-    fallbackContact: profile?.fallbackContactMethod || profile?.businessPhone || profile?.email || "No fallback contact available."
+    fallbackContact: profile?.fallbackContactMethod || profile?.businessPhone || "No fallback contact available."
   };
 }
 
