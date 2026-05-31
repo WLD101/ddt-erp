@@ -71,6 +71,6 @@ export const updateSalesInvoiceStatus = createServerAction({
     getDetails: (input) => `Status transition to ${input.status}`,
   },
   handler: async ({ input, context }) => {
-    return service.updateSalesInvoiceStatus(context.db, input.id, input.status);
+    return service.updateSalesInvoiceStatus(context.db, context.branchId, input.id, input.status);
   },
 });

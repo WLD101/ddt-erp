@@ -9,11 +9,12 @@ import Link from "next/link";
 import { getCurrentTenantContext, TenantForbiddenError } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 
-export default async function PrintInvoicePage({ params }: { params: { id: string } }) {
+export default async function PrintInvoicePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const ctx = await getCurrentTenantContext();
 
   const invoice = await prisma.salesInvoice.findUnique({
-    where: { id_organizationId: { id: params.id, organizationId: ctx.organizationId } },
+    where: { id_organizationId: { id: resolvedParams.id, organizationId: ctx.organizationId } },
     include: {
       customer: true,
       items: {

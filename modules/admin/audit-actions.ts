@@ -5,7 +5,6 @@ import {
   TenantForbiddenError,
   getCurrentTenantContext,
   requirePermission,
-  requireRole,
 } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 import { canUseFeature } from "@/lib/billing/enforcement";
@@ -19,14 +18,13 @@ const AUDIT_LOGS_FORBIDDEN_MESSAGE =
 
 /**
  * FETCH PAGINATED AUDIT LOGS
- * Strictly restricted to owner/admin and subscription feature gate.
+ * Restricted by audit permission and subscription feature gate.
  */
 export async function getAuditLogs(options: service.AuditLogFilterOptions = {}) {
   let ctx;
   try {
     ctx = await getCurrentTenantContext();
     requirePermission(ctx, "audit.view");
-    requireRole(ctx, "owner", "admin");
   } catch (error) {
     if (error instanceof TenantForbiddenError) {
       return {
@@ -89,7 +87,6 @@ export async function getAuditLogMetadata() {
   try {
     ctx = await getCurrentTenantContext();
     requirePermission(ctx, "audit.view");
-    requireRole(ctx, "owner", "admin");
   } catch (error) {
     if (error instanceof TenantForbiddenError) {
       return {

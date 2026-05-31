@@ -50,6 +50,12 @@ export async function getOrganizationAccessState(orgId: string): Promise<{
       });
       return { status: "expired", redirectTo: "/settings/billing" };
     }
+    
+    // Even demo users need to pick a starting plan preference if unassigned
+    if (organization.subscription?.planId === "unassigned") {
+      return { status: organization.accessStatus as OrganizationAccessStatus, redirectTo: "/onboarding/packages" };
+    }
+
     return { status: organization.accessStatus as OrganizationAccessStatus };
   }
 

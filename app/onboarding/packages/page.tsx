@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { inferPlanIdFromPackage } from "@/lib/billing/catalog";
 import { getAvailableStripeBillingCycles } from "@/lib/billing/stripe";
+import { prisma } from "@/lib/prisma";
 import { getActivePackages } from "@/modules/packages/actions";
 
 import { PackageSelectionClient } from "./PackageSelectionClient";
@@ -12,6 +13,26 @@ export const dynamic = "force-dynamic";
 export default async function PackageSelectionPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin?callbackUrl=/onboarding/packages");
+
+  const userWithOrg = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: {
+      memberships: {
+        take: 1,
+        include: {
+          organization: {
+            select: {
+              isDemoTenant: true,
+              lifecycleStatus: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const org = userWithOrg?.memberships?.[0]?.organization;
+  const isDemoOrTrial = org?.isDemoTenant === true || ["demo", "trial"].includes(org?.lifecycleStatus || "");
 
   const packages = (await getActivePackages()).map((pkg) => ({
     id: pkg.id,
@@ -34,10 +55,12 @@ export default async function PackageSelectionPage() {
           Choose how this ERP goes live
         </h1>
         <p className="max-w-2xl text-slate-400">
-          Standard plans continue into secure Stripe checkout. Enterprise requests stay pending until a platform admin assigns a custom package.
+          {isDemoOrTrial 
+            ? "Choose your preferred starting plan to unlock onboarding. You will not be charged during the trial."
+            : "Standard plans continue into secure Stripe checkout. Enterprise requests stay pending until a platform admin assigns a custom package."}
         </p>
       </section>
-      <PackageSelectionClient packages={packages} />
+      <PackageSelectionClient packages={packages} isDemoOrTrial={isDemoOrTrial} />
     </div>
   );
 }

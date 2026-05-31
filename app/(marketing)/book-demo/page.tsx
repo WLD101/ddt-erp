@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
 export default function BookDemoPage() {
-  redirect("/auth/signup");
+  redirect("/auth/signup?mode=demo");
 }
 

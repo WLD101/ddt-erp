@@ -49,13 +49,13 @@ export default async function MarketingHomePage() {
 
           {/* Call to Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 reveal stagger-3">
-            <Link href="/auth/signup">
+            <Link href="/auth/signup?mode=trial">
               <Button size="lg" className="h-14 px-10 text-base font-bold rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_25px_rgba(99,102,241,0.4)] border-t border-indigo-400/30 transition-all transform hover:scale-[1.03] active:scale-95 group">
                 Get Started Free
                 <Rocket className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link href="/auth/signup">
+            <Link href="/auth/signup?mode=demo">
               <Button variant="ghost" size="lg" className="h-14 px-10 text-base font-bold rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white backdrop-blur-md transition-all">
                 Book Platform Demo
               </Button>
@@ -120,7 +120,7 @@ export default async function MarketingHomePage() {
         <div className="max-w-5xl mx-auto glass-card p-12 md:p-20 rounded-[40px] text-center relative border border-indigo-500/20">
           <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">Ready to simplify?</h2>
           <p className="text-xl text-indigo-200 mb-12 max-w-xl mx-auto">Join hundreds of high-volume merchants using WhatsQuery to run reliable ops.</p>
-          <Link href="/auth/signup">
+          <Link href="/auth/signup?mode=paid">
             <Button size="lg" className="h-16 px-12 text-lg font-bold rounded-full bg-white hover:bg-slate-100 text-slate-900 transition-all shadow-[0_20px_50px_rgba(255,255,255,0.15)] active:scale-95">
               Launch Workspace Now
             </Button>

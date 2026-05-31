@@ -29,6 +29,10 @@ type VoiceCallLogsManagerProps = {
     callDirection: string;
     summary: string | null;
     transcriptPlaceholder: string | null;
+    transcript: string | null;
+    recordingUrl: string | null;
+    endedReason: string | null;
+    providerCallId: string | null;
     durationSeconds: number | null;
     appointmentRequested: boolean;
     createdAt: string;
@@ -164,7 +168,7 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
               <table className="min-w-full divide-y divide-white/10 text-sm">
                 <thead className="bg-slate-950/45 text-slate-300">
                   <tr>
-                    {["Caller", "Status", "Direction", "Summary", "Transcript", "Duration", "Created"].map((heading) => (
+                    {["Caller", "Status", "Provider ID", "Reason", "Summary", "Transcript", "Duration", "Created"].map((heading) => (
                       <th key={heading} className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.22em]">
                         {heading}
                       </th>
@@ -176,9 +180,17 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
                     <tr key={log.id}>
                       <td className="px-4 py-3">{log.callerNumber}</td>
                       <td className="px-4 py-3">{log.callStatus}</td>
-                      <td className="px-4 py-3">{log.callDirection}</td>
+                      <td className="px-4 py-3">{log.providerCallId || "—"}</td>
+                      <td className="px-4 py-3">{log.endedReason || "—"}</td>
                       <td className="px-4 py-3">{log.summary || "—"}</td>
-                      <td className="px-4 py-3">{log.transcriptPlaceholder || "Pending live telephony"}</td>
+                      <td className="px-4 py-3 max-w-xs truncate" title={log.transcript || log.transcriptPlaceholder || "Pending"}>
+                        {log.transcript || log.transcriptPlaceholder || "Pending live telephony"}
+                        {log.recordingUrl && (
+                          <a href={log.recordingUrl} target="_blank" rel="noreferrer" className="block text-cyan-400 mt-1 hover:underline">
+                            Recording 🎵
+                          </a>
+                        )}
+                      </td>
                       <td className="px-4 py-3">{typeof log.durationSeconds === "number" ? `${log.durationSeconds}s` : "—"}</td>
                       <td className="px-4 py-3">{new Date(log.createdAt).toLocaleString()}</td>
                     </tr>

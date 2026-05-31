@@ -7,20 +7,66 @@ import { AuditLogFilters, type FilterValues } from "@/modules/admin/components/a
 import { AuditLogTable } from "@/modules/admin/components/audit-log-table";
 import { getAuditLogs } from "@/modules/admin/audit-actions";
 
+import { AuditExportDialog, type AuditExportRequest } from "./AuditExportDialog";
+
 type AuditLogsClientProps = {
   featureEnabled: boolean;
+  canExportAudit: boolean;
+  canUseDeveloperFormats: boolean;
 };
 
 const SAFE_LOAD_MESSAGE =
-  "We couldn’t load audit logs right now. Please refresh the page or contact your workspace administrator if the issue continues.";
+  "We couldnâ€™t load audit logs right now. Please refresh the page or contact your workspace administrator if the issue continues.";
 
-export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
+function buildExportDates(request: AuditExportRequest) {
+  if (request.preset === "custom") {
+    return {
+      startDate: request.startDate || undefined,
+      endDate: request.endDate || undefined,
+    };
+  }
+
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
+
+  if (request.preset === "today") {
+    return { startDate: today, endDate: today };
+  }
+
+  if (request.preset === "last7") {
+    const start = new Date(now);
+    start.setDate(now.getDate() - 6);
+    return { startDate: start.toISOString().split("T")[0], endDate: today };
+  }
+
+  if (request.preset === "last30") {
+    const start = new Date(now);
+    start.setDate(now.getDate() - 29);
+    return { startDate: start.toISOString().split("T")[0], endDate: today };
+  }
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  return { startDate: startOfMonth.toISOString().split("T")[0], endDate: today };
+}
+
+function getDownloadFilename(response: Response, fallback: string) {
+  const disposition = response.headers.get("content-disposition");
+  const matched = disposition?.match(/filename="([^"]+)"/i);
+  return matched?.[1] || fallback;
+}
+
+export function AuditLogsClient({
+  featureEnabled,
+  canExportAudit,
+  canUseDeveloperFormats,
+}: AuditLogsClientProps) {
   const [logs, setLogs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(featureEnabled);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({
     search: "",
@@ -76,7 +122,7 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
     setPage(1);
   };
 
-  const handleExport = async () => {
+  const handleExport = async (request: AuditExportRequest) => {
     setIsExporting(true);
     try {
       const params = new URLSearchParams();
@@ -84,6 +130,13 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
       if (filters.userId) params.set("userId", filters.userId);
       if (filters.entityType) params.set("entityType", filters.entityType);
       if (filters.action) params.set("action", filters.action);
+      params.set("format", request.format);
+      params.set("category", request.category);
+      params.set("reason", request.reason.trim());
+
+      const { startDate, endDate } = buildExportDates(request);
+      if (startDate) params.set("startDate", startDate);
+      if (endDate) params.set("endDate", endDate);
 
       const response = await fetch(`/api/export/audit-logs?${params.toString()}`, {
         method: "GET",
@@ -100,13 +153,17 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `audit-log-${new Date().toISOString().split("T")[0]}.csv`;
+      link.download = getDownloadFilename(
+        response,
+        `audit-log-${new Date().toISOString().split("T")[0]}.${request.format}`,
+      );
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
+      setIsExportDialogOpen(false);
       toast.success(logs.length === 0 ? "Empty audit export downloaded." : "Audit export downloaded.");
     } catch (error) {
       console.error("[audit-logs] export failed", error);
@@ -145,7 +202,12 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
         </div>
       ) : (
         <>
-          <AuditLogFilters onFilterChange={handleFilterChange} onExport={handleExport} isExporting={isExporting} />
+          <AuditLogFilters
+            onFilterChange={handleFilterChange}
+            onExport={() => setIsExportDialogOpen(true)}
+            isExporting={isExporting}
+            canExport={canExportAudit}
+          />
 
           {errorMessage ? (
             <div className="rounded-3xl border border-amber-500/20 bg-amber-500/8 p-8">
@@ -172,6 +234,14 @@ export function AuditLogsClient({ featureEnabled }: AuditLogsClientProps) {
           )}
         </>
       )}
+
+      <AuditExportDialog
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        onConfirm={handleExport}
+        isExporting={isExporting}
+        canUseDeveloperFormats={canUseDeveloperFormats}
+      />
 
       <div className="mt-10 flex gap-4 rounded-3xl border border-primary/10 bg-primary/5 p-6 text-xs font-medium text-on-surface-variant">
         <span className="material-symbols-outlined shrink-0 text-[20px] text-primary">info</span>

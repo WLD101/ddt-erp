@@ -7,6 +7,11 @@ import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 
 const navItems = [
   {
+    label: "Command Center",
+    href: "/dashboard/command-center",
+    description: "Master operations, Vapi system status, and receptionist readiness.",
+  },
+  {
     label: "Dashboard",
     href: "/dashboard",
     description: "Business profile, launch readiness, and live status once telephony is connected.",

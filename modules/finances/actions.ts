@@ -2,7 +2,7 @@
 
 import { createServerAction } from "@/lib/actions/builder";
 import * as service from "./service";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, requirePermission, requireRole } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 
 /**
@@ -11,7 +11,8 @@ import { getTenantStore } from "@/lib/db/client";
 export const createAccountAction = createServerAction({
   label: "CreateAccount",
   schema: service.accountSchema,
-  permissions: ["finances.view"], // Using finances.view base for now, can be narrowed
+  roles: ["owner", "admin"],
+  permissions: ["payments.manage"],
   revalidatePaths: ["/finances/accounts"],
   audit: {
     action: "create",
@@ -30,6 +31,8 @@ export const createAccountAction = createServerAction({
 export const executeTransferAction = createServerAction({
   label: "ExecuteTransfer",
   schema: service.transferSchema,
+  roles: ["owner", "admin"],
+  permissions: ["payments.manage"],
   revalidatePaths: ["/finances/accounts"],
   audit: {
     action: "create",
@@ -47,24 +50,29 @@ export const executeTransferAction = createServerAction({
  */
 export async function getAccounts() {
   const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "finances.view");
   const db = getTenantStore(ctx);
   return service.getAccounts(db);
 }
 
 export async function getAccountById(id: string) {
   const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "finances.view");
   const db = getTenantStore(ctx);
   return service.getAccountById(db, id);
 }
 
 export async function getAccountLedger(id: string) {
   const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "finances.view");
   const db = getTenantStore(ctx);
   return service.getAccountLedger(db, id);
 }
 
 export async function getUnifiedLedger() {
   const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
+  requirePermission(ctx, "finances.view");
   const db = getTenantStore(ctx);
   return service.getUnifiedLedger(db);
 }

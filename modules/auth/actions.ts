@@ -7,8 +7,18 @@ import { revalidatePath } from "next/cache";
 import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 import { requestOtp, verifyOtp } from "@/modules/otp/service";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
-import { sanitizeRedirectPath } from "@/lib/security/access";
+import { getPostSignInRedirect, sanitizeRedirectPath } from "@/lib/security/access";
 import { isProductionEnv } from "@/lib/security/env";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
+import {
+  createSignInChallenge,
+  logSecurityEvent,
+  shouldRequireTwoFactor,
+  TRUSTED_DEVICE_COOKIE,
+  updateTrustedDeviceUsage,
+} from "@/modules/security/service";
 
 /**
  * SIGN UP / ORG BOOTSTRAP
@@ -87,7 +97,7 @@ export async function verifyPaidSignupOtpAction(data: unknown) {
  * SIGN IN
  */
 export async function signInAction(_prevState: unknown, formData: FormData) {
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
   const password = formData.get("password") as string;
   const callbackUrl = sanitizeRedirectPath(formData.get("callbackUrl") as string, "/dashboard");
 
@@ -99,11 +109,119 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
     return { error: "Email and password are required." };
   }
 
+  const limit = await checkRateLimit(rateLimitKey("login", email), {
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!limit.allowed) {
+    return { error: "Too many sign-in attempts. Please try again later." };
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { email },
+    include: {
+      memberships: {
+        include: { role: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+  });
+
+  if (!user?.password) {
+    await logSecurityEvent({
+      userId: user?.id || null,
+      organizationId: user?.memberships[0]?.organizationId || null,
+      type: "auth.login.failed",
+      status: "warning",
+      details: `Failed sign-in attempt for ${email}`,
+      metadata: { reason: "invalid_credentials" },
+    }).catch(() => null);
+    return { error: "Invalid credentials." };
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    await logSecurityEvent({
+      userId: user.id,
+      organizationId: user.memberships[0]?.organizationId || null,
+      type: "auth.login.failed",
+      status: "warning",
+      details: `Failed sign-in attempt for ${email}`,
+      metadata: { reason: "invalid_credentials" },
+    }).catch(() => null);
+    return { error: "Invalid credentials." };
+  }
+
+  const primaryMembership = user.memberships[0];
+  const redirectTo = getPostSignInRedirect({
+    email: user.email,
+    callbackUrl,
+    organizationId: primaryMembership?.organizationId,
+  });
+
+  let twoFactorRequirement:
+    | Awaited<ReturnType<typeof shouldRequireTwoFactor>>
+    | null = null;
+
+  if (primaryMembership) {
+    twoFactorRequirement = await shouldRequireTwoFactor({
+      userId: user.id,
+      organizationId: primaryMembership.organizationId,
+      role: primaryMembership.role.name,
+    });
+
+    if (twoFactorRequirement.policy?.forcePasswordReset) {
+      return { error: "Your workspace requires a password reset before you can continue. Use the forgot password flow to set a new password." };
+    }
+
+    if (twoFactorRequirement.policy?.emergencyLockEnabled) {
+      await logSecurityEvent({
+        userId: user.id,
+        organizationId: primaryMembership.organizationId,
+        type: "auth.login.blocked",
+        status: "critical",
+        details: "Login blocked by tenant emergency account lock.",
+      }).catch(() => null);
+      return { error: "This workspace is temporarily locked by a security administrator." };
+    }
+
+    if (twoFactorRequirement.required && twoFactorRequirement.enrolled) {
+      const cookieStore = await cookies();
+      const trustedToken = cookieStore.get(TRUSTED_DEVICE_COOKIE)?.value;
+      const trustedDevice = trustedToken
+        ? await updateTrustedDeviceUsage(user.id, trustedToken).catch(() => null)
+        : null;
+
+      if (!trustedDevice) {
+        const challenge = await createSignInChallenge({
+          userId: user.id,
+          organizationId: primaryMembership.organizationId,
+          redirectTo,
+          trustDeviceRequested: true,
+        });
+        await logSecurityEvent({
+          userId: user.id,
+          organizationId: primaryMembership.organizationId,
+          type: "auth.login.challenge_issued",
+          status: "info",
+          details: "Two-factor verification challenge issued during sign-in.",
+        }).catch(() => null);
+        return {
+          requiresTwoFactor: true,
+          next: `/auth/verify-2fa?token=${encodeURIComponent(challenge.token)}`,
+        };
+      }
+    }
+  }
+
   try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirectTo: callbackUrl,
+      await signIn("credentials", {
+        email,
+        password,
+      redirectTo:
+        twoFactorRequirement?.required && !twoFactorRequirement.enrolled
+          ? "/settings/security?required=1"
+          : redirectTo,
     });
   } catch (error: any) {
     if (error instanceof AuthError) {

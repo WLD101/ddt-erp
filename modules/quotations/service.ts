@@ -35,7 +35,7 @@ export async function getQuotations(db: ScopedPrisma, branchId: string) {
  * SERVICE: FETCH QUOTATION BY ID
  */
 export async function getQuotationById(db: ScopedPrisma, branchId: string, id: string) {
-  return db.quotation.findUnique({
+  return db.quotation.findFirst({
     where: { id, branchId },
     include: { 
       customer: true, 
@@ -89,9 +89,18 @@ export async function createQuotation(db: ScopedPrisma, branchId: string, data: 
  */
 export async function updateQuotationStatus(
   db: ScopedPrisma, 
+  branchId: string,
   id: string, 
   status: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "CONVERTED"
 ) {
+  const existing = await db.quotation.findFirst({
+    where: { id, branchId },
+    select: { id: true },
+  });
+  if (!existing) {
+    throw new Error("Quotation not found.");
+  }
+
   return db.quotation.update({
     where: { id },
     data: { status },
@@ -105,7 +114,7 @@ export async function convertToInvoice(db: ScopedPrisma, branchId: string, quota
   const { createSalesInvoice } = await import("../sales/service");
   
   return db.$transaction(async (tx) => {
-    const quotation = await tx.quotation.findUnique({
+    const quotation = await tx.quotation.findFirst({
       where: { id: quotationId, branchId },
       include: { items: true },
     });
@@ -140,7 +149,15 @@ export async function convertToInvoice(db: ScopedPrisma, branchId: string, quota
 /**
  * SERVICE: DELETE QUOTATION
  */
-export async function deleteQuotation(db: ScopedPrisma, id: string) {
+export async function deleteQuotation(db: ScopedPrisma, branchId: string, id: string) {
+  const existing = await db.quotation.findFirst({
+    where: { id, branchId },
+    select: { id: true },
+  });
+  if (!existing) {
+    throw new Error("Quotation not found.");
+  }
+
   return db.quotation.delete({
     where: { id },
   });

@@ -210,13 +210,7 @@ export async function createStripeCheckoutSession(input: {
     throw new Error("Enterprise plans must be activated manually by a platform administrator.");
   }
 
-  const packageRecord = await preparePackageSelectionForCheckout(
-    input.organizationId,
-    input.planId,
-    input.billingCycle,
-  );
   const stripe = getStripe();
-  const priceId = getStripePriceId(input.planId, input.billingCycle);
   const existingSubscription = await prisma.subscription.findUnique({
     where: { organizationId: input.organizationId },
   });
@@ -228,6 +222,32 @@ export async function createStripeCheckoutSession(input: {
   ) {
     throw new Error("This workspace already has a Stripe subscription. Use the billing portal to manage plan changes.");
   }
+
+  if (
+    existingSubscription?.billingSource === "stripe" &&
+    existingSubscription.status === "payment_pending" &&
+    existingSubscription.stripeCheckoutSessionId
+  ) {
+    const existingSession = await stripe.checkout.sessions.retrieve(existingSubscription.stripeCheckoutSessionId);
+    if (existingSession.status === "open" && existingSession.url) {
+      return existingSession;
+    }
+  }
+
+  const org = await prisma.organization.findUnique({
+    where: { id: input.organizationId },
+    select: { isDemoTenant: true },
+  });
+
+  if (org?.isDemoTenant) {
+    throw new Error("Trial or Demo tenants cannot use direct self-serve checkout. Please contact support or select standard trial.");
+  }
+
+  const packageRecord = await getActivePackageRecordForPlanId(input.planId);
+  if (!packageRecord) {
+    throw new Error(`Package for ${input.planId} is not available.`);
+  }
+  const priceId = getStripePriceId(input.planId, input.billingCycle);
 
   const customerId = existingSubscription?.stripeCustomerId
     ? existingSubscription.stripeCustomerId
@@ -271,6 +291,12 @@ export async function createStripeCheckoutSession(input: {
       },
     },
   });
+
+  await preparePackageSelectionForCheckout(
+    input.organizationId,
+    input.planId,
+    input.billingCycle,
+  );
 
   await prisma.subscription.update({
     where: { organizationId: input.organizationId },
@@ -452,13 +478,38 @@ export async function handleStripeInvoiceFailed(invoice: Stripe.Invoice) {
 }
 
 export async function recordStripeWebhookEvent(event: Stripe.Event, organizationId?: string | null) {
+  const payload = JSON.stringify({ created: event.created });
+  const existing = await prisma.stripeWebhookEvent.findUnique({
+    where: { eventId: event.id },
+    select: { id: true, status: true, organizationId: true },
+  });
+
+  if (existing) {
+    if (existing.status === "processed" || existing.status === "processing") {
+      return false;
+    }
+
+    await prisma.stripeWebhookEvent.update({
+      where: { eventId: event.id },
+      data: {
+        type: event.type,
+        organizationId: organizationId || existing.organizationId || null,
+        status: "processing",
+        payload,
+        processedAt: new Date(),
+      },
+    });
+    return true;
+  }
+
   try {
     await prisma.stripeWebhookEvent.create({
       data: {
         eventId: event.id,
         type: event.type,
         organizationId: organizationId || null,
-        payload: JSON.stringify({ created: event.created }),
+        status: "processing",
+        payload,
       },
     });
     return true;
@@ -468,4 +519,17 @@ export async function recordStripeWebhookEvent(event: Stripe.Event, organization
     }
     throw error;
   }
+}
+
+export async function markStripeWebhookEventStatus(
+  eventId: string,
+  status: "processed" | "failed",
+) {
+  await prisma.stripeWebhookEvent.updateMany({
+    where: { eventId },
+    data: {
+      status,
+      processedAt: new Date(),
+    },
+  });
 }

@@ -27,7 +27,7 @@ export async function getPurchaseInvoices(db: ScopedPrisma, branchId: string) {
 }
 
 export async function getPurchaseInvoiceById(db: ScopedPrisma, branchId: string, id: string) {
-  return db.purchaseInvoice.findUnique({
+  return db.purchaseInvoice.findFirst({
     where: { id, branchId },
     include: { 
       supplier: true, 

@@ -14,6 +14,10 @@ declare module "next-auth" {
       organizationId?: string;
       /** True for platform operators configured through SUPER_ADMIN_EMAILS */
       isSuperAdmin?: boolean;
+      role?: string;
+      forceSignOut?: boolean;
+      mfaEnrollmentRequired?: boolean;
+      twoFactorEnabled?: boolean;
       // Standard fields
       name?: string | null;
       email?: string | null;
@@ -27,6 +31,7 @@ declare module "next-auth" {
     id: string;
     organizationId?: string;
     isSuperAdmin?: boolean;
+    role?: string;
   }
 }
 
@@ -35,5 +40,12 @@ declare module "next-auth/jwt" {
     sub?: string;
     /** Cached primary organizationId — set once at login, stored in the JWT */
     organizationId?: string;
+    role?: string;
+    isSuperAdmin?: boolean;
+    forceSignOut?: boolean;
+    mfaEnrollmentRequired?: boolean;
+    twoFactorEnabled?: boolean;
+    securitySessionVersion?: number;
+    securityPolicyUpdatedAt?: number | null;
   }
 }

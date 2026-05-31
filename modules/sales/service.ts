@@ -29,7 +29,7 @@ export async function getSalesInvoices(db: ScopedPrisma, branchId: string) {
 }
 
 export async function getSalesInvoiceById(db: ScopedPrisma, branchId: string, id: string) {
-  return db.salesInvoice.findUnique({
+  return db.salesInvoice.findFirst({
     where: { id, branchId },
     include: { 
       customer: true, 
@@ -194,9 +194,18 @@ export async function createSalesInvoice(db: ScopedPrisma, branchId: string, dat
 
 export async function updateSalesInvoiceStatus(
   db: ScopedPrisma, 
+  branchId: string,
   id: string, 
   status: "DRAFT" | "SENT" | "PAID" | "OVERDUE"
 ) {
+  const existing = await db.salesInvoice.findFirst({
+    where: { id, branchId },
+    select: { id: true },
+  });
+  if (!existing) {
+    throw new Error("Sales invoice not found.");
+  }
+
   return db.salesInvoice.update({
     where: { id },
     data: { status },

@@ -25,14 +25,13 @@ export async function trackEvent(data: {
     organizationId?: string | null;
     properties?: Record<string, any>;
 }) {
-    // Non-blocking fire-and-forget (handled by Vercel/Next.js after response)
-    // In production with high volume, this would go to a queue.
     void prisma.analyticsEvent.create({
         data: {
             name: data.name,
             category: data.category,
             userId: data.userId,
             organizationId: data.organizationId,
+            properties: data.properties ?? null,
         }
     }).catch(err => console.error("[Analytics Error] Failed to log event:", err));
 }

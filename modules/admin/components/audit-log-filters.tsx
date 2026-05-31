@@ -27,9 +27,10 @@ interface AuditLogFiltersProps {
   onFilterChange: (filters: FilterValues) => void;
   onExport: () => void;
   isExporting?: boolean;
+  canExport?: boolean;
 }
 
-export function AuditLogFilters({ onFilterChange, onExport, isExporting = false }: AuditLogFiltersProps) {
+export function AuditLogFilters({ onFilterChange, onExport, isExporting = false, canExport = false }: AuditLogFiltersProps) {
   const [metadata, setMetadata] = useState<{
     users: { id: string; name: string }[];
     entityTypes: string[];
@@ -113,15 +114,27 @@ export function AuditLogFilters({ onFilterChange, onExport, isExporting = false 
           />
         </div>
         <div className="flex gap-2">
-          <Button onClick={onExport} variant="outline" className="border-white/10 hover:bg-white/5" disabled={isExporting}>
+          <Button
+            onClick={onExport}
+            variant="outline"
+            className="border-white/10 hover:bg-white/5"
+            disabled={isExporting || !canExport}
+            title={!canExport ? "Only tenant admins or staff with audit export access can export these logs." : undefined}
+          >
             <Download className="w-4 h-4 mr-2" />
-            {isExporting ? "Exporting..." : "Export CSV"}
+            {isExporting ? "Exporting..." : "Export Audit"}
           </Button>
           <Button onClick={handleReset} variant="ghost" size="icon" className="hover:bg-white/5">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
       </div>
+
+      {!canExport ? (
+        <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
+          Only tenant admins or approved staff with audit export access can export these logs.
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Select

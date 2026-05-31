@@ -119,9 +119,10 @@ export async function bootstrapOrganization(data: SignUpInput) {
         subscription: {
           create: {
             planId: "unassigned",
-            status: isDemoOrTrial ? mode : "payment_pending",
-            paymentStatus: isDemoOrTrial ? "free" : "payment_pending",
+            status: isDemoOrTrial ? "trialing" : "payment_pending",
+            paymentStatus: isDemoOrTrial ? "demo" : "payment_pending",
             accessStatus: isDemoOrTrial ? "active" : "payment_pending",
+            billingSource: isDemoOrTrial ? "demo" : null,
             currentPeriodStart: now,
             currentPeriodEnd: isDemoOrTrial ? demoExpiresAt : now,
           }

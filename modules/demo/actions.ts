@@ -24,19 +24,26 @@ export async function createDemoAccount() {
       },
     });
 
-    // 2. Create Organization with 14-Day Free Trial
+    // 2. Create Organization with 7-Day Free Trial
     const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14);
+    trialEnd.setDate(trialEnd.getDate() + 7);
 
     const organization = await tx.organization.create({
       data: {
         name: "Acme Corp (Demo)",
         slug: `demo-org-${demoUuid}`,
         isDemoTenant: true,
+        lifecycleStatus: "demo",
+        accessStatus: "active",
+        activatedAt: new Date(),
+        demoExpiresAt: trialEnd,
         subscription: {
           create: {
             planId: "pro",
             status: "trialing",
+            paymentStatus: "demo",
+            accessStatus: "active",
+            billingSource: "demo",
             currentPeriodStart: new Date(),
             currentPeriodEnd: trialEnd,
           }

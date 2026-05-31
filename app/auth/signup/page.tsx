@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Mail, Lock, Building, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Building, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signUpAction } from "@/modules/auth/actions";
 import { PACKAGE_PROFILE_STORAGE_KEY, recommendPackage, type TeamSizeBand } from "@/lib/package-fit";
@@ -27,6 +27,7 @@ const signUpSchema = z.object({
   country: z.string().min(2, "Country is required"),
   referralCode: z.string().optional(),
   industry: z.string().optional(),
+  mode: z.enum(["demo", "trial", "paid"]).optional().default("trial"),
   teamSize: z.string().optional(),
   branchCount: z.preprocess((value) => {
     if (value === "" || value === null || value === undefined) {
@@ -46,6 +47,7 @@ function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { register, watch, handleSubmit, setValue, formState: { errors } } = useForm<SignUpFormValues, unknown, SignUpSubmitValues>({
     resolver: zodResolver(signUpSchema),
@@ -76,6 +78,13 @@ function SignUpForm() {
     const industryParam = searchParams.get("industry");
     if (industryParam) {
       setValue("industry", industryParam);
+    }
+
+    const modeParam = searchParams.get("mode") as any;
+    if (["demo", "trial", "paid"].includes(modeParam)) {
+      setValue("mode", modeParam);
+    } else {
+      setValue("mode", "trial");
     }
 
     const handleTurnstile = (e: any) => setTurnstileToken(e.detail);
@@ -291,12 +300,21 @@ function SignUpForm() {
               <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Create a strong password"
-                className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 hover:bg-white/10 rounded-xl transition-all"
+                className="h-11 rounded-xl border-white/10 bg-white/5 pl-11 pr-11 text-white placeholder:text-slate-600 transition-all hover:bg-white/10 focus:border-indigo-500/50 focus:ring-indigo-500/20"
                 {...register("password")}
                 disabled={isLoading}
               />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center text-slate-400 transition hover:text-white"
+                onClick={() => setShowPassword((value) => !value)}
+                disabled={isLoading}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
             {errors.password && (
               <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
@@ -306,6 +324,7 @@ function SignUpForm() {
           </div>
 
           <input type="hidden" {...register("industry")} />
+          <input type="hidden" {...register("mode")} />
 
           {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
             <div className="flex justify-center my-4">
@@ -357,6 +376,9 @@ function SignUpForm() {
             Sign in
           </Link>
         </p>
+        <Link href="/auth/forgot-password" className="text-xs font-bold text-slate-400 transition hover:text-indigo-300">
+          Forgot your password?
+        </Link>
       </CardFooter>
     </Card>
   );

@@ -14,6 +14,10 @@ import bcrypt from "bcryptjs";
 import { isPlatformAdminEmail } from "@/lib/security/access";
 import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 import { getAuthSecret, isProductionEnv } from "@/lib/security/env";
+import {
+  consumeVerifiedSignInChallenge,
+  getSessionSecurityState,
+} from "@/modules/security/service";
 
 const authSecret = getAuthSecret();
 const isProduction = isProductionEnv();
@@ -34,8 +38,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        challengeToken: { label: "Challenge Token", type: "text" },
       },
       async authorize(credentials) {
+        if (typeof credentials?.challengeToken === "string" && credentials.challengeToken.length > 0) {
+          const challengedUser = await consumeVerifiedSignInChallenge(credentials.challengeToken);
+          if (!challengedUser) {
+            devLog("Invalid or expired 2FA challenge token during authorize.");
+            return null;
+          }
+          return challengedUser;
+        }
+
         if (!credentials?.email || !credentials?.password) {
           devLog("Missing email or password during authorize.");
           return null;
@@ -95,18 +109,67 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = token.email as string | undefined;
         token.isSuperAdmin = isPlatformAdminEmail(email);
 
-        if (!token.organizationId) {
-          const membership = token.isSuperAdmin
+        let membership: { organizationId: string; role: { name: string } } | null = null;
+
+        if (!token.isSuperAdmin) {
+          membership = await prisma.organizationUser.findFirst({
+            where: { userId: token.sub },
+            select: { organizationId: true, role: { select: { name: true } } },
+            orderBy: { createdAt: "asc" },
+          });
+        }
+
+        if (membership?.organizationId) {
+          token.organizationId = membership.organizationId;
+          token.role = membership.role.name;
+        }
+
+        const securityState =
+          token.isSuperAdmin || !token.sub
             ? null
-            : await prisma.organizationUser.findFirst({
-                where: { userId: token.sub },
-                select: { organizationId: true },
-                orderBy: { createdAt: "asc" },
+            : await getSessionSecurityState({
+                userId: token.sub,
+                organizationId: membership?.organizationId ?? (typeof token.organizationId === "string" ? token.organizationId : null),
               });
 
-          if (membership) {
-            token.organizationId = membership.organizationId;
+        if (securityState) {
+          if (
+            typeof token.securitySessionVersion === "number" &&
+            token.securitySessionVersion !== securityState.sessionVersion
+          ) {
+            token.forceSignOut = true;
           }
+
+          if (
+            typeof token.securityPolicyUpdatedAt === "number" &&
+            securityState.policyUpdatedAt &&
+            token.securityPolicyUpdatedAt !== securityState.policyUpdatedAt
+          ) {
+            token.forceSignOut = true;
+          }
+
+          if (
+            securityState.policy?.absoluteSessionLifetimeMinutes &&
+            typeof token.iat === "number" &&
+            Date.now() >= token.iat * 1000 + securityState.policy.absoluteSessionLifetimeMinutes * 60 * 1000
+          ) {
+            token.forceSignOut = true;
+          }
+
+          if (securityState.emergencyLockEnabled) {
+            token.forceSignOut = true;
+          }
+
+          const role = membership?.role.name ?? (typeof token.role === "string" ? token.role : "");
+          const policyRequiresEnrollment =
+            !!securityState.policy?.requireTwoFactorForAllUsers ||
+            (["owner", "admin", "super_admin"].includes(role) &&
+              !!securityState.policy?.requireTwoFactorForPrivileged);
+
+          token.securitySessionVersion = securityState.sessionVersion;
+          token.securityPolicyUpdatedAt = securityState.policyUpdatedAt;
+          token.twoFactorEnabled = securityState.profile.totpEnabled;
+          token.mfaEnrollmentRequired = !securityState.profile.totpEnabled && policyRequiresEnrollment;
         }
       }
       return token;
@@ -121,6 +184,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (session.user) {
         session.user.isSuperAdmin = token.isSuperAdmin === true;
+        session.user.role = typeof token.role === "string" ? token.role : undefined;
+        session.user.forceSignOut = token.forceSignOut === true;
+        session.user.mfaEnrollmentRequired = token.mfaEnrollmentRequired === true;
+        session.user.twoFactorEnabled = token.twoFactorEnabled === true;
       }
       return session;
     },

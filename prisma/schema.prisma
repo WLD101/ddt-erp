@@ -527,11 +527,25 @@ model VoiceCallLog {
   callDirection         String
   summary               String?
   transcriptPlaceholder String?
-  durationSeconds       Int?
-  appointmentRequested  Boolean      @default(false)
-  isMissed              Boolean      @default(false)
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+
+  // Vapi integration fields
+  provider              String? // "vapi", "twilio", etc.
+  providerCallId        String?
+  providerPhoneNumberId String?
+  providerAssistantId   String?
+  endedReason           String?
+  transcript            String?
+  messagesJson          String?
+  rawEventJson          String?
+  recordingUrl          String?
+  startedAt             DateTime?
+  endedAt               DateTime?
+
+  durationSeconds      Int?
+  appointmentRequested Boolean  @default(false)
+  isMissed             Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])

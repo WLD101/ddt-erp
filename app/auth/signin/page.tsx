@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Mail, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
@@ -36,6 +36,7 @@ function SignInForm() {
   const searchParams = useSearchParams();
   const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl")) || "/dashboard";
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -53,6 +54,9 @@ function SignInForm() {
 
       if (result?.error) {
         toast.error(result.error);
+      } else if (result?.requiresTwoFactor && result.next) {
+        toast.success("Security verification required.");
+        window.location.assign(result.next);
       } else {
         toast.success("Welcome back!");
         window.location.assign(callbackUrl);
@@ -114,12 +118,21 @@ function SignInForm() {
               <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all hover:bg-white/10 rounded-xl"
+                className="h-12 rounded-xl border-white/10 bg-white/5 pl-11 pr-11 text-white placeholder:text-slate-600 transition-all hover:bg-white/10 focus:border-indigo-500/50 focus:ring-indigo-500/20"
                 {...register("password")}
                 disabled={isLoading}
               />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center text-slate-400 transition hover:text-white"
+                onClick={() => setShowPassword((value) => !value)}
+                disabled={isLoading}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
             {errors.password && (
               <p className="text-xs text-red-400 flex items-center mt-1 animate-in slide-in-from-left-2">
@@ -151,6 +164,9 @@ function SignInForm() {
             Create workspace
           </Link>
         </p>
+        <Link href="/auth/forgot-password" className="text-xs font-bold text-slate-400 transition hover:text-indigo-300">
+          Need to reset your password?
+        </Link>
       </CardFooter>
     </Card>
   );

@@ -4,7 +4,7 @@
 
 import { createServerAction } from "@/lib/actions/builder";
 import * as service from "./service";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, requirePermission } from "@/lib/tenant";
 import { getTenantStore } from "@/lib/db/client";
 
 /**
@@ -13,7 +13,7 @@ import { getTenantStore } from "@/lib/db/client";
 export const createQuotationAction = createServerAction({
   label: "CreateQuotation",
   schema: service.quotationSchema,
-  permissions: ["quotations.create"],
+  permissions: ["sales.create"],
   revalidatePaths: ["/sales/quotes"],
   audit: {
     action: "create",
@@ -32,7 +32,7 @@ export const createQuotationAction = createServerAction({
 export const updateQuotationStatusAction = createServerAction({
   label: "UpdateQuotationStatus",
   schema: service.quotationSchema.partial(), // Simplified for status only usually, but let's be explicit if needed
-  permissions: ["quotations.edit"],
+  permissions: ["sales.edit"],
   revalidatePaths: ["/sales/quotes"],
   handler: async ({ input, context }) => {
     // Note: This expects a specific status update logic, usually done via a specialized action
@@ -47,7 +47,7 @@ export const updateQuotationStatusAction = createServerAction({
 export const deleteQuotationAction = createServerAction({
   label: "DeleteQuotation",
   blockInDemoMode: true,
-  permissions: ["quotations.delete"],
+  permissions: ["sales.delete"],
   revalidatePaths: ["/sales/quotes"],
   audit: {
     action: "delete",
@@ -56,7 +56,7 @@ export const deleteQuotationAction = createServerAction({
   },
   handler: async ({ input, context }) => {
     // input is the ID here based on common builder usage for deletes
-    return service.deleteQuotation(context.db, input as string);
+    return service.deleteQuotation(context.db, context.ctx.branchId, input as string);
   },
 });
 
@@ -65,12 +65,14 @@ export const deleteQuotationAction = createServerAction({
  */
 export async function getQuotations() {
   const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "sales.view");
   const db = getTenantStore(ctx);
   return service.getQuotations(db, ctx.branchId);
 }
 
 export async function getQuotationById(id: string) {
   const ctx = await getCurrentTenantContext();
+  requirePermission(ctx, "sales.view");
   const db = getTenantStore(ctx);
   return service.getQuotationById(db, ctx.branchId, id);
 }

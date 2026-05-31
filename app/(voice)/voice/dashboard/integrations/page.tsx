@@ -1,12 +1,14 @@
 import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { getVoiceIntegrationsOverview } from "@/modules/voice/service";
+import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
+import Link from "next/link";
 
 const integrationCards = [
   {
     key: "vapi",
-    title: "Vapi",
-    description: "Future telephony + AI conversation provider",
-    envs: ["VOICE_VAPI_API_KEY", "VOICE_VAPI_ASSISTANT_ID", "VOICE_VAPI_PHONE_NUMBER_ID"],
+    title: "Vapi (AI Receptionist)",
+    description: "Manage your AI receptionist, webhook configuration, and prompts.",
+    envs: ["VAPI_PRIVATE_API_KEY", "VAPI_PUBLIC_KEY", "VAPI_WEBHOOK_SECRET", "VAPI_DEFAULT_ASSISTANT_ID", "VAPI_DEFAULT_PHONE_NUMBER_ID"],
   },
   {
     key: "twilio",
@@ -39,6 +41,8 @@ export default async function VoiceIntegrationsPage() {
     googleCalendar: settings?.googleCalendarStatus ?? "NOT_CONNECTED",
     whatsapp: settings?.whatsappFollowUpStatus ?? "NOT_CONNECTED",
   } as const;
+
+  const vapiStatus = getVapiEnvStatus();
 
   return (
     <div className="space-y-6">
@@ -93,6 +97,35 @@ export default async function VoiceIntegrationsPage() {
                   ))}
                 </div>
               </div>
+              
+              {card.key === "vapi" && (
+                <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Vapi Status</div>
+                    <Link href="/voice/dashboard/integrations/vapi" className="text-xs font-semibold text-cyan-400 hover:text-cyan-300">
+                      Manage Setup →
+                    </Link>
+                  </div>
+                  <ul className="space-y-2 text-sm text-slate-300">
+                    <li className="flex justify-between"><span>API Keys:</span> <span>{vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey ? "✅ Connected" : "❌ Missing"}</span></li>
+                    <li className="flex justify-between"><span>Assistant ID:</span> <span>{vapiStatus.hasDefaultAssistantId ? "✅ Configured" : "❌ Missing"}</span></li>
+                    <li className="flex justify-between"><span>Phone Num ID:</span> <span>{vapiStatus.hasDefaultPhoneNumberId ? "✅ Configured" : "❌ Missing"}</span></li>
+                    <li className="flex justify-between"><span>Webhook Secret:</span> <span>{vapiStatus.hasWebhookSecret ? "🔒 Secured" : "⚠️ None"}</span></li>
+                    <li className="flex justify-between"><span>Live Calling:</span> <span>{vapiStatus.callingEnabled ? "🔴 ENABLED" : "⚫ DISABLED"}</span></li>
+                  </ul>
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Webhook URL (Copy to Vapi)</div>
+                    <code className="block rounded bg-black/50 p-2 text-xs text-amber-200 break-all select-all">
+                      {vapiStatus.webhookUrl || "Configure VOICE_PUBLIC_APP_URL"}
+                    </code>
+                  </div>
+                  {!vapiStatus.callingEnabled && (
+                    <div className="mt-3 text-xs text-amber-400">
+                      ⚠️ Calling is currently disabled. Set VOICE_CALLING_ENABLED=true to allow live calls.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

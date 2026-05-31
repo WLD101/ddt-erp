@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
+import { buildAuditExportResponse, type AuditExportCategory, type AuditExportFormat } from "@/lib/audit-export";
 import { auth } from "@/lib/auth";
 import { canUseFeature } from "@/lib/billing/enforcement";
+import { writeAuditLog } from "@/lib/audit";
 import { getTenantStore } from "@/lib/db/client";
-import { generateCSVResponse } from "@/lib/export-utils";
 import * as auditService from "@/modules/admin/audit-service";
 import {
   getCurrentTenantContext,
   requirePermission,
-  requireRole,
   TenantForbiddenError,
   tenantForbiddenResponse,
 } from "@/lib/tenant";
@@ -20,6 +20,22 @@ function getSingleValue(value: string | null) {
   return value?.trim() ? value.trim() : undefined;
 }
 
+function isAuditExportFormat(value: string | undefined): value is AuditExportFormat {
+  return value === "pdf" || value === "xlsx" || value === "csv" || value === "json";
+}
+
+function isAuditExportCategory(value: string | undefined): value is AuditExportCategory {
+  return value === "all"
+    || value === "login_activity"
+    || value === "staff_actions"
+    || value === "customer_changes"
+    || value === "product_changes"
+    || value === "invoice_changes"
+    || value === "finance_changes"
+    || value === "export_download_activity"
+    || value === "assistant_actions";
+}
+
 export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -29,7 +45,7 @@ export async function GET(request: Request) {
   try {
     const ctx = await getCurrentTenantContext();
     requirePermission(ctx, "audit.view");
-    requireRole(ctx, "owner", "admin");
+    requirePermission(ctx, "audit.export");
 
     const allowed = await canUseFeature(ctx.organizationId, "auditLogs");
     if (!allowed) {
@@ -37,31 +53,76 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
+    const formatParam = getSingleValue(searchParams.get("format"))?.toLowerCase();
+    const categoryParam = getSingleValue(searchParams.get("category"))?.toLowerCase();
+    const reason = getSingleValue(searchParams.get("reason"));
+    const format: AuditExportFormat = isAuditExportFormat(formatParam) ? formatParam : "pdf";
+    const category: AuditExportCategory = isAuditExportCategory(categoryParam) ? categoryParam : "all";
+
+    if (!reason || reason.length < 8) {
+      return NextResponse.json(
+        { error: "Please include a short reason for exporting audit logs." },
+        { status: 400 },
+      );
+    }
+
+    if (format === "json" && !["owner", "admin"].includes(ctx.role)) {
+      return NextResponse.json(
+        { error: "JSON audit exports are only available to workspace administrators." },
+        { status: 403 },
+      );
+    }
+
     const db = getTenantStore(ctx);
-    const result = await auditService.getAuditLogs(db, {
-      search: getSingleValue(searchParams.get("search")),
-      userId: getSingleValue(searchParams.get("userId")),
-      entityType: getSingleValue(searchParams.get("entityType")),
-      action: getSingleValue(searchParams.get("action")),
-      startDate: getSingleValue(searchParams.get("startDate")),
-      endDate: getSingleValue(searchParams.get("endDate")),
-      page: 1,
-      pageSize: 5000,
+    const [result, organization] = await Promise.all([
+      auditService.getAuditLogs(db, {
+        search: getSingleValue(searchParams.get("search")),
+        userId: getSingleValue(searchParams.get("userId")),
+        entityType: getSingleValue(searchParams.get("entityType")),
+        action: getSingleValue(searchParams.get("action")),
+        startDate: getSingleValue(searchParams.get("startDate")),
+        endDate: getSingleValue(searchParams.get("endDate")),
+        page: 1,
+        pageSize: 5000,
+      }),
+      db.organization.findFirst({
+        where: { id: ctx.organizationId },
+        select: { name: true },
+      }),
+    ]);
+
+    const response = await buildAuditExportResponse({
+      logs: result.logs,
+      organizationName: organization?.name || "Workspace",
+      requestedBy: session.user.name || session.user.email || "Workspace user",
+      category,
+      format,
+      reason,
+      fromDate: getSingleValue(searchParams.get("startDate")),
+      toDate: getSingleValue(searchParams.get("endDate")),
     });
 
-    return generateCSVResponse(
-      result.logs,
-      [
-        { header: "Timestamp", key: (item) => new Date(item.createdAt).toISOString() },
-        { header: "Actor", key: (item) => item.user?.name || item.user?.email || "Unknown user" },
-        { header: "Actor Email", key: (item) => item.user?.email || "" },
-        { header: "Action", key: "action" },
-        { header: "Entity Type", key: "entityType" },
-        { header: "Entity ID", key: "entityId" },
-        { header: "Details", key: "details" },
-      ],
-      "audit-log",
+    await writeAuditLog(
+      ctx,
+      "EXPORT_AUDIT_LOGS",
+      "AuditLog",
+      ctx.organizationId,
+      JSON.stringify({
+        format,
+        category,
+        reason,
+        search: getSingleValue(searchParams.get("search")) || null,
+        userId: getSingleValue(searchParams.get("userId")) || null,
+        entityType: getSingleValue(searchParams.get("entityType")) || null,
+        action: getSingleValue(searchParams.get("action")) || null,
+        startDate: getSingleValue(searchParams.get("startDate")) || null,
+        endDate: getSingleValue(searchParams.get("endDate")) || null,
+        userAgent: request.headers.get("user-agent"),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip"),
+      }),
     );
+
+    return response;
   } catch (error) {
     if (error instanceof TenantForbiddenError) {
       return tenantForbiddenResponse(error);

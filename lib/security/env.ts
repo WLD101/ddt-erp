@@ -45,6 +45,25 @@ export function getIntegrationEncryptionSecret() {
   return process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "dev-only-insecure-secret";
 }
 
+export function getSecurityEncryptionSecret() {
+  const strongSecret =
+    process.env.SECURITY_ENCRYPTION_KEY ||
+    process.env.ENCRYPTION_KEY ||
+    process.env.INTEGRATION_CREDENTIAL_SECRET;
+
+  if (strongSecret) {
+    return strongSecret;
+  }
+
+  if (isProductionEnv()) {
+    throw new Error(
+      "Missing SECURITY_ENCRYPTION_KEY, ENCRYPTION_KEY, or INTEGRATION_CREDENTIAL_SECRET in production."
+    );
+  }
+
+  return process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "dev-only-insecure-secret";
+}
+
 export function getBootstrapAdminPassword() {
   const password = process.env.SUPER_ADMIN_BOOTSTRAP_PASSWORD;
   if (!password) {

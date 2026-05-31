@@ -4,6 +4,7 @@
 "use client";
 
 import React, { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { salesInvoiceSchema, SalesInvoiceFormValues } from "../schema";
@@ -35,6 +36,7 @@ interface SaleFormProps {
 
 export function SaleForm({ customers, products, initialData, onSuccess }: SaleFormProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const form = useForm<SalesInvoiceFormValues>({
     resolver: zodResolver(salesInvoiceSchema),
@@ -121,7 +123,11 @@ export function SaleForm({ customers, products, initialData, onSuccess }: SaleFo
       const result = await createSalesInvoice(data);
       if (result.success) {
         toast.success("Sales invoice finalized");
-        onSuccess?.();
+        if (onSuccess) {
+          onSuccess();
+        } else if (result.data?.id) {
+          router.push(`/sales/${result.data.id}/print`);
+        }
       } else {
         if (result.error.includes("Plan Limit Reached")) {
           showLimitModal("Sales Invoices", result.error);

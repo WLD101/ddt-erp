@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import {
   handleStripeInvoiceFailed,
   handleStripeInvoicePaid,
+  markStripeWebhookEventStatus,
   recordStripeWebhookEvent,
   syncStripeCheckoutSession,
   syncStripeSubscription,
@@ -63,7 +64,9 @@ export async function POST(request: Request) {
       default:
         break;
     }
+    await markStripeWebhookEventStatus(event.id, "processed");
   } catch (error) {
+    await markStripeWebhookEventStatus(event.id, "failed");
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Webhook processing failed." },
       { status: 500 },
