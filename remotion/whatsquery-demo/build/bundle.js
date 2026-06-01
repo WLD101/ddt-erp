@@ -57,8 +57,6 @@ var update = injectStylesIntoStyleTag_default()(index_js_src/* default */.A, opt
 
        /* harmony default export */ const src = (index_js_src/* default */.A && index_js_src/* default */.A.locals ? index_js_src/* default */.A.locals : undefined);
 
-// EXTERNAL MODULE: ./node_modules/react/index.js
-var react = __webpack_require__(6540);
 // EXTERNAL MODULE: ./node_modules/remotion/dist/esm/no-react.mjs
 var no_react = __webpack_require__(9382);
 ;// ./node_modules/@remotion/google-fonts/dist/esm/PlusJakartaSans.mjs
@@ -315,32 +313,37 @@ var loadFont = (style, options) => {
 
 
 
-
 loadFont("normal", {
   weights: ["400", "500", "600", "700", "800"],
   subsets: ["latin"]
 });
+const fps = 30;
 const BRAND = {
-  bg: "#020617",
-  panelBorder: "rgba(255,255,255,0.11)",
-  text: "#e2e8f0",
-  textMuted: "#94a3b8",
-  textSoft: "#62748e",
+  bg: "#030817",
+  bgSoft: "#091128",
+  text: "#f8fbff",
+  textMuted: "#aeb9d4",
+  textSoft: "#6f7ea4",
   indigo: "#625fff",
-  indigoSoft: "#a4b3ff",
+  indigoSoft: "#c4cbff",
   purple: "#ac4bff",
   cyan: "#06b6d4",
-  green: "#22c55e",
-  amber: "#f59e0b",
-  red: "#f43f5e"
+  green: "#10b981",
+  red: "#ef4444",
+  border: "rgba(255,255,255,0.12)"
 };
-const fps = 30;
-const glow = (color, opacity) => ({
-  background: color,
-  opacity,
-  filter: "blur(120px)"
-});
-const makeSpring = (frame, duration = 24, delay = 0) => (0,esm.spring)({
+const SHOTS = {
+  dashboard: (0,esm.staticFile)("screens/dashboard.png"),
+  assistant: (0,esm.staticFile)("screens/assistant.png"),
+  customers: (0,esm.staticFile)("screens/customers.png"),
+  products: (0,esm.staticFile)("screens/products.png"),
+  salesA: (0,esm.staticFile)("screens/sales-a.png"),
+  salesB: (0,esm.staticFile)("screens/sales-b.png"),
+  reports: (0,esm.staticFile)("screens/reports.png"),
+  integrations: (0,esm.staticFile)("screens/integrations.png"),
+  logo: (0,esm.staticFile)("logo-emblem.png")
+};
+const makeSpring = (frame, delay = 0, duration = 28) => (0,esm.spring)({
   fps,
   frame: Math.max(0, frame - delay),
   config: {
@@ -350,1695 +353,1115 @@ const makeSpring = (frame, duration = 24, delay = 0) => (0,esm.spring)({
   },
   durationInFrames: duration
 });
-const SceneShell = ({ accent, eyebrow, title, subtitle, children }) => {
+const starSeed = Array.from({ length: 42 }, (_, index) => ({
+  left: index * 83 % 1e3 / 10,
+  top: index * 137 % 620 / 6.2,
+  size: 2 + index % 3,
+  opacity: 0.25 + index % 5 * 0.12
+}));
+const PageBackground = () => {
   const frame = (0,esm.useCurrentFrame)();
-  const scale = (0,esm.interpolate)(frame, [0, 18], [0.985, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: esm.Easing.out(esm.Easing.cubic)
-  });
-  const opacity = (0,esm.interpolate)(frame, [0, 10], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
     esm.AbsoluteFill,
     {
       style: {
-        opacity,
-        transform: `scale(${scale})`,
-        color: BRAND.text,
-        fontFamily: fontFamily
+        background: "radial-gradient(circle at 22% 18%, rgba(98,95,255,0.18), transparent 24%), radial-gradient(circle at 80% 12%, rgba(172,75,255,0.14), transparent 22%), radial-gradient(circle at 60% 88%, rgba(6,182,212,0.12), transparent 24%), linear-gradient(180deg, #050b19 0%, #030817 54%, #020611 100%)"
       },
       children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { background: BRAND.bg }, children: [
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                position: "absolute",
-                inset: 0,
-                background: "radial-gradient(circle at 15% 15%, rgba(98,95,255,0.18), transparent 28%), radial-gradient(circle at 85% 20%, rgba(172,75,255,0.14), transparent 26%), radial-gradient(circle at 50% 88%, rgba(6,182,212,0.1), transparent 24%)"
-              }
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                position: "absolute",
-                top: 70,
-                left: 70,
-                width: 420,
-                height: 420,
-                borderRadius: "999px",
-                ...glow(accent, 0.16)
-              }
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                position: "absolute",
-                right: 90,
-                bottom: 60,
-                width: 380,
-                height: 380,
-                borderRadius: "999px",
-                ...glow(BRAND.purple, 0.12)
-              }
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                position: "absolute",
-                inset: 0,
-                backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-                backgroundSize: "100px 100px",
-                maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.42), rgba(0,0,0,0.85))"
-              }
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              padding: "64px 72px 56px 72px",
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-              boxSizing: "border-box"
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}),
-              /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { marginTop: 30 }, children: [
-                /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                  "div",
-                  {
-                    style: {
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 12,
-                      borderRadius: 999,
-                      border: `1px solid ${accent}55`,
-                      background: `${accent}14`,
-                      padding: "10px 18px",
-                      fontSize: 18,
-                      fontWeight: 800,
-                      letterSpacing: "0.24em",
-                      textTransform: "uppercase",
-                      color: BRAND.indigoSoft
-                    },
-                    children: [
-                      /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                        "span",
-                        {
-                          style: {
-                            width: 10,
-                            height: 10,
-                            borderRadius: 999,
-                            background: accent,
-                            boxShadow: `0 0 18px ${accent}`
-                          }
-                        }
-                      ),
-                      eyebrow
-                    ]
-                  }
-                ),
-                /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                  "div",
-                  {
-                    style: {
-                      marginTop: 20,
-                      fontSize: 70,
-                      lineHeight: 1.04,
-                      fontWeight: 800,
-                      letterSpacing: "-0.05em",
-                      maxWidth: 1080
-                    },
-                    children: title
-                  }
-                ),
-                /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                  "div",
-                  {
-                    style: {
-                      marginTop: 18,
-                      fontSize: 28,
-                      lineHeight: 1.5,
-                      color: BRAND.textMuted,
-                      maxWidth: 1050,
-                      fontWeight: 500
-                    },
-                    children: subtitle
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { flex: 1, display: "flex", alignItems: "center" }, children })
-            ]
-          }
-        )
-      ]
-    }
-  );
-};
-const BrandLockup = () => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between"
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 18 }, children: [
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                width: 64,
-                height: 64,
-                borderRadius: 22,
-                background: "rgba(255,255,255,0.07)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 18px 40px rgba(0, 0, 0, 0.28)"
-              },
-              children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                esm.Img,
-                {
-                  src: (0,esm.staticFile)("logo-emblem.png"),
-                  style: {
-                    width: 42,
-                    height: 42,
-                    objectFit: "contain"
-                  }
-                }
-              )
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              "div",
-              {
-                style: {
-                  fontSize: 34,
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em"
-                },
-                children: "WhatsQuery"
-              }
-            ),
-            /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              "div",
-              {
-                style: {
-                  marginTop: 4,
-                  color: BRAND.indigoSoft,
-                  fontWeight: 700,
-                  letterSpacing: "0.36em",
-                  fontSize: 15,
-                  textTransform: "uppercase"
-                },
-                children: "ERP Platform"
-              }
-            )
-          ] })
-        ] }),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              borderRadius: 999,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.05)",
-              padding: "12px 18px",
-              fontSize: 18,
-              fontWeight: 700,
-              color: BRAND.textMuted
-            },
-            children: "Intelligent Business Operations"
-          }
-        )
-      ]
-    }
-  );
-};
-const BrowserFrame = ({ children, rightPanel }) => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        display: "grid",
-        gridTemplateColumns: rightPanel ? "1fr 340px" : "1fr",
-        gap: 22,
-        width: "100%"
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              borderRadius: 34,
-              padding: 22,
-              border: `1px solid ${BRAND.panelBorder}`,
-              background: "rgba(8, 12, 28, 0.92)",
-              boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
-              overflow: "hidden"
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                "div",
-                {
-                  style: {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    paddingBottom: 16
-                  },
-                  children: [
-                    ["#f87171", "#fbbf24", "#4ade80"].map((c) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                      "div",
-                      {
-                        style: {
-                          width: 14,
-                          height: 14,
-                          borderRadius: 99,
-                          background: c,
-                          opacity: 0.9
-                        }
-                      },
-                      c
-                    )),
-                    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                      "div",
-                      {
-                        style: {
-                          marginLeft: 12,
-                          flex: 1,
-                          borderRadius: 999,
-                          background: "rgba(255,255,255,0.05)",
-                          border: `1px solid ${BRAND.panelBorder}`,
-                          color: BRAND.textMuted,
-                          fontSize: 18,
-                          padding: "12px 18px"
-                        },
-                        children: "app.whatsquery.com/dashboard"
-                      }
-                    )
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                "div",
-                {
-                  style: {
-                    display: "grid",
-                    gridTemplateColumns: "240px 1fr",
-                    gap: 18
-                  },
-                  children: [
-                    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                      "div",
-                      {
-                        style: {
-                          borderRadius: 26,
-                          border: `1px solid ${BRAND.panelBorder}`,
-                          background: "rgba(255,255,255,0.035)",
-                          padding: 20,
-                          minHeight: 520
-                        },
-                        children: [
-                          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                            "div",
-                            {
-                              style: {
-                                fontSize: 17,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.28em",
-                                color: BRAND.textSoft,
-                                marginBottom: 18,
-                                fontWeight: 800
-                              },
-                              children: "Workspace"
-                            }
-                          ),
-                          [
-                            "Dashboard",
-                            "Customers",
-                            "Products",
-                            "Sales",
-                            "Finance",
-                            "Reports",
-                            "Smart Assistant"
-                          ].map((item, index) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                            "div",
-                            {
-                              style: {
-                                borderRadius: 18,
-                                padding: "16px 18px",
-                                marginBottom: 10,
-                                background: index === 0 ? "linear-gradient(135deg, rgba(98,95,255,0.9), rgba(172,75,255,0.72))" : "transparent",
-                                border: index === 0 ? "1px solid rgba(255,255,255,0.1)" : "1px solid transparent",
-                                color: index === 0 ? "#fff" : BRAND.textMuted,
-                                fontWeight: index === 0 ? 800 : 600,
-                                fontSize: 18
-                              },
-                              children: item
-                            },
-                            item
-                          ))
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { children })
-                  ]
-                }
-              )
-            ]
-          }
-        ),
-        rightPanel ? rightPanel : null
-      ]
-    }
-  );
-};
-const AnalyticsLine = ({
-  tone = BRAND.indigoSoft,
-  points
-}) => {
-  const width = 360;
-  const height = 100;
-  const max = Math.max(...points);
-  const min = Math.min(...points);
-  const d = points.map((point, index) => {
-    const x = index / (points.length - 1) * width;
-    const y = height - (point - min) / Math.max(1, max - min) * (height - 14) - 7;
-    return `${index === 0 ? "M" : "L"} ${x} ${y}`;
-  }).join(" ");
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)("svg", { width, height, viewBox: `0 0 ${width} ${height}`, children: [
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("defs", { children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("linearGradient", { id: `line-${tone}`, x1: "0", x2: "1", y1: "0", y2: "0", children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)("stop", { offset: "0%", stopColor: tone, stopOpacity: 0.25 }),
-      /* @__PURE__ */ (0,jsx_runtime.jsx)("stop", { offset: "100%", stopColor: tone, stopOpacity: 0.95 })
-    ] }) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      "path",
-      {
-        d,
-        fill: "none",
-        stroke: `url(#line-${tone})`,
-        strokeWidth: "5",
-        strokeLinecap: "round"
-      }
-    )
-  ] });
-};
-const MetricGrid = ({ cards }) => {
-  const toneMap = {
-    indigo: BRAND.indigoSoft,
-    green: BRAND.green,
-    purple: BRAND.purple,
-    cyan: BRAND.cyan,
-    amber: BRAND.amber
-  };
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    "div",
-    {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-        gap: 16
-      },
-      children: cards.map((card) => {
-        const tone = toneMap[card.tone ?? "indigo"];
-        return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              borderRadius: 22,
-              border: `1px solid ${BRAND.panelBorder}`,
-              background: "rgba(255,255,255,0.05)",
-              padding: 18
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "div",
-                {
-                  style: {
-                    color: BRAND.textSoft,
-                    fontSize: 14,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.22em",
-                    fontWeight: 800
-                  },
-                  children: card.label
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "div",
-                {
-                  style: {
-                    marginTop: 12,
-                    fontSize: 33,
-                    fontWeight: 800,
-                    color: BRAND.text
-                  },
-                  children: card.value
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "div",
-                {
-                  style: {
-                    marginTop: 14,
-                    width: "100%",
-                    height: 8,
-                    borderRadius: 999,
-                    background: "rgba(255,255,255,0.06)",
-                    overflow: "hidden"
-                  },
-                  children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    "div",
-                    {
-                      style: {
-                        width: `${card.value.includes("%") ? 70 : 60}%`,
-                        height: "100%",
-                        borderRadius: 999,
-                        background: `linear-gradient(90deg, ${tone}66, ${tone})`
-                      }
-                    }
-                  )
-                }
-              )
-            ]
-          },
-          card.label
-        );
-      })
-    }
-  );
-};
-const TableCard = ({ title, rows, columns }) => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        borderRadius: 26,
-        border: `1px solid ${BRAND.panelBorder}`,
-        background: "rgba(255,255,255,0.04)",
-        padding: 20
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              fontSize: 24,
-              fontWeight: 800,
-              marginBottom: 18
-            },
-            children: title
-          }
-        ),
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              display: "grid",
-              gridTemplateColumns: "1.5fr 1fr 1fr",
-              color: BRAND.textSoft,
-              fontSize: 13,
-              textTransform: "uppercase",
-              letterSpacing: "0.2em",
-              fontWeight: 800,
-              padding: "0 10px 10px 10px"
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { children: columns[0] }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { children: columns[1] }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { children: columns[2] })
-            ]
-          }
-        ),
-        rows.map((row) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              display: "grid",
-              gridTemplateColumns: "1.5fr 1fr 1fr",
-              borderRadius: 18,
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              padding: "14px 12px",
-              marginBottom: 10,
-              alignItems: "center",
-              fontSize: 17
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { children: [
-                /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontWeight: 700 }, children: row.primary }),
-                row.tag ? /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                  "div",
-                  {
-                    style: {
-                      marginTop: 5,
-                      color: BRAND.indigoSoft,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase"
-                    },
-                    children: row.tag
-                  }
-                ) : null
-              ] }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { color: BRAND.textMuted, fontWeight: 600 }, children: row.secondary }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontWeight: 700 }, children: row.third })
-            ]
-          },
-          `${row.primary}-${row.secondary}`
-        ))
-      ]
-    }
-  );
-};
-const RightRail = ({
-  title,
-  items
-}) => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        borderRadius: 30,
-        padding: 24,
-        border: `1px solid ${BRAND.panelBorder}`,
-        background: "rgba(255,255,255,0.05)",
-        boxShadow: "0 24px 50px rgba(0,0,0,0.3)"
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              fontSize: 16,
-              color: BRAND.textSoft,
-              textTransform: "uppercase",
-              letterSpacing: "0.24em",
-              fontWeight: 800
-            },
-            children: title
-          }
-        ),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { marginTop: 16 }, children: items.map((item) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              borderRadius: 18,
-              background: "rgba(255,255,255,0.04)",
-              border: `1px solid ${BRAND.panelBorder}`,
-              padding: "16px 18px",
-              marginBottom: 12
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 15, color: BRAND.textSoft, fontWeight: 700 }, children: item.label }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 26, fontWeight: 800, marginTop: 8 }, children: item.value })
-            ]
-          },
-          item.label
-        )) })
-      ]
-    }
-  );
-};
-const HookScene = () => {
-  const frame = (0,esm.useCurrentFrame)();
-  const messyOpacity = (0,esm.interpolate)(frame, [0, 30, 75], [1, 1, 0], {
-    extrapolateRight: "clamp"
-  });
-  const dashboardX = (0,esm.interpolate)(frame, [40, 95], [180, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: esm.Easing.out(esm.Easing.exp)
-  });
-  const badgeScale = makeSpring(frame, 28, 18);
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.indigo,
-      eyebrow: "Opening Hook",
-      title: "Run your business from one intelligent ERP.",
-      subtitle: "From scattered spreadsheets, calls, products, and payments into one clean operational system.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { justifyContent: "center" }, children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: 28 }, children: [
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                opacity: messyOpacity,
-                transform: `translateY(${(0,esm.interpolate)(frame, [0, 80], [0, -10])}px) rotate(-2deg)`
-              },
-              children: /* @__PURE__ */ (0,jsx_runtime.jsx)(MessyWorkflow, {})
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                transform: `translateX(${dashboardX}px)`
-              },
-              children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                BrowserFrame,
-                {
-                  rightPanel: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    RightRail,
-                    {
-                      title: "Transformation",
-                      items: [
-                        { label: "Calls answered", value: "24/7 AI" },
-                        { label: "Invoices synced", value: "Realtime" },
-                        { label: "Operations", value: "Unified" }
-                      ]
-                    }
-                  ),
-                  children: /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                    "div",
-                    {
-                      style: {
-                        display: "grid",
-                        gridTemplateRows: "auto auto 1fr",
-                        gap: 18
-                      },
-                      children: [
-                        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                          MetricGrid,
-                          {
-                            cards: [
-                              { label: "Revenue", value: "PKR 2.8M", tone: "indigo" },
-                              { label: "Customers", value: "1,248", tone: "cyan" },
-                              { label: "Invoices", value: "302", tone: "purple" },
-                              { label: "Fulfillment", value: "98.4%", tone: "green" }
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                          "div",
-                          {
-                            style: {
-                              display: "grid",
-                              gridTemplateColumns: "1.3fr 1fr",
-                              gap: 16
-                            },
-                            children: [
-                              /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Weekly sales performance", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(AnalyticsLine, { points: [14, 18, 22, 21, 28, 36, 44] }) }),
-                              /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Automation status", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                                StackedStatus,
-                                {
-                                  items: [
-                                    { label: "Calls", value: "AI active" },
-                                    { label: "Billing", value: "Synced" },
-                                    { label: "Inventory", value: "Stable" }
-                                  ]
-                                }
-                              ) })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                          TableCard,
-                          {
-                            title: "Recent activity",
-                            columns: ["Module", "Status", "Impact"],
-                            rows: [
-                              {
-                                primary: "Invoice INV-2048",
-                                secondary: "Sent",
-                                third: "PKR 145,000",
-                                tag: "Sales"
-                              },
-                              {
-                                primary: "Customer Follow-up",
-                                secondary: "Automated",
-                                third: "Lead captured",
-                                tag: "AI"
-                              },
-                              {
-                                primary: "Stock Reorder",
-                                secondary: "Triggered",
-                                third: "2 warehouses",
-                                tag: "Inventory"
-                              }
-                            ]
-                          }
-                        )
-                      ]
-                    }
-                  )
-                }
-              )
-            }
-          )
-        ] }),
         /* @__PURE__ */ (0,jsx_runtime.jsx)(
           "div",
           {
             style: {
               position: "absolute",
-              right: 38,
-              top: 38,
-              borderRadius: 999,
-              background: "linear-gradient(135deg, rgba(98,95,255,0.95), rgba(172,75,255,0.85))",
-              padding: "14px 22px",
-              fontSize: 20,
-              fontWeight: 800,
-              transform: `scale(${badgeScale})`,
-              boxShadow: "0 20px 40px rgba(98,95,255,0.3)"
-            },
-            children: "One dashboard. Full control."
-          }
-        )
-      ] })
-    }
-  );
-};
-const DashboardScene = () => {
-  const frame = (0,esm.useCurrentFrame)();
-  const reveal = makeSpring(frame, 26, 6);
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.indigoSoft,
-      eyebrow: "Unified Dashboard",
-      title: "Everything your business needs. In one place.",
-      subtitle: "Sales, customers, products, invoices, reports, and finance all move through one clean control layer.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        "div",
-        {
-          style: {
-            width: "100%",
-            transform: `translateY(${(0,esm.interpolate)(reveal, [0, 1], [26, 0])}px)`,
-            opacity: reveal
-          },
-          children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            BrowserFrame,
-            {
-              rightPanel: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                RightRail,
-                {
-                  title: "Decision cards",
-                  items: [
-                    { label: "Cash collected", value: "PKR 1.2M" },
-                    { label: "Orders pending", value: "14" },
-                    { label: "Assistant actions", value: "84" }
-                  ]
-                }
-              ),
-              children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gap: 18 }, children: [
-                /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                  MetricGrid,
-                  {
-                    cards: [
-                      { label: "Gross Sales", value: "PKR 3.9M", tone: "indigo" },
-                      { label: "Net Profit", value: "PKR 780K", tone: "green" },
-                      { label: "Inventory", value: "1,284 SKUs", tone: "purple" },
-                      { label: "Collections", value: "91%", tone: "cyan" }
-                    ]
-                  }
-                ),
-                /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 16 }, children: [
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Revenue trends", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(AnalyticsLine, { points: [10, 12, 18, 26, 22, 32, 38, 44], tone: BRAND.indigo }) }),
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Smart alerts", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    StackedStatus,
-                    {
-                      items: [
-                        { label: "Low stock", value: "8 items" },
-                        { label: "Overdue invoices", value: "11" },
-                        { label: "Supplier payouts", value: "Due Friday" }
-                      ]
-                    }
-                  ) })
-                ] }),
-                /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }, children: [
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    TableCard,
-                    {
-                      title: "Top customers",
-                      columns: ["Customer", "Orders", "Value"],
-                      rows: [
-                        { primary: "Ali Traders", secondary: "18", third: "PKR 420K" },
-                        { primary: "North Mart", secondary: "11", third: "PKR 310K" },
-                        { primary: "Prime Retail", secondary: "9", third: "PKR 208K" }
-                      ]
-                    }
-                  ),
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    TableCard,
-                    {
-                      title: "Operational queues",
-                      columns: ["Queue", "Count", "State"],
-                      rows: [
-                        { primary: "Invoices", secondary: "24", third: "On track" },
-                        { primary: "Purchase orders", secondary: "7", third: "Review" },
-                        { primary: "Reports", secondary: "3", third: "Ready" }
-                      ]
-                    }
-                  )
-                ] })
-              ] })
-            }
-          )
-        }
-      )
-    }
-  );
-};
-const ManagementScene = () => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.cyan,
-      eyebrow: "Operations Management",
-      title: "Manage customers, suppliers, products, and inventory.",
-      subtitle: "Organize relationships, stock, pricing, and supply flow with fast, readable business screens.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        BrowserFrame,
-        {
-          rightPanel: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            RightRail,
-            {
-              title: "Live overview",
-              items: [
-                { label: "Customers", value: "3,128" },
-                { label: "Suppliers", value: "214" },
-                { label: "Products", value: "2,546" },
-                { label: "Stock alerts", value: "12" }
-              ]
-            }
-          ),
-          children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateRows: "1fr 1fr", gap: 16 }, children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 16 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Customer directory",
-                  columns: ["Customer", "Status", "Credit"],
-                  rows: [
-                    { primary: "Ashraf Cloth House", secondary: "Active", third: "PKR 85K" },
-                    { primary: "City Mart", secondary: "Priority", third: "PKR 120K" },
-                    { primary: "Nova Retail", secondary: "Active", third: "PKR 54K" }
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Supplier network",
-                  columns: ["Supplier", "Terms", "Payable"],
-                  rows: [
-                    { primary: "Prime Fabrics", secondary: "30 days", third: "PKR 220K" },
-                    { primary: "East Packaging", secondary: "14 days", third: "PKR 64K" },
-                    { primary: "Metro Imports", secondary: "Advance", third: "PKR 118K" }
-                  ]
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 16 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Inventory board",
-                  columns: ["Product", "Stock", "Warehouse"],
-                  rows: [
-                    { primary: "Premium Cotton Roll", secondary: "148", third: "Karachi Hub" },
-                    { primary: "Retail Box Set", secondary: "42", third: "Lahore DC" },
-                    { primary: "Invoice Printer", secondary: "11", third: "Main Branch" }
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Restock suggestions", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                StackedStatus,
-                {
-                  items: [
-                    { label: "Cotton roll", value: "Reorder 80 units" },
-                    { label: "Barcode labels", value: "Reorder 250" },
-                    { label: "Blue cartons", value: "Healthy" }
-                  ]
-                }
-              ) })
-            ] })
-          ] })
-        }
-      )
-    }
-  );
-};
-const FinanceScene = () => {
-  const frame = (0,esm.useCurrentFrame)();
-  const invoiceReveal = makeSpring(frame, 28, 12);
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.green,
-      eyebrow: "Sales + Finance",
-      title: "Create invoices. Track payments. Stay in control.",
-      subtitle: "Move from sales entry to invoice issue to payment tracking with a finance layer built for operational clarity.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { width: "100%" }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        BrowserFrame,
-        {
-          rightPanel: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            RightRail,
-            {
-              title: "Finance status",
-              items: [
-                { label: "Received today", value: "PKR 248K" },
-                { label: "Outstanding", value: "PKR 612K" },
-                { label: "Expenses", value: "PKR 94K" }
-              ]
-            }
-          ),
-          children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gap: 16 }, children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 16 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(InvoiceComposer, { progress: invoiceReveal }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Payment tracking", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                StackedStatus,
-                {
-                  items: [
-                    { label: "INV-2048", value: "Paid" },
-                    { label: "INV-2051", value: "Partial" },
-                    { label: "INV-2057", value: "Overdue" },
-                    { label: "Refunds", value: "0 pending" }
-                  ]
-                }
-              ) })
-            ] }),
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Receivables",
-                  columns: ["Customer", "Due", "Amount"],
-                  rows: [
-                    { primary: "Ali Traders", secondary: "Today", third: "PKR 145K" },
-                    { primary: "Nova Retail", secondary: "2 days", third: "PKR 82K" },
-                    { primary: "Metro Outlet", secondary: "7 days", third: "PKR 56K" }
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Expense summary",
-                  columns: ["Account", "State", "Amount"],
-                  rows: [
-                    { primary: "Operations", secondary: "Approved", third: "PKR 48K" },
-                    { primary: "Transport", secondary: "Posted", third: "PKR 22K" },
-                    { primary: "Utilities", secondary: "Planned", third: "PKR 14K" }
-                  ]
-                }
-              )
-            ] })
-          ] })
-        }
-      ) })
-    }
-  );
-};
-const ReportsScene = () => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.purple,
-      eyebrow: "Reports + Analytics",
-      title: "Turn daily operations into clear insights.",
-      subtitle: "Revenue trends, stock movement, collections, and performance metrics become readable decisions instead of disconnected reports.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { width: "100%" }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        BrowserFrame,
-        {
-          rightPanel: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            RightRail,
-            {
-              title: "Business pulse",
-              items: [
-                { label: "Growth", value: "+18.4%" },
-                { label: "Avg. order", value: "PKR 24K" },
-                { label: "Conversion", value: "31%" }
-              ]
-            }
-          ),
-          children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gap: 16 }, children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              MetricGrid,
-              {
-                cards: [
-                  { label: "Monthly Sales", value: "PKR 9.4M", tone: "purple" },
-                  { label: "Gross Margin", value: "26.8%", tone: "green" },
-                  { label: "Returns", value: "1.4%", tone: "amber" },
-                  { label: "Orders", value: "384", tone: "indigo" }
-                ]
-              }
-            ),
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 16 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Revenue trend by week", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(AnalyticsLine, { points: [12, 18, 24, 22, 29, 38, 44, 52], tone: BRAND.purple }) }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Department mix", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(MixChart, {}) })
-            ] }),
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Best-selling categories",
-                  columns: ["Category", "Units", "Revenue"],
-                  rows: [
-                    { primary: "Apparel", secondary: "1,204", third: "PKR 3.2M" },
-                    { primary: "Packaging", secondary: "648", third: "PKR 1.1M" },
-                    { primary: "Accessories", secondary: "372", third: "PKR 840K" }
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TableCard,
-                {
-                  title: "Performance notes",
-                  columns: ["Signal", "State", "Action"],
-                  rows: [
-                    { primary: "Collections", secondary: "Strong", third: "Maintain" },
-                    { primary: "Stock turnover", secondary: "Stable", third: "Monitor" },
-                    { primary: "Supplier costs", secondary: "Rising", third: "Review" }
-                  ]
-                }
-              )
-            ] })
-          ] })
-        }
-      ) })
-    }
-  );
-};
-const AssistantScene = () => {
-  const frame = (0,esm.useCurrentFrame)();
-  const typing = (0,esm.interpolate)(frame, [30, 90, 120, 180], [0, 1, 1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.indigo,
-      eyebrow: "Built-in AI",
-      title: "Built-in AI assistance for faster decisions.",
-      subtitle: "Ask business questions, create records, and move faster with guided AI built into the operations layer.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-        "div",
-        {
-          style: {
-            display: "grid",
-            gridTemplateColumns: "0.85fr 1.15fr",
-            gap: 24,
-            width: "100%"
-          },
-          children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)(Panel, { title: "Smart Assistant", children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                "div",
-                {
-                  style: {
-                    borderRadius: 24,
-                    background: "rgba(255,255,255,0.04)",
-                    border: `1px solid ${BRAND.panelBorder}`,
-                    padding: 22
-                  },
-                  children: [
-                    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                      ChatBubble,
-                      {
-                        role: "user",
-                        text: "Show unpaid invoices and the top customer balance this week."
-                      }
-                    ),
-                    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                      ChatBubble,
-                      {
-                        role: "assistant",
-                        text: "I found 11 unpaid invoices worth PKR 612,000. Top outstanding customer: Ali Traders with PKR 145,000 due. Would you like the invoice list exported for review?",
-                        typing: typing > 0.2 && typing < 0.95
-                      }
-                    )
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }, children: [
-                "Create invoice",
-                "Check inventory",
-                "Find customer balance",
-                "Show sales report"
-              ].map((pill) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "div",
-                {
-                  style: {
-                    borderRadius: 999,
-                    border: `1px solid ${BRAND.panelBorder}`,
-                    background: "rgba(255,255,255,0.05)",
-                    padding: "12px 16px",
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: BRAND.textMuted
-                  },
-                  children: pill
-                },
-                pill
-              )) })
-            ] }),
-            /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              BrowserFrame,
-              {
-                rightPanel: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                  RightRail,
-                  {
-                    title: "AI value",
-                    items: [
-                      { label: "Response speed", value: "< 2 sec" },
-                      { label: "Suggested actions", value: "Context-aware" },
-                      { label: "Approvals", value: "Role-safe" }
-                    ]
-                  }
-                ),
-                children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gap: 16 }, children: [
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    MetricGrid,
-                    {
-                      cards: [
-                        { label: "Assistant actions", value: "1,284", tone: "indigo" },
-                        { label: "Saved hours", value: "142", tone: "green" },
-                        { label: "Auto drafts", value: "96", tone: "purple" },
-                        { label: "Follow-ups", value: "84", tone: "cyan" }
-                      ]
-                    }
-                  ),
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    TableCard,
-                    {
-                      title: "Suggested next steps",
-                      columns: ["Workflow", "Mode", "Outcome"],
-                      rows: [
-                        { primary: "Unpaid invoice follow-up", secondary: "Recommended", third: "Recover faster" },
-                        { primary: "Low stock reorder", secondary: "Queued", third: "Avoid stockouts" },
-                        { primary: "Customer summary export", secondary: "Awaiting approval", third: "Secure" }
-                      ]
-                    }
-                  )
-                ] })
-              }
-            )
-          ]
-        }
-      )
-    }
-  );
-};
-const SecurityScene = () => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    SceneShell,
-    {
-      accent: BRAND.cyan,
-      eyebrow: "Secure Multi-tenant Platform",
-      title: "Secure, scalable, and built for growing businesses.",
-      subtitle: "Role-based access, separate business workspaces, approval flows, and future-ready expansion for AI Receptionist.",
-      children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22, width: "100%" }, children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Multi-business control", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 14,
-              marginTop: 10
-            },
-            children: [
-              { name: "Ali Traders", state: "Isolated workspace" },
-              { name: "Prime Retail", state: "Role protected" },
-              { name: "North Mart", state: "Audit ready" }
-            ].map((item, index) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-              "div",
-              {
-                style: {
-                  borderRadius: 22,
-                  background: "rgba(255,255,255,0.05)",
-                  border: `1px solid ${BRAND.panelBorder}`,
-                  padding: 18
-                },
-                children: [
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                    "div",
-                    {
-                      style: {
-                        width: 52,
-                        height: 52,
-                        borderRadius: 16,
-                        background: index === 0 ? "rgba(98,95,255,0.18)" : index === 1 ? "rgba(6,182,212,0.16)" : "rgba(34,197,94,0.16)",
-                        marginBottom: 16
-                      }
-                    }
-                  ),
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 22, fontWeight: 800 }, children: item.name }),
-                  /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 15, color: BRAND.textMuted, marginTop: 8 }, children: item.state })
-                ]
-              },
-              item.name
-            ))
-          }
-        ) }),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Growth-ready ecosystem", children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "grid", gap: 14 }, children: [
-          { label: "ERP dashboard", value: "Live" },
-          { label: "Finance + reporting", value: "Live" },
-          { label: "Smart Assistant", value: "Live" },
-          { label: "WhatsQuery Voice", value: "Coming soon" }
-        ].map((item) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              borderRadius: 20,
-              border: `1px solid ${BRAND.panelBorder}`,
-              background: "rgba(255,255,255,0.04)",
-              padding: "18px 20px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              fontSize: 20
-            },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { style: { fontWeight: 700 }, children: item.label }),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "span",
-                {
-                  style: {
-                    borderRadius: 999,
-                    padding: "9px 14px",
-                    background: item.value === "Coming soon" ? "rgba(245,158,11,0.15)" : "rgba(34,197,94,0.15)",
-                    color: item.value === "Coming soon" ? BRAND.amber : BRAND.green,
-                    fontWeight: 800,
-                    fontSize: 15,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.12em"
-                  },
-                  children: item.value
-                }
-              )
-            ]
-          },
-          item.label
-        )) }) })
-      ] })
-    }
-  );
-};
-const OutroScene = () => {
-  const frame = (0,esm.useCurrentFrame)();
-  const scale = makeSpring(frame, 26, 8);
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    esm.AbsoluteFill,
-    {
-      style: {
-        background: BRAND.bg,
-        color: BRAND.text,
-        fontFamily: fontFamily
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          esm.AbsoluteFill,
-          {
-            style: {
-              background: "radial-gradient(circle at 50% 35%, rgba(98,95,255,0.22), transparent 26%), radial-gradient(circle at 50% 78%, rgba(172,75,255,0.18), transparent 24%)"
+              inset: 0,
+              backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+              backgroundSize: "120px 120px",
+              maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
+              opacity: 0.5
             }
           }
         ),
-        /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-          "div",
-          {
-            style: {
-              margin: "auto",
-              textAlign: "center",
-              transform: `scale(${scale})`
+        starSeed.map((star, index) => {
+          const pulse = (0,esm.interpolate)(
+            (frame + index * 3) % 90,
+            [0, 45, 90],
+            [0.3, 1, 0.35],
+            {
+              easing: esm.Easing.inOut(esm.Easing.sin)
+            }
+          );
+          return /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                left: `${star.left}%`,
+                top: `${star.top}%`,
+                width: star.size,
+                height: star.size,
+                borderRadius: 999,
+                background: "#dbe7ff",
+                opacity: star.opacity * pulse,
+                boxShadow: "0 0 14px rgba(219,231,255,0.6)"
+              }
             },
-            children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                "div",
-                {
-                  style: {
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 18,
-                    padding: "18px 26px",
-                    borderRadius: 30,
-                    border: `1px solid ${BRAND.panelBorder}`,
-                    background: "rgba(255,255,255,0.05)",
-                    boxShadow: "0 30px 80px rgba(0,0,0,0.32)"
-                  },
-                  children: [
-                    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                      esm.Img,
-                      {
-                        src: (0,esm.staticFile)("logo-emblem.png"),
-                        style: { width: 68, height: 68, objectFit: "contain" }
-                      }
-                    ),
-                    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { textAlign: "left" }, children: [
-                      /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 44, fontWeight: 800, letterSpacing: "-0.04em" }, children: "WhatsQuery ERP" }),
-                      /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                        "div",
-                        {
-                          style: {
-                            color: BRAND.indigoSoft,
-                            fontWeight: 800,
-                            fontSize: 16,
-                            letterSpacing: "0.28em",
-                            textTransform: "uppercase",
-                            marginTop: 4
-                          },
-                          children: "Smart business management starts here."
-                        }
-                      )
-                    ] })
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "div",
-                {
-                  style: {
-                    marginTop: 30,
-                    fontSize: 26,
-                    color: BRAND.textMuted,
-                    fontWeight: 600
-                  },
-                  children: "whatsquery.com"
-                }
-              )
-            ]
-          }
-        )
+            `${star.left}-${star.top}-${index}`
+          );
+        })
       ]
     }
   );
 };
-const MessyWorkflow = () => {
-  const papers = (0,react.useMemo)(
-    () => [
-      { top: 40, left: 40, rotate: -10, label: "Missed calls", color: BRAND.red },
-      { top: 170, left: 120, rotate: 8, label: "Inventory sheet", color: BRAND.amber },
-      { top: 280, left: 50, rotate: -4, label: "Invoices due", color: BRAND.cyan },
-      { top: 410, left: 150, rotate: 12, label: "Customer notes", color: BRAND.purple }
-    ],
-    []
-  );
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
+const BrandLockup = () => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 18 }, children: [
+  /* @__PURE__ */ (0,jsx_runtime.jsx)(
     "div",
     {
       style: {
-        position: "relative",
-        height: 560,
-        borderRadius: 34,
-        border: `1px solid ${BRAND.panelBorder}`,
-        background: "rgba(255,255,255,0.035)",
-        overflow: "hidden"
-      },
-      children: papers.map((paper) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-        "div",
-        {
-          style: {
-            position: "absolute",
-            top: paper.top,
-            left: paper.left,
-            width: 260,
-            padding: 20,
-            borderRadius: 24,
-            background: "rgba(255,255,255,0.08)",
-            border: `1px solid ${BRAND.panelBorder}`,
-            boxShadow: "0 24px 50px rgba(0,0,0,0.28)",
-            transform: `rotate(${paper.rotate}deg)`
-          },
-          children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10 }, children: [
-              /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                "div",
-                {
-                  style: {
-                    width: 14,
-                    height: 14,
-                    borderRadius: 999,
-                    background: paper.color
-                  }
-                }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 24, fontWeight: 800 }, children: paper.label })
-            ] }),
-            /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { marginTop: 14 }, children: [0.86, 0.66, 0.74].map((w, index) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              "div",
-              {
-                style: {
-                  width: `${w * 100}%`,
-                  height: 10,
-                  borderRadius: 999,
-                  background: "rgba(255,255,255,0.1)",
-                  marginBottom: 10
-                }
-              },
-              `${paper.label}-${index}`
-            )) })
-          ]
-        },
-        paper.label
-      ))
-    }
-  );
-};
-const Panel = ({ title, children }) => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        borderRadius: 26,
-        border: `1px solid ${BRAND.panelBorder}`,
-        background: "rgba(255,255,255,0.05)",
-        padding: 20
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              color: BRAND.textSoft,
-              fontSize: 14,
-              textTransform: "uppercase",
-              letterSpacing: "0.22em",
-              fontWeight: 800,
-              marginBottom: 16
-            },
-            children: title
-          }
-        ),
-        children
-      ]
-    }
-  );
-};
-const StackedStatus = ({ items }) => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { children: items.map((item, index) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
+        width: 62,
+        height: 62,
         borderRadius: 18,
-        background: "rgba(255,255,255,0.04)",
-        border: `1px solid ${BRAND.panelBorder}`,
-        padding: "16px 18px",
-        marginBottom: 12
+        background: "rgba(255,255,255,0.08)",
+        border: `1px solid ${BRAND.border}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 16px 36px rgba(0,0,0,0.28)"
       },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 18, fontWeight: 700 }, children: item.label }),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 18, fontWeight: 800, color: BRAND.indigoSoft }, children: item.value })
-      ]
-    },
-    `${item.label}-${index}`
-  )) });
-};
-const InvoiceComposer = ({ progress }) => {
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)(Panel, { title: "Invoice workflow", children: /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-    "div",
-    {
-      style: {
-        borderRadius: 24,
-        background: "rgba(255,255,255,0.03)",
-        border: `1px solid ${BRAND.panelBorder}`,
-        padding: 20
-      },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }, children: [
-          "Customer: Ali Traders",
-          "Date: 01 Jun 2026",
-          "Invoice: INV-2048",
-          "Terms: 14 days"
-        ].map((field) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              borderRadius: 16,
-              padding: "14px 16px",
-              border: `1px solid ${BRAND.panelBorder}`,
-              background: "rgba(255,255,255,0.04)",
-              fontSize: 18,
-              color: BRAND.textMuted,
-              fontWeight: 600
-            },
-            children: field
-          },
-          field
-        )) }),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { marginTop: 14 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          TableCard,
-          {
-            title: "Items",
-            columns: ["Line item", "Qty", "Total"],
-            rows: [
-              { primary: "Premium Cotton Roll", secondary: "12", third: "PKR 72K" },
-              { primary: "Retail Packaging Set", secondary: "20", third: "PKR 48K" },
-              { primary: "Delivery Handling", secondary: "1", third: "PKR 8K" }
-            ]
-          }
-        ) }),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              marginTop: 16,
-              height: 12,
-              borderRadius: 999,
-              overflow: "hidden",
-              background: "rgba(255,255,255,0.06)"
-            },
-            children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              "div",
-              {
-                style: {
-                  width: `${(0,esm.interpolate)(progress, [0, 1], [18, 100])}%`,
-                  height: "100%",
-                  borderRadius: 999,
-                  background: `linear-gradient(90deg, ${BRAND.green}88, ${BRAND.indigo})`
-                }
-              }
-            )
-          }
-        )
-      ]
+      children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        esm.Img,
+        {
+          src: SHOTS.logo,
+          style: { width: 42, height: 42, objectFit: "contain" }
+        }
+      )
     }
-  ) });
-};
-const MixChart = () => {
-  const bars = [
-    { label: "Sales", value: 82, color: BRAND.indigo },
-    { label: "Products", value: 58, color: BRAND.cyan },
-    { label: "Customers", value: 71, color: BRAND.purple },
-    { label: "Finance", value: 43, color: BRAND.green }
-  ];
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "grid", gap: 16 }, children: bars.map((bar) => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { children: [
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+  ),
+  /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
       "div",
       {
         style: {
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 10,
-          fontSize: 17,
-          fontWeight: 700
+          fontSize: 28,
+          fontWeight: 800,
+          letterSpacing: "-0.04em"
         },
-        children: [
-          /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { children: bar.label }),
-          /* @__PURE__ */ (0,jsx_runtime.jsxs)("span", { style: { color: BRAND.textMuted }, children: [
-            bar.value,
-            "%"
-          ] })
-        ]
+        children: "WhatsQuery"
       }
     ),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
       "div",
       {
         style: {
-          width: "100%",
-          height: 14,
-          borderRadius: 999,
-          background: "rgba(255,255,255,0.06)"
+          marginTop: 4,
+          color: BRAND.indigoSoft,
+          fontWeight: 800,
+          fontSize: 12,
+          letterSpacing: "0.34em",
+          textTransform: "uppercase"
         },
-        children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              width: `${bar.value}%`,
-              height: "100%",
-              borderRadius: 999,
-              background: `linear-gradient(90deg, ${bar.color}99, ${bar.color})`
-            }
-          }
-        )
+        children: "ERP Platform"
       }
     )
-  ] }, bar.label)) });
-};
-const ChatBubble = ({
-  role,
-  text,
-  typing = false
-}) => {
-  const align = role === "user" ? "flex-end" : "flex-start";
-  const bg = role === "user" ? "linear-gradient(135deg, rgba(98,95,255,0.95), rgba(172,75,255,0.82))" : "rgba(255,255,255,0.06)";
-  return /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "flex", justifyContent: align, marginBottom: 16 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-    "div",
-    {
-      style: {
-        maxWidth: "82%",
-        borderRadius: 22,
-        padding: "16px 18px",
-        border: role === "assistant" ? `1px solid ${BRAND.panelBorder}` : "none",
-        background: bg,
-        color: "#fff",
-        fontSize: 18,
-        lineHeight: 1.5,
-        fontWeight: 600
-      },
-      children: typing ? /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "flex", gap: 8, padding: "4px 0" }, children: [0, 1, 2].map((dot) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        "div",
+  ] })
+] });
+const Eyebrow = ({
+  label,
+  accent = BRAND.indigo
+}) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+  "div",
+  {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "10px 18px",
+      borderRadius: 999,
+      border: `1px solid ${accent}55`,
+      background: `${accent}14`,
+      fontSize: 16,
+      fontWeight: 800,
+      color: BRAND.indigoSoft,
+      textTransform: "uppercase",
+      letterSpacing: "0.24em"
+    },
+    children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        "span",
         {
           style: {
             width: 10,
             height: 10,
             borderRadius: 999,
-            background: BRAND.indigoSoft,
-            opacity: 0.9 - dot * 0.2
+            background: accent,
+            boxShadow: `0 0 20px ${accent}`
           }
-        },
-        dot
-      )) }) : text
+        }
+      ),
+      label
+    ]
+  }
+);
+const TextBlock = ({ title, subtitle, align = "left", maxWidth = 720 }) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+  "div",
+  {
+    style: {
+      maxWidth,
+      textAlign: align
+    },
+    children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        "div",
+        {
+          style: {
+            marginTop: 22,
+            fontSize: align === "center" ? 64 : 58,
+            lineHeight: 1.04,
+            fontWeight: 800,
+            letterSpacing: "-0.055em",
+            color: BRAND.text
+          },
+          children: title
+        }
+      ),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        "div",
+        {
+          style: {
+            marginTop: 16,
+            fontSize: 22,
+            lineHeight: 1.45,
+            color: BRAND.textMuted,
+            fontWeight: 500
+          },
+          children: subtitle
+        }
+      )
+    ]
+  }
+);
+const GlassCard = ({ title, style, children }) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+  "div",
+  {
+    style: {
+      borderRadius: 28,
+      border: `1px solid ${BRAND.border}`,
+      background: "rgba(9,17,40,0.68)",
+      boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+      backdropFilter: "blur(14px)",
+      padding: 22,
+      ...style
+    },
+    children: [
+      title ? /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        "div",
+        {
+          style: {
+            fontSize: 14,
+            textTransform: "uppercase",
+            letterSpacing: "0.24em",
+            color: BRAND.textSoft,
+            fontWeight: 800,
+            marginBottom: 16
+          },
+          children: title
+        }
+      ) : null,
+      children
+    ]
+  }
+);
+const ScreenshotCard = ({
+  src,
+  frame,
+  delay = 0,
+  scaleFrom = 0.94,
+  xFrom = 0,
+  yFrom = 24,
+  rotation = 0,
+  style
+}) => {
+  const progress = makeSpring(frame, delay, 30);
+  const opacity = (0,esm.interpolate)(progress, [0, 1], [0, 1]);
+  const scale = (0,esm.interpolate)(progress, [0, 1], [scaleFrom, 1]);
+  const x = (0,esm.interpolate)(progress, [0, 1], [xFrom, 0]);
+  const y = (0,esm.interpolate)(progress, [0, 1], [yFrom, 0]);
+  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
+    "div",
+    {
+      style: {
+        borderRadius: 30,
+        border: `1px solid ${BRAND.border}`,
+        background: "rgba(255,255,255,0.06)",
+        boxShadow: "0 34px 90px rgba(0,0,0,0.4)",
+        overflow: "hidden",
+        opacity,
+        transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotation}deg)`,
+        ...style
+      },
+      children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        esm.Img,
+        {
+          src,
+          style: {
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block"
+          }
+        }
+      )
     }
-  ) });
+  );
+};
+const FloatingBadge = ({ title, value, tone = "indigo", frame, delay = 0, style }) => {
+  const colors = {
+    indigo: BRAND.indigo,
+    cyan: BRAND.cyan,
+    purple: BRAND.purple,
+    green: BRAND.green
+  };
+  const rise = (0,esm.interpolate)(
+    makeSpring(frame, delay),
+    [0, 1],
+    [20, 0]
+  );
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+    GlassCard,
+    {
+      style: {
+        width: 240,
+        opacity: makeSpring(frame, delay),
+        transform: `translateY(${rise}px)`,
+        ...style
+      },
+      children: [
+        /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              fontSize: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.24em",
+              color: BRAND.textSoft,
+              fontWeight: 800
+            },
+            children: title
+          }
+        ),
+        /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              marginTop: 12,
+              fontSize: 34,
+              fontWeight: 800,
+              color: BRAND.text
+            },
+            children: value
+          }
+        ),
+        /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              marginTop: 14,
+              height: 8,
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.08)",
+              overflow: "hidden"
+            },
+            children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+              "div",
+              {
+                style: {
+                  width: "70%",
+                  height: "100%",
+                  borderRadius: 999,
+                  background: `linear-gradient(90deg, ${colors[tone]}66, ${colors[tone]})`
+                }
+              }
+            )
+          }
+        )
+      ]
+    }
+  );
+};
+const VoiceActionCard = ({ label, value, frame, delay }) => {
+  const enter = makeSpring(frame, delay, 26);
+  const opacity = (0,esm.interpolate)(enter, [0, 1], [0, 1]);
+  const y = (0,esm.interpolate)(enter, [0, 1], [26, 0]);
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+    "div",
+    {
+      style: {
+        borderRadius: 22,
+        border: `1px solid ${BRAND.border}`,
+        background: "rgba(255,255,255,0.06)",
+        padding: "18px 20px",
+        opacity,
+        transform: `translateY(${y}px)`
+      },
+      children: [
+        /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              color: BRAND.textSoft,
+              fontSize: 12,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              fontWeight: 800
+            },
+            children: label
+          }
+        ),
+        /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              marginTop: 10,
+              fontSize: 22,
+              fontWeight: 800,
+              color: BRAND.text
+            },
+            children: value
+          }
+        )
+      ]
+    }
+  );
+};
+const TypewriterLine = ({
+  text,
+  frame,
+  start
+}) => {
+  const count = Math.floor(
+    (0,esm.interpolate)(frame, [start, start + 44], [0, text.length], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp"
+    })
+  );
+  return /* @__PURE__ */ (0,jsx_runtime.jsx)(jsx_runtime.Fragment, { children: text.slice(0, count) });
+};
+const OpeningScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  const hero = makeSpring(frame, 8, 30);
+  const hubScale = (0,esm.interpolate)(hero, [0, 1], [0.8, 1]);
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 48 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 28
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+            "div",
+            {
+              style: {
+                position: "relative",
+                width: 660,
+                height: 300,
+                transform: `scale(${hubScale})`
+              },
+              children: [
+                [
+                  { label: "Missed Calls", x: 40, y: 70, color: BRAND.red },
+                  { label: "Invoices Due", x: 460, y: 44, color: BRAND.purple },
+                  { label: "Stock Sheet", x: 90, y: 204, color: BRAND.cyan },
+                  { label: "Order Slip", x: 432, y: 220, color: BRAND.green }
+                ].map((item, index) => {
+                  const float = (0,esm.interpolate)(
+                    (frame + index * 8) % 80,
+                    [0, 40, 80],
+                    [-8, 8, -8]
+                  );
+                  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+                    "div",
+                    {
+                      style: {
+                        position: "absolute",
+                        left: item.x,
+                        top: item.y + float,
+                        padding: "16px 18px",
+                        borderRadius: 20,
+                        border: `1px solid ${BRAND.border}`,
+                        background: "rgba(255,255,255,0.06)",
+                        boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
+                        color: BRAND.text,
+                        fontSize: 18,
+                        fontWeight: 700
+                      },
+                      children: [
+                        /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                          "span",
+                          {
+                            style: {
+                              display: "inline-block",
+                              width: 10,
+                              height: 10,
+                              marginRight: 10,
+                              borderRadius: 999,
+                              background: item.color,
+                              boxShadow: `0 0 18px ${item.color}`
+                            }
+                          }
+                        ),
+                        item.label
+                      ]
+                    },
+                    item.label
+                  );
+                }),
+                /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                  "div",
+                  {
+                    style: {
+                      position: "absolute",
+                      left: "50%",
+                      top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 210,
+                      height: 210,
+                      borderRadius: 999,
+                      background: "radial-gradient(circle, rgba(98,95,255,0.38) 0%, rgba(172,75,255,0.2) 48%, rgba(6,182,212,0.08) 72%, transparent 100%)",
+                      border: `1px solid ${BRAND.border}`,
+                      boxShadow: "0 0 120px rgba(98,95,255,0.4)"
+                    }
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { textAlign: "center" }, children: [
+            /* @__PURE__ */ (0,jsx_runtime.jsx)(
+              "div",
+              {
+                style: {
+                  fontSize: 72,
+                  lineHeight: 1.02,
+                  fontWeight: 800,
+                  letterSpacing: "-0.06em",
+                  color: BRAND.text
+                },
+                children: "Your Business."
+              }
+            ),
+            /* @__PURE__ */ (0,jsx_runtime.jsx)(
+              "div",
+              {
+                style: {
+                  marginTop: 10,
+                  fontSize: 72,
+                  lineHeight: 1.02,
+                  fontWeight: 800,
+                  letterSpacing: "-0.06em",
+                  background: "linear-gradient(90deg, #ffffff, #c4cbff 38%, #8bbdff 74%, #8af3ff 100%)",
+                  backgroundClip: "text",
+                  color: "transparent"
+                },
+                children: "Automated by AI."
+              }
+            )
+          ] })
+        ]
+      }
+    )
+  ] });
+};
+const DashboardScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 48 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 140 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Intelligent ERP Command Center" }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        TextBlock,
+        {
+          title: "One intelligent platform for business operations.",
+          subtitle: "Sales, customers, products, finance, reports, and AI assistance in one clean daily workspace.",
+          maxWidth: 700
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.dashboard,
+        frame,
+        delay: 14,
+        xFrom: 48,
+        yFrom: 30,
+        style: {
+          position: "absolute",
+          right: 62,
+          top: 170,
+          width: 1120,
+          height: 760
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      FloatingBadge,
+      {
+        title: "Total revenue",
+        value: "PKR 839,999.9",
+        tone: "indigo",
+        frame,
+        delay: 34,
+        style: { position: "absolute", left: 80, bottom: 166 }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      FloatingBadge,
+      {
+        title: "Enterprise health",
+        value: "84 / 100",
+        tone: "green",
+        frame,
+        delay: 46,
+        style: { position: "absolute", left: 350, bottom: 110 }
+      }
+    )
+  ] });
+};
+const ManagementScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 54 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 150 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Customers + Products", accent: BRAND.cyan }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        TextBlock,
+        {
+          title: "Organize customers, products, and inventory.",
+          subtitle: "Built around the real WhatsQuery interface, with clean tables, direct actions, and room to scale.",
+          maxWidth: 680
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.customers,
+        frame,
+        delay: 18,
+        xFrom: -38,
+        yFrom: 28,
+        rotation: -1.2,
+        style: {
+          position: "absolute",
+          left: 70,
+          bottom: 90,
+          width: 900,
+          height: 520
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.products,
+        frame,
+        delay: 32,
+        xFrom: 50,
+        yFrom: 28,
+        rotation: 1.1,
+        style: {
+          position: "absolute",
+          right: 70,
+          bottom: 126,
+          width: 860,
+          height: 500
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      FloatingBadge,
+      {
+        title: "Customer export",
+        value: "Approval ready",
+        tone: "purple",
+        frame,
+        delay: 48,
+        style: { position: "absolute", right: 190, top: 248 }
+      }
+    )
+  ] });
+};
+const SalesScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 54 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 140 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Sales + Invoices", accent: BRAND.purple }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        TextBlock,
+        {
+          title: "Create invoices. Track payments. Stay in control.",
+          subtitle: "Quote to invoice, payment tracking, and export-ready documents from one consistent sales ledger.",
+          maxWidth: 700
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.salesA,
+        frame,
+        delay: 12,
+        xFrom: -24,
+        yFrom: 34,
+        style: {
+          position: "absolute",
+          left: 70,
+          bottom: 92,
+          width: 850,
+          height: 490
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.salesB,
+        frame,
+        delay: 24,
+        xFrom: 40,
+        yFrom: 20,
+        style: {
+          position: "absolute",
+          right: 74,
+          bottom: 122,
+          width: 840,
+          height: 460
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Invoice workflow",
+        style: {
+          position: "absolute",
+          left: 960,
+          top: 238,
+          width: 340,
+          opacity: makeSpring(frame, 40)
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "grid", gap: 12 }, children: [
+          "Customer selected",
+          "Products added",
+          "Invoice generated",
+          "Payment status updated"
+        ].map((step, index) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+          "div",
+          {
+            style: {
+              borderRadius: 18,
+              border: `1px solid ${BRAND.border}`,
+              background: "rgba(255,255,255,0.05)",
+              padding: "14px 16px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12
+            },
+            children: [
+              /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                "div",
+                {
+                  style: {
+                    width: 26,
+                    height: 26,
+                    borderRadius: 999,
+                    background: index < 3 ? "linear-gradient(135deg, rgba(172,75,255,0.95), rgba(98,95,255,0.85))" : "linear-gradient(135deg, rgba(16,185,129,0.95), rgba(6,182,212,0.75))"
+                  }
+                }
+              ),
+              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 18, fontWeight: 700, color: BRAND.text }, children: step })
+            ]
+          },
+          step
+        )) })
+      }
+    )
+  ] });
+};
+const ReportsScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 56 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 150 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Reports + Analytics", accent: BRAND.green }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        TextBlock,
+        {
+          title: "Turn operations into clear business insights.",
+          subtitle: "Filter by cycle, review revenue, and surface decision-ready trends without leaving the ERP.",
+          maxWidth: 700
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.reports,
+        frame,
+        delay: 18,
+        xFrom: 54,
+        yFrom: 32,
+        style: {
+          position: "absolute",
+          right: 70,
+          top: 220,
+          width: 1140,
+          height: 680
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      FloatingBadge,
+      {
+        title: "Net profit",
+        value: "PKR 40,000",
+        tone: "green",
+        frame,
+        delay: 36,
+        style: { position: "absolute", left: 86, bottom: 170 }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      FloatingBadge,
+      {
+        title: "Total revenue",
+        value: "PKR 840,000",
+        tone: "indigo",
+        frame,
+        delay: 50,
+        style: { position: "absolute", left: 356, bottom: 104 }
+      }
+    )
+  ] });
+};
+const AssistantScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 56 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 148 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Built-in AI Assistant", accent: BRAND.indigo }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        TextBlock,
+        {
+          title: "Built-in AI assistance for faster decisions.",
+          subtitle: "Ask in plain language, review a safe action preview, and move from question to workflow in seconds.",
+          maxWidth: 710
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.assistant,
+        frame,
+        delay: 16,
+        xFrom: 36,
+        yFrom: 30,
+        style: {
+          position: "absolute",
+          right: 70,
+          top: 222,
+          width: 1110,
+          height: 650
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      GlassCard,
+      {
+        title: "Live command",
+        style: {
+          position: "absolute",
+          left: 84,
+          bottom: 110,
+          width: 540,
+          opacity: makeSpring(frame, 40)
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                fontSize: 24,
+                lineHeight: 1.5,
+                fontWeight: 700,
+                color: BRAND.text
+              },
+              children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                TypewriterLine,
+                {
+                  text: "Show today's sales and unpaid invoices for Ali Traders.",
+                  frame,
+                  start: 44
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 18,
+                fontSize: 16,
+                color: BRAND.textMuted,
+                lineHeight: 1.5
+              },
+              children: "Deterministic assistant. Preview-first. Role-safe execution."
+            }
+          )
+        ]
+      }
+    )
+  ] });
+};
+const VoiceScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 56 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 146 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "WhatsQuery Voice", accent: BRAND.cyan }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        TextBlock,
+        {
+          title: "AI Receptionist for calls, bookings, and orders.",
+          subtitle: "Voice-ready expansion for inbound business workflows, lead capture, and connected ERP updates.",
+          maxWidth: 730
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Voice-ready workflow",
+        style: {
+          position: "absolute",
+          left: 70,
+          bottom: 110,
+          width: 720,
+          height: 460
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }, children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            VoiceActionCard,
+            {
+              label: "Incoming call",
+              value: "Ahmed Electronics",
+              frame,
+              delay: 18
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            VoiceActionCard,
+            {
+              label: "AI call answered",
+              value: "Greeting delivered",
+              frame,
+              delay: 30
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            VoiceActionCard,
+            {
+              label: "Order synced",
+              value: "2 items pushed",
+              frame,
+              delay: 42
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            VoiceActionCard,
+            {
+              label: "Customer saved",
+              value: "Lead captured",
+              frame,
+              delay: 54
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            VoiceActionCard,
+            {
+              label: "Table booked",
+              value: "Tomorrow \xB7 7:30 PM",
+              frame,
+              delay: 66
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            VoiceActionCard,
+            {
+              label: "Invoice generated",
+              value: "INV-4081 draft",
+              frame,
+              delay: 78
+            }
+          )
+        ] })
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.integrations,
+        frame,
+        delay: 26,
+        xFrom: 42,
+        yFrom: 28,
+        style: {
+          position: "absolute",
+          right: 70,
+          bottom: 96,
+          width: 980,
+          height: 560
+        }
+      }
+    )
+  ] });
+};
+const OutroScene = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  const scale = makeSpring(frame, 8, 28);
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column"
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                transform: `scale(${(0,esm.interpolate)(scale, [0, 1], [0.9, 1])})`
+              },
+              children: /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+                "div",
+                {
+                  style: {
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 20,
+                    padding: "24px 30px",
+                    borderRadius: 34,
+                    border: `1px solid ${BRAND.border}`,
+                    background: "rgba(255,255,255,0.06)",
+                    boxShadow: "0 34px 90px rgba(0,0,0,0.4)"
+                  },
+                  children: [
+                    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                      esm.Img,
+                      {
+                        src: SHOTS.logo,
+                        style: {
+                          width: 74,
+                          height: 74,
+                          objectFit: "contain"
+                        }
+                      }
+                    ),
+                    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { children: [
+                      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                        "div",
+                        {
+                          style: {
+                            fontSize: 48,
+                            fontWeight: 800,
+                            letterSpacing: "-0.05em",
+                            color: BRAND.text
+                          },
+                          children: "WhatsQuery"
+                        }
+                      ),
+                      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                        "div",
+                        {
+                          style: {
+                            marginTop: 8,
+                            fontSize: 18,
+                            color: BRAND.indigoSoft,
+                            fontWeight: 800,
+                            letterSpacing: "0.26em",
+                            textTransform: "uppercase"
+                          },
+                          children: "ERP + AI Receptionist"
+                        }
+                      )
+                    ] })
+                  ]
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 36,
+                fontSize: 30,
+                color: BRAND.text,
+                fontWeight: 700
+              },
+              children: "Launch your AI-powered business system."
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 14,
+                fontSize: 22,
+                color: BRAND.textMuted,
+                fontWeight: 500
+              },
+              children: "whatsquery.com"
+            }
+          )
+        ]
+      }
+    )
+  ] });
 };
 const WhatsQueryDemo = () => {
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 0, durationInFrames: 150, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(HookScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 150, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(DashboardScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 360, durationInFrames: 300, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(ManagementScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 660, durationInFrames: 300, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(FinanceScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 960, durationInFrames: 300, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(ReportsScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1260, durationInFrames: 240, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(AssistantScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1500, durationInFrames: 180, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(SecurityScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1680, durationInFrames: 120, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(OutroScene, {}) })
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(OpeningScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 90, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(DashboardScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 300, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(ManagementScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 510, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(SalesScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 720, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(ReportsScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 930, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(AssistantScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1140, durationInFrames: 270, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(VoiceScene, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1410, durationInFrames: 390, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(OutroScene, {}) })
   ] });
 };
 
@@ -2314,6 +1737,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.2.0 | MIT License |
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
+    --spacing: 0.25rem;
     --default-font-family: var(--font-sans);
     --default-font-feature-settings: var(--font-sans--font-feature-settings);
     --default-font-variation-settings: var(
@@ -2479,6 +1903,12 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.2.0 | MIT License |
   .relative {
     position: relative;
   }
+  .start {
+    inset-inline-start: var(--spacing);
+  }
+  .block {
+    display: block;
+  }
   .flex {
     display: flex;
   }
@@ -2487,6 +1917,9 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.2.0 | MIT License |
   }
   .hidden {
     display: none;
+  }
+  .inline-block {
+    display: inline-block;
   }
   .inline-flex {
     display: inline-flex;
@@ -2500,9 +1933,6 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.2.0 | MIT License |
   }
   .uppercase {
     text-transform: uppercase;
-  }
-  .filter {
-    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
 }
 html, body, #root {
@@ -2536,59 +1966,6 @@ html, body, #root {
   inherits: false;
   initial-value: solid;
 }
-@property --tw-blur {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-brightness {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-contrast {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-grayscale {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-hue-rotate {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-invert {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-opacity {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-saturate {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-sepia {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-drop-shadow {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-drop-shadow-color {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-drop-shadow-alpha {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 100%;
-}
-@property --tw-drop-shadow-size {
-  syntax: "*";
-  inherits: false;
-}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
@@ -2598,23 +1975,10 @@ html, body, #root {
       --tw-skew-x: initial;
       --tw-skew-y: initial;
       --tw-border-style: solid;
-      --tw-blur: initial;
-      --tw-brightness: initial;
-      --tw-contrast: initial;
-      --tw-grayscale: initial;
-      --tw-hue-rotate: initial;
-      --tw-invert: initial;
-      --tw-opacity: initial;
-      --tw-saturate: initial;
-      --tw-sepia: initial;
-      --tw-drop-shadow: initial;
-      --tw-drop-shadow-color: initial;
-      --tw-drop-shadow-alpha: 100%;
-      --tw-drop-shadow-size: initial;
     }
   }
 }
-`, "",{"version":3,"sources":["webpack://./src/index.css"],"names":[],"mappings":"AAAA,gEAAgE;AAChE,iBAAiB;AACjB,yCAAyC;AACzC;EACE;IACE;6DACyD;IACzD;iDAC6C;IAC7C,uCAAuC;IACvC,wEAAwE;IACxE;;KAEC;IACD,4CAA4C;IAC5C;;KAEC;IACD;;KAEC;EACH;AACF;AACA;EACE;IACE,sBAAsB;IACtB,SAAS;IACT,UAAU;IACV,eAAe;EACjB;EACA;IACE,gBAAgB;IAChB,8BAA8B;IAC9B,WAAW;IACX,6JAA6J;IAC7J,mEAAmE;IACnE,yEAAyE;IACzE,wCAAwC;EAC1C;EACA;IACE,oBAAoB;EACtB;EACA;IACE,SAAS;IACT,cAAc;IACd,qBAAqB;EACvB;EACA;IACE,yCAAyC;IACzC,iCAAiC;EACnC;EACA;IACE,kBAAkB;IAClB,oBAAoB;EACtB;EACA;IACE,cAAc;IACd,gCAAgC;IAChC,wBAAwB;EAC1B;EACA;IACE,mBAAmB;EACrB;EACA;IACE,kJAAkJ;IAClJ,0EAA0E;IAC1E,8EAA8E;IAC9E,cAAc;EAChB;EACA;IACE,cAAc;EAChB;EACA;IACE,cAAc;IACd,cAAc;IACd,kBAAkB;IAClB,wBAAwB;EAC1B;EACA;IACE,eAAe;EACjB;EACA;IACE,WAAW;EACb;EACA;IACE,cAAc;IACd,qBAAqB;IACrB,yBAAyB;EAC3B;EACA;IACE,aAAa;EACf;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,kBAAkB;EACpB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,cAAc;IACd,sBAAsB;EACxB;EACA;IACE,eAAe;IACf,YAAY;EACd;EACA;IACE,aAAa;IACb,8BAA8B;IAC9B,gCAAgC;IAChC,uBAAuB;IACvB,cAAc;IACd,gBAAgB;IAChB,6BAA6B;IAC7B,UAAU;EACZ;EACA;IACE,mBAAmB;EACrB;EACA;IACE,0BAA0B;EAC5B;EACA;IACE,sBAAsB;EACxB;EACA;IACE,UAAU;IACV,mBAAmB;IACnB;MACE,yDAAyD;IAC3D;EACF;EACA;IACE,gBAAgB;EAClB;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,eAAe;IACf,mBAAmB;EACrB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,UAAU;EACZ;EACA;IACE,gBAAgB;EAClB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,YAAY;EACd;EACA;IACE,wBAAwB;EAC1B;AACF;AACA;EACE;IACE,kBAAkB;EACpB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,oBAAoB;EACtB;EACA;IACE,0GAA0G;EAC5G;EACA;IACE,oCAAoC;IACpC,iBAAiB;EACnB;EACA;IACE,yBAAyB;EAC3B;EACA;IACE,0LAA0L;EAC5L;AACF;AACA;EACE,SAAS;EACT,WAAW;EACX,YAAY;EACZ,mBAAmB;AACrB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;EACf,oBAAoB;AACtB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,sBAAsB;EACtB,eAAe;EACf,mBAAmB;AACrB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE;IACE;MACE,sBAAsB;MACtB,sBAAsB;MACtB,sBAAsB;MACtB,oBAAoB;MACpB,oBAAoB;MACpB,wBAAwB;MACxB,kBAAkB;MAClB,wBAAwB;MACxB,sBAAsB;MACtB,uBAAuB;MACvB,wBAAwB;MACxB,oBAAoB;MACpB,qBAAqB;MACrB,sBAAsB;MACtB,mBAAmB;MACnB,yBAAyB;MACzB,+BAA+B;MAC/B,4BAA4B;MAC5B,8BAA8B;IAChC;EACF;AACF","sourcesContent":["/*! tailwindcss v4.2.0 | MIT License | https://tailwindcss.com */\n@layer properties;\n@layer theme, base, components, utilities;\n@layer theme {\n  :root, :host {\n    --font-sans: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,\n      \"Liberation Mono\", \"Courier New\", monospace;\n    --default-font-family: var(--font-sans);\n    --default-font-feature-settings: var(--font-sans--font-feature-settings);\n    --default-font-variation-settings: var(\n      --font-sans--font-variation-settings\n    );\n    --default-mono-font-family: var(--font-mono);\n    --default-mono-font-feature-settings: var(\n      --font-mono--font-feature-settings\n    );\n    --default-mono-font-variation-settings: var(\n      --font-mono--font-variation-settings\n    );\n  }\n}\n@layer base {\n  *, ::after, ::before, ::backdrop, ::file-selector-button {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n    border: 0 solid;\n  }\n  html, :host {\n    line-height: 1.5;\n    -webkit-text-size-adjust: 100%;\n    tab-size: 4;\n    font-family: var( --default-font-family, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\" );\n    font-feature-settings: var(--default-font-feature-settings, normal);\n    font-variation-settings: var( --default-font-variation-settings, normal );\n    -webkit-tap-highlight-color: transparent;\n  }\n  body {\n    line-height: inherit;\n  }\n  hr {\n    height: 0;\n    color: inherit;\n    border-top-width: 1px;\n  }\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n  h1, h2, h3, h4, h5, h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n  b, strong {\n    font-weight: bolder;\n  }\n  code, kbd, samp, pre {\n    font-family: var( --default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace );\n    font-feature-settings: var( --default-mono-font-feature-settings, normal );\n    font-variation-settings: var( --default-mono-font-variation-settings, normal );\n    font-size: 1em;\n  }\n  small {\n    font-size: 80%;\n  }\n  sub, sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n  sub {\n    bottom: -0.25em;\n  }\n  sup {\n    top: -0.5em;\n  }\n  table {\n    text-indent: 0;\n    border-color: inherit;\n    border-collapse: collapse;\n  }\n  :-moz-focusring {\n    outline: auto;\n  }\n  progress {\n    vertical-align: baseline;\n  }\n  summary {\n    display: list-item;\n  }\n  ol, ul, menu {\n    list-style: none;\n  }\n  img, svg, video, canvas, audio, iframe, embed, object {\n    display: block;\n    vertical-align: middle;\n  }\n  img, video {\n    max-width: 100%;\n    height: auto;\n  }\n  button, input, select, optgroup, textarea, ::file-selector-button {\n    font: inherit;\n    font-feature-settings: inherit;\n    font-variation-settings: inherit;\n    letter-spacing: inherit;\n    color: inherit;\n    border-radius: 0;\n    background-color: transparent;\n    opacity: 1;\n  }\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n  ::placeholder {\n    opacity: 1;\n    color: currentColor;\n    @supports (color: color-mix(in lab, red, red)) {\n      color: color-mix(in oklab, currentColor 50%, transparent);\n    }\n  }\n  textarea {\n    resize: vertical;\n  }\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n  ::-webkit-date-and-time-value {\n    min-height: 1lh;\n    text-align: inherit;\n  }\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n  button, input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]), ::file-selector-button {\n    appearance: button;\n  }\n  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {\n    height: auto;\n  }\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n@layer utilities {\n  .absolute {\n    position: absolute;\n  }\n  .relative {\n    position: relative;\n  }\n  .flex {\n    display: flex;\n  }\n  .grid {\n    display: grid;\n  }\n  .hidden {\n    display: none;\n  }\n  .inline-flex {\n    display: inline-flex;\n  }\n  .transform {\n    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);\n  }\n  .border {\n    border-style: var(--tw-border-style);\n    border-width: 1px;\n  }\n  .uppercase {\n    text-transform: uppercase;\n  }\n  .filter {\n    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);\n  }\n}\nhtml, body, #root {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  background: #020617;\n}\n@property --tw-rotate-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-z {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-border-style {\n  syntax: \"*\";\n  inherits: false;\n  initial-value: solid;\n}\n@property --tw-blur {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-brightness {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-contrast {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-grayscale {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-hue-rotate {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-invert {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-opacity {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-saturate {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-sepia {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-drop-shadow {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-drop-shadow-color {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-drop-shadow-alpha {\n  syntax: \"<percentage>\";\n  inherits: false;\n  initial-value: 100%;\n}\n@property --tw-drop-shadow-size {\n  syntax: \"*\";\n  inherits: false;\n}\n@layer properties {\n  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {\n    *, ::before, ::after, ::backdrop {\n      --tw-rotate-x: initial;\n      --tw-rotate-y: initial;\n      --tw-rotate-z: initial;\n      --tw-skew-x: initial;\n      --tw-skew-y: initial;\n      --tw-border-style: solid;\n      --tw-blur: initial;\n      --tw-brightness: initial;\n      --tw-contrast: initial;\n      --tw-grayscale: initial;\n      --tw-hue-rotate: initial;\n      --tw-invert: initial;\n      --tw-opacity: initial;\n      --tw-saturate: initial;\n      --tw-sepia: initial;\n      --tw-drop-shadow: initial;\n      --tw-drop-shadow-color: initial;\n      --tw-drop-shadow-alpha: 100%;\n      --tw-drop-shadow-size: initial;\n    }\n  }\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/index.css"],"names":[],"mappings":"AAAA,gEAAgE;AAChE,iBAAiB;AACjB,yCAAyC;AACzC;EACE;IACE;6DACyD;IACzD;iDAC6C;IAC7C,kBAAkB;IAClB,uCAAuC;IACvC,wEAAwE;IACxE;;KAEC;IACD,4CAA4C;IAC5C;;KAEC;IACD;;KAEC;EACH;AACF;AACA;EACE;IACE,sBAAsB;IACtB,SAAS;IACT,UAAU;IACV,eAAe;EACjB;EACA;IACE,gBAAgB;IAChB,8BAA8B;IAC9B,WAAW;IACX,6JAA6J;IAC7J,mEAAmE;IACnE,yEAAyE;IACzE,wCAAwC;EAC1C;EACA;IACE,oBAAoB;EACtB;EACA;IACE,SAAS;IACT,cAAc;IACd,qBAAqB;EACvB;EACA;IACE,yCAAyC;IACzC,iCAAiC;EACnC;EACA;IACE,kBAAkB;IAClB,oBAAoB;EACtB;EACA;IACE,cAAc;IACd,gCAAgC;IAChC,wBAAwB;EAC1B;EACA;IACE,mBAAmB;EACrB;EACA;IACE,kJAAkJ;IAClJ,0EAA0E;IAC1E,8EAA8E;IAC9E,cAAc;EAChB;EACA;IACE,cAAc;EAChB;EACA;IACE,cAAc;IACd,cAAc;IACd,kBAAkB;IAClB,wBAAwB;EAC1B;EACA;IACE,eAAe;EACjB;EACA;IACE,WAAW;EACb;EACA;IACE,cAAc;IACd,qBAAqB;IACrB,yBAAyB;EAC3B;EACA;IACE,aAAa;EACf;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,kBAAkB;EACpB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,cAAc;IACd,sBAAsB;EACxB;EACA;IACE,eAAe;IACf,YAAY;EACd;EACA;IACE,aAAa;IACb,8BAA8B;IAC9B,gCAAgC;IAChC,uBAAuB;IACvB,cAAc;IACd,gBAAgB;IAChB,6BAA6B;IAC7B,UAAU;EACZ;EACA;IACE,mBAAmB;EACrB;EACA;IACE,0BAA0B;EAC5B;EACA;IACE,sBAAsB;EACxB;EACA;IACE,UAAU;IACV,mBAAmB;IACnB;MACE,yDAAyD;IAC3D;EACF;EACA;IACE,gBAAgB;EAClB;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,eAAe;IACf,mBAAmB;EACrB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,UAAU;EACZ;EACA;IACE,gBAAgB;EAClB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,YAAY;EACd;EACA;IACE,wBAAwB;EAC1B;AACF;AACA;EACE;IACE,kBAAkB;EACpB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,kCAAkC;EACpC;EACA;IACE,cAAc;EAChB;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,qBAAqB;EACvB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,0GAA0G;EAC5G;EACA;IACE,oCAAoC;IACpC,iBAAiB;EACnB;EACA;IACE,yBAAyB;EAC3B;AACF;AACA;EACE,SAAS;EACT,WAAW;EACX,YAAY;EACZ,mBAAmB;AACrB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;EACf,oBAAoB;AACtB;AACA;EACE;IACE;MACE,sBAAsB;MACtB,sBAAsB;MACtB,sBAAsB;MACtB,oBAAoB;MACpB,oBAAoB;MACpB,wBAAwB;IAC1B;EACF;AACF","sourcesContent":["/*! tailwindcss v4.2.0 | MIT License | https://tailwindcss.com */\n@layer properties;\n@layer theme, base, components, utilities;\n@layer theme {\n  :root, :host {\n    --font-sans: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,\n      \"Liberation Mono\", \"Courier New\", monospace;\n    --spacing: 0.25rem;\n    --default-font-family: var(--font-sans);\n    --default-font-feature-settings: var(--font-sans--font-feature-settings);\n    --default-font-variation-settings: var(\n      --font-sans--font-variation-settings\n    );\n    --default-mono-font-family: var(--font-mono);\n    --default-mono-font-feature-settings: var(\n      --font-mono--font-feature-settings\n    );\n    --default-mono-font-variation-settings: var(\n      --font-mono--font-variation-settings\n    );\n  }\n}\n@layer base {\n  *, ::after, ::before, ::backdrop, ::file-selector-button {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n    border: 0 solid;\n  }\n  html, :host {\n    line-height: 1.5;\n    -webkit-text-size-adjust: 100%;\n    tab-size: 4;\n    font-family: var( --default-font-family, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\" );\n    font-feature-settings: var(--default-font-feature-settings, normal);\n    font-variation-settings: var( --default-font-variation-settings, normal );\n    -webkit-tap-highlight-color: transparent;\n  }\n  body {\n    line-height: inherit;\n  }\n  hr {\n    height: 0;\n    color: inherit;\n    border-top-width: 1px;\n  }\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n  h1, h2, h3, h4, h5, h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n  b, strong {\n    font-weight: bolder;\n  }\n  code, kbd, samp, pre {\n    font-family: var( --default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace );\n    font-feature-settings: var( --default-mono-font-feature-settings, normal );\n    font-variation-settings: var( --default-mono-font-variation-settings, normal );\n    font-size: 1em;\n  }\n  small {\n    font-size: 80%;\n  }\n  sub, sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n  sub {\n    bottom: -0.25em;\n  }\n  sup {\n    top: -0.5em;\n  }\n  table {\n    text-indent: 0;\n    border-color: inherit;\n    border-collapse: collapse;\n  }\n  :-moz-focusring {\n    outline: auto;\n  }\n  progress {\n    vertical-align: baseline;\n  }\n  summary {\n    display: list-item;\n  }\n  ol, ul, menu {\n    list-style: none;\n  }\n  img, svg, video, canvas, audio, iframe, embed, object {\n    display: block;\n    vertical-align: middle;\n  }\n  img, video {\n    max-width: 100%;\n    height: auto;\n  }\n  button, input, select, optgroup, textarea, ::file-selector-button {\n    font: inherit;\n    font-feature-settings: inherit;\n    font-variation-settings: inherit;\n    letter-spacing: inherit;\n    color: inherit;\n    border-radius: 0;\n    background-color: transparent;\n    opacity: 1;\n  }\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n  ::placeholder {\n    opacity: 1;\n    color: currentColor;\n    @supports (color: color-mix(in lab, red, red)) {\n      color: color-mix(in oklab, currentColor 50%, transparent);\n    }\n  }\n  textarea {\n    resize: vertical;\n  }\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n  ::-webkit-date-and-time-value {\n    min-height: 1lh;\n    text-align: inherit;\n  }\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n  button, input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]), ::file-selector-button {\n    appearance: button;\n  }\n  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {\n    height: auto;\n  }\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n@layer utilities {\n  .absolute {\n    position: absolute;\n  }\n  .relative {\n    position: relative;\n  }\n  .start {\n    inset-inline-start: var(--spacing);\n  }\n  .block {\n    display: block;\n  }\n  .flex {\n    display: flex;\n  }\n  .grid {\n    display: grid;\n  }\n  .hidden {\n    display: none;\n  }\n  .inline-block {\n    display: inline-block;\n  }\n  .inline-flex {\n    display: inline-flex;\n  }\n  .transform {\n    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);\n  }\n  .border {\n    border-style: var(--tw-border-style);\n    border-width: 1px;\n  }\n  .uppercase {\n    text-transform: uppercase;\n  }\n}\nhtml, body, #root {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  background: #020617;\n}\n@property --tw-rotate-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-z {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-border-style {\n  syntax: \"*\";\n  inherits: false;\n  initial-value: solid;\n}\n@layer properties {\n  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {\n    *, ::before, ::after, ::backdrop {\n      --tw-rotate-x: initial;\n      --tw-rotate-y: initial;\n      --tw-rotate-z: initial;\n      --tw-skew-x: initial;\n      --tw-skew-y: initial;\n      --tw-border-style: solid;\n    }\n  }\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
