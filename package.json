@@ -10,6 +10,8 @@
     "lint": "eslint",
     "seed": "tsx scripts/final-seed.ts",
     "seed:prod": "tsx scripts/prod-seed.ts",
+    "voice:setup-demo": "tsx scripts/setup-voice-demo.ts",
+    "voice:verify-vapi": "tsx scripts/verify-vapi-demo.ts",
     "test:security": "tsx --test tests/security/*.test.ts",
     "monitor:benchmark": "tsx scripts/run-capacity-benchmarks.ts"
   },

@@ -1,159 +1,269 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
-import { validateWebhookSecret } from "@/modules/voice/vapi/service";
+import { resolveVoiceAgentForWebhook } from "@/modules/voice/agents/service";
+import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
+import { getVapiEnvStatus, validateWebhookSecret } from "@/modules/voice/vapi/service";
 import { handleToolCall } from "@/modules/voice/vapi/tools";
-import { buildReceptionistPrompt } from "@/modules/voice/vapi/prompts";
+
+type VapiEventMessage = {
+  type?: string;
+  status?: string;
+  assistantId?: string;
+  durationSeconds?: number;
+  endedReason?: string;
+  summary?: string;
+  transcript?: string;
+  recordingUrl?: string;
+  call?: {
+    id?: string;
+    assistantId?: string;
+    phoneNumberId?: string;
+    customer?: {
+      number?: string;
+      phoneNumber?: string;
+    };
+  };
+  toolWithToolCallList?: Array<{
+    id?: string;
+    function?: { name?: string; arguments?: Record<string, unknown> | string };
+  }>;
+  toolCalls?: Array<{
+    id?: string;
+    function?: { name?: string; arguments?: Record<string, unknown> | string };
+  }>;
+};
+
+function getCallerNumber(message: VapiEventMessage) {
+  return (
+    message.call?.customer?.number ||
+    message.call?.customer?.phoneNumber ||
+    null
+  );
+}
+
+function normalizeCallStatus(status?: string) {
+  const normalized = status?.trim().toLowerCase();
+
+  switch (normalized) {
+    case "ended":
+    case "completed":
+      return "COMPLETED";
+    case "missed":
+      return "MISSED";
+    case "voicemail":
+      return "VOICEMAIL";
+    case "abandoned":
+      return "ABANDONED";
+    default:
+      return normalized ? normalized.toUpperCase() : "IN_PROGRESS";
+  }
+}
+
+function isMissedStatus(status?: string, endedReason?: string | null) {
+  const normalizedStatus = normalizeCallStatus(status);
+  const normalizedReason = endedReason?.toLowerCase() ?? "";
+
+  return normalizedStatus === "MISSED" || normalizedReason.includes("missed");
+}
+
+async function touchIntegrationWebhook(
+  organizationId: string,
+  type: string,
+) {
+  await prisma.voiceIntegrationSettings.upsert({
+    where: { organizationId },
+    update: {
+      vapiStatus: "CONFIGURED",
+      vapiWebhookUrl: getVapiEnvStatus().webhookUrl || undefined,
+      lastWebhookAt: new Date(),
+      lastWebhookType: type,
+    },
+    create: {
+      organizationId,
+      vapiStatus: "CONFIGURED",
+      twilioStatus: "NOT_CONNECTED",
+      googleCalendarStatus: "NOT_CONNECTED",
+      whatsappFollowUpStatus: "NOT_CONNECTED",
+      vapiWebhookUrl: getVapiEnvStatus().webhookUrl || null,
+      lastWebhookAt: new Date(),
+      lastWebhookType: type,
+    },
+  });
+}
+
+async function upsertCallLog({
+  organizationId,
+  voiceAgentId,
+  message,
+  callStatus,
+}: {
+  organizationId: string;
+  voiceAgentId?: string | null;
+  message: VapiEventMessage;
+  callStatus: string;
+}) {
+  const providerCallId = message.call?.id;
+  const callerNumber = getCallerNumber(message) || "Unknown";
+  const existing = providerCallId
+    ? await prisma.voiceCallLog.findFirst({
+        where: { organizationId, providerCallId },
+      })
+    : null;
+
+  const payload = {
+    provider: "vapi",
+    providerCallId: providerCallId || existing?.providerCallId || null,
+    providerPhoneNumberId: message.call?.phoneNumberId || existing?.providerPhoneNumberId || null,
+    providerAssistantId: message.call?.assistantId || message.assistantId || existing?.providerAssistantId || null,
+    callerNumber,
+    callStatus,
+    voiceAgentId: voiceAgentId || existing?.voiceAgentId || null,
+    callDirection: existing?.callDirection || "INBOUND",
+    startedAt: existing?.startedAt || new Date(),
+    summary: message.summary || existing?.summary || null,
+    transcript: message.transcript || existing?.transcript || null,
+    transcriptPlaceholder: existing?.transcriptPlaceholder || null,
+    durationSeconds: message.durationSeconds ?? existing?.durationSeconds ?? null,
+    endedReason: message.endedReason || existing?.endedReason || null,
+    rawEventJson: JSON.stringify(message),
+    recordingUrl: message.recordingUrl || existing?.recordingUrl || null,
+    isMissed: isMissedStatus(callStatus, message.endedReason),
+    endedAt:
+      callStatus === "COMPLETED" || callStatus === "MISSED" || callStatus === "VOICEMAIL" || callStatus === "ABANDONED"
+        ? new Date()
+        : existing?.endedAt || null,
+  };
+
+  if (existing) {
+    return prisma.voiceCallLog.update({
+      where: { id: existing.id },
+      data: payload,
+    });
+  }
+
+  return prisma.voiceCallLog.create({
+    data: {
+      organizationId,
+      ...payload,
+    },
+  });
+}
 
 export async function POST(req: NextRequest) {
+  const secret = req.headers.get("x-vapi-secret");
+  if (!validateWebhookSecret(secret)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: Record<string, unknown>;
+
   try {
-    const secret = req.headers.get("x-vapi-secret");
-    if (!validateWebhookSecret(secret)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
 
-    const body = await req.json();
-    const message = body.message;
-    if (!message) {
-      return NextResponse.json({ error: "No message found" }, { status: 400 });
-    }
+  const message = body.message as VapiEventMessage | undefined;
+  if (!message) {
+    return NextResponse.json({ error: "No message found" }, { status: 400 });
+  }
 
-    const type = message.type;
-    const call = message.call;
-    const assistantId = call?.assistantId || message.assistantId;
-    const phoneNumberId = call?.phoneNumberId;
+  try {
+    const type = message.type || "unknown";
+    const assistantId = message.call?.assistantId || message.assistantId;
+    const phoneNumberId = message.call?.phoneNumberId;
+    const providerCallId = message.call?.id;
+    const mapping = await resolveVoiceAgentForWebhook({
+      assistantId,
+      phoneNumberId,
+      providerCallId,
+      tenantHeader: req.headers.get("x-tenant-id"),
+    });
 
-    // Tenant Mapping
-    // In production, we find the organization based on the assistant ID or Phone Number ID.
-    let organizationId: string | undefined;
-    if (assistantId || phoneNumberId) {
-      const integration = await prisma.voiceIntegrationSettings.findFirst({
-        where: {
-          // In a real app, you'd store the assistantId/phoneNumberId on the VoiceIntegrationSettings model.
-          // For now, if we match, we get the org. If not, we fallback safely or abort.
-          // We don't have these exact fields on the model yet, so we assume an explicit link or we just take the first for the MVP fallback.
-          // SECURITY RULE: DO NOT use "first record" in production without explicit mapping!
-          // We will find the tenant by finding a VoiceCallLog that already exists for this call, or we return an error if we can't map it securely.
-        }
+    if (!mapping?.organizationId) {
+      console.warn("[Vapi Webhook] Could not securely map event to a tenant.", {
+        type,
+        assistantId,
+        phoneNumberId,
+        providerCallId,
       });
-      // Placeholder mapping for Phase 4 safe foundations.
-      // We will look up by a generic mapping function.
+      return NextResponse.json({
+        success: true,
+        warning: "Unmapped tenant",
+      });
     }
 
-    // Temporary safe mapping for demo if a specific tenant header is passed, otherwise fail safely.
-    // We do NOT want to blindly write data to the wrong tenant.
-    organizationId = req.headers.get("x-tenant-id") || undefined;
-    
-    // If we have no organizationId mapping, we log securely and return.
-    if (!organizationId && type !== "assistant-request") {
-      // It's possible the call was already created. Let's try to look it up.
-      if (call?.id) {
-        const existingCall = await prisma.voiceCallLog.findFirst({
-          where: { providerCallId: call.id }
-        });
-        if (existingCall) {
-          organizationId = existingCall.organizationId;
-        }
-      }
-    }
+    const { organizationId, voiceAgentId } = mapping;
 
-    if (!organizationId) {
-      console.warn("[Vapi Webhook] Could not securely map event to tenant.");
-      // We return 200 so Vapi doesn't retry, but we do nothing.
-      return NextResponse.json({ success: true, warning: "Unmapped tenant" });
-    }
+    await touchIntegrationWebhook(organizationId, type);
 
-    // Handle different message types
     if (type === "assistant-request") {
-      // Build dynamic prompt
-      const profile = await prisma.voiceBusinessProfile.findUnique({ where: { organizationId } });
-      const settings = await prisma.voiceReceptionistSettings.findUnique({ where: { organizationId } });
-      const kb = await prisma.voiceKnowledgeBaseItem.findMany({ where: { organizationId, isActive: true } });
-
-      const prompt = buildReceptionistPrompt(profile, settings, kb);
+      const trainingWorkspace = await getVoiceTrainingWorkspace(organizationId, {
+        voiceAgentId,
+      });
 
       return NextResponse.json({
         assistant: {
           model: {
-            messages: [{ role: "system", content: prompt }]
-          }
-        }
+            messages: [{ role: "system", content: trainingWorkspace.promptPreview }],
+          },
+        },
       });
     }
 
     if (type === "status-update") {
-      const status = message.status;
-      
-      // Upsert Call Log
-      if (call?.id) {
-        const existing = await prisma.voiceCallLog.findFirst({ where: { providerCallId: call.id, organizationId } });
-        if (!existing) {
-          await prisma.voiceCallLog.create({
-            data: {
-              organizationId,
-              provider: "vapi",
-              providerCallId: call.id,
-              providerPhoneNumberId: call.phoneNumberId,
-              providerAssistantId: call.assistantId,
-              callerNumber: call.customer?.number || "Unknown",
-              callStatus: status || "started",
-              callDirection: "inbound", // Vapi default assumption for this flow
-              startedAt: new Date(),
-            }
-          });
-        } else {
-          await prisma.voiceCallLog.update({
-            where: { id: existing.id },
-            data: { callStatus: status }
-          });
-        }
-      }
+      await upsertCallLog({
+        organizationId,
+        voiceAgentId,
+        message,
+        callStatus: normalizeCallStatus(message.status),
+      });
+
       return NextResponse.json({ success: true });
     }
 
     if (type === "tool-calls") {
       const toolCalls = message.toolWithToolCallList || message.toolCalls || [];
       const results = [];
-      
+
       for (const tc of toolCalls) {
-        const funcName = tc.function?.name;
-        const args = tc.function?.arguments;
-        const result = await handleToolCall(funcName, args, organizationId);
+        const funcName = tc.function?.name || "";
+        const args = tc.function?.arguments || {};
+        const result = await handleToolCall(funcName, args, organizationId, {
+          voiceAgentId,
+          providerCallId,
+          callerNumber: getCallerNumber(message),
+          providerAssistantId: assistantId,
+          providerPhoneNumberId: phoneNumberId,
+        });
+
         results.push({
           toolCallId: tc.id,
-          result: result
+          result,
         });
       }
-      
+
       return NextResponse.json({ results });
     }
 
     if (type === "end-of-call-report") {
-      if (call?.id) {
-        const existing = await prisma.voiceCallLog.findFirst({ where: { providerCallId: call.id, organizationId } });
-        if (existing) {
-          await prisma.voiceCallLog.update({
-            where: { id: existing.id },
-            data: {
-              callStatus: "ended",
-              endedReason: message.endedReason,
-              durationSeconds: message.durationSeconds,
-              summary: message.summary,
-              transcript: message.transcript,
-              recordingUrl: message.recordingUrl,
-              endedAt: new Date(),
-            }
-          });
-        }
-      }
+      await upsertCallLog({
+        organizationId,
+        voiceAgentId,
+        message,
+        callStatus: normalizeCallStatus(message.status || "completed"),
+      });
+
       return NextResponse.json({ success: true });
     }
 
-    // Default safe response for unhandled types
     return NextResponse.json({ success: true, unhandled: true });
-
   } catch (error) {
     console.error("[Vapi Webhook] Uncaught error:", error);
-    // Never leak stack trace
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({
+      success: false,
+      error: "Webhook processing failed safely.",
+    });
   }
 }

@@ -17,6 +17,11 @@ const navItems = [
     description: "Business profile, launch readiness, and live status once telephony is connected.",
   },
   {
+    label: "AI Agents",
+    href: "/dashboard/agents",
+    description: "Manage multiple receptionists, order-takers, and specialized voice personas.",
+  },
+  {
     label: "Call Logs",
     href: "/dashboard/call-logs",
     description: "Inbound calls, outcomes, transcripts, escalation flags, and future quality review.",
@@ -27,9 +32,24 @@ const navItems = [
     description: "Business FAQs, service menus, policy notes, and answer boundaries for the receptionist.",
   },
   {
+    label: "Training",
+    href: "/dashboard/training",
+    description: "Business-specific identity, business rules, menus, prompt preview, and action boundaries for the receptionist.",
+  },
+  {
     label: "Leads & Appointments",
     href: "/dashboard/leads",
     description: "Captured callers, follow-ups, booking requests, and handoff destinations.",
+  },
+  {
+    label: "Reservations",
+    href: "/dashboard/reservations",
+    description: "Table booking requests captured from calls, ready for staff confirmation.",
+  },
+  {
+    label: "Orders",
+    href: "/dashboard/orders",
+    description: "Takeaway and order requests saved for follow-up without touching ERP.",
   },
   {
     label: "Integrations",

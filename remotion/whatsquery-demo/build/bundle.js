@@ -329,6 +329,7 @@ const BRAND = {
   purple: "#ac4bff",
   cyan: "#06b6d4",
   green: "#10b981",
+  amber: "#f59e0b",
   red: "#ef4444",
   border: "rgba(255,255,255,0.12)"
 };
@@ -343,7 +344,24 @@ const SHOTS = {
   integrations: (0,esm.staticFile)("screens/integrations.png"),
   logo: (0,esm.staticFile)("logo-emblem.png")
 };
-const makeSpring = (frame, delay = 0, duration = 28) => (0,esm.spring)({
+const AUDIO = {
+  music: (0,esm.staticFile)("audio/whatsquery-music-bed.wav"),
+  voiceover: (0,esm.staticFile)("audio/whatsquery-voiceover.wav"),
+  whoosh: (0,esm.staticFile)("audio/sfx-whoosh.wav"),
+  click: (0,esm.staticFile)("audio/sfx-click.wav"),
+  chime: (0,esm.staticFile)("audio/sfx-chime.wav"),
+  pulse: (0,esm.staticFile)("audio/sfx-pulse.wav"),
+  ringtone: (0,esm.staticFile)("audio/sfx-ringtone.wav"),
+  sync: (0,esm.staticFile)("audio/sfx-sync.wav"),
+  logoSting: (0,esm.staticFile)("audio/sfx-logo-sting.wav")
+};
+const starSeed = Array.from({ length: 46 }, (_, index) => ({
+  left: index * 87 % 980 / 9.8,
+  top: index * 149 % 620 / 6.2,
+  size: 2 + index % 3,
+  opacity: 0.22 + index % 5 * 0.12
+}));
+const scaleIn = (frame, delay = 0, duration = 24) => (0,esm.spring)({
   fps,
   frame: Math.max(0, frame - delay),
   config: {
@@ -353,19 +371,13 @@ const makeSpring = (frame, delay = 0, duration = 28) => (0,esm.spring)({
   },
   durationInFrames: duration
 });
-const starSeed = Array.from({ length: 42 }, (_, index) => ({
-  left: index * 83 % 1e3 / 10,
-  top: index * 137 % 620 / 6.2,
-  size: 2 + index % 3,
-  opacity: 0.25 + index % 5 * 0.12
-}));
 const PageBackground = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
     esm.AbsoluteFill,
     {
       style: {
-        background: "radial-gradient(circle at 22% 18%, rgba(98,95,255,0.18), transparent 24%), radial-gradient(circle at 80% 12%, rgba(172,75,255,0.14), transparent 22%), radial-gradient(circle at 60% 88%, rgba(6,182,212,0.12), transparent 24%), linear-gradient(180deg, #050b19 0%, #030817 54%, #020611 100%)"
+        background: "radial-gradient(circle at 18% 16%, rgba(98,95,255,0.18), transparent 24%), radial-gradient(circle at 82% 12%, rgba(172,75,255,0.18), transparent 22%), radial-gradient(circle at 60% 88%, rgba(6,182,212,0.12), transparent 26%), linear-gradient(180deg, #050b19 0%, #030817 54%, #020611 100%)"
       },
       children: [
         /* @__PURE__ */ (0,jsx_runtime.jsx)(
@@ -376,19 +388,17 @@ const PageBackground = () => {
               inset: 0,
               backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
               backgroundSize: "120px 120px",
-              maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
-              opacity: 0.5
+              opacity: 0.48,
+              maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.34), rgba(0,0,0,0.9))"
             }
           }
         ),
         starSeed.map((star, index) => {
           const pulse = (0,esm.interpolate)(
-            (frame + index * 3) % 90,
+            (frame + index * 5) % 90,
             [0, 45, 90],
-            [0.3, 1, 0.35],
-            {
-              easing: esm.Easing.inOut(esm.Easing.sin)
-            }
+            [0.38, 1, 0.4],
+            { easing: esm.Easing.inOut(esm.Easing.sin) }
           );
           return /* @__PURE__ */ (0,jsx_runtime.jsx)(
             "div",
@@ -401,37 +411,37 @@ const PageBackground = () => {
                 height: star.size,
                 borderRadius: 999,
                 background: "#dbe7ff",
-                opacity: star.opacity * pulse,
-                boxShadow: "0 0 14px rgba(219,231,255,0.6)"
+                opacity: pulse * star.opacity,
+                boxShadow: "0 0 14px rgba(219,231,255,0.5)"
               }
             },
-            `${star.left}-${star.top}-${index}`
+            `${index}-${star.left}-${star.top}`
           );
         })
       ]
     }
   );
 };
-const BrandLockup = () => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 18 }, children: [
+const BrandLockup = () => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 16 }, children: [
   /* @__PURE__ */ (0,jsx_runtime.jsx)(
     "div",
     {
       style: {
-        width: 62,
-        height: 62,
+        width: 60,
+        height: 60,
         borderRadius: 18,
         background: "rgba(255,255,255,0.08)",
         border: `1px solid ${BRAND.border}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 16px 36px rgba(0,0,0,0.28)"
+        boxShadow: "0 16px 36px rgba(0,0,0,0.25)"
       },
       children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
         esm.Img,
         {
           src: SHOTS.logo,
-          style: { width: 42, height: 42, objectFit: "contain" }
+          style: { width: 40, height: 40, objectFit: "contain" }
         }
       )
     }
@@ -443,7 +453,8 @@ const BrandLockup = () => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: {
         style: {
           fontSize: 28,
           fontWeight: 800,
-          letterSpacing: "-0.04em"
+          letterSpacing: "-0.04em",
+          color: BRAND.text
         },
         children: "WhatsQuery"
       }
@@ -478,7 +489,7 @@ const Eyebrow = ({
       borderRadius: 999,
       border: `1px solid ${accent}55`,
       background: `${accent}14`,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: 800,
       color: BRAND.indigoSoft,
       textTransform: "uppercase",
@@ -493,7 +504,7 @@ const Eyebrow = ({
             height: 10,
             borderRadius: 999,
             background: accent,
-            boxShadow: `0 0 20px ${accent}`
+            boxShadow: `0 0 18px ${accent}`
           }
         }
       ),
@@ -501,45 +512,36 @@ const Eyebrow = ({
     ]
   }
 );
-const TextBlock = ({ title, subtitle, align = "left", maxWidth = 720 }) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-  "div",
-  {
-    style: {
-      maxWidth,
-      textAlign: align
-    },
-    children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        "div",
-        {
-          style: {
-            marginTop: 22,
-            fontSize: align === "center" ? 64 : 58,
-            lineHeight: 1.04,
-            fontWeight: 800,
-            letterSpacing: "-0.055em",
-            color: BRAND.text
-          },
-          children: title
-        }
-      ),
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        "div",
-        {
-          style: {
-            marginTop: 16,
-            fontSize: 22,
-            lineHeight: 1.45,
-            color: BRAND.textMuted,
-            fontWeight: 500
-          },
-          children: subtitle
-        }
-      )
-    ]
-  }
-);
-const GlassCard = ({ title, style, children }) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+const Headline = ({ title, subtitle, align = "left", maxWidth = 720 }) => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { maxWidth, textAlign: align }, children: [
+  /* @__PURE__ */ (0,jsx_runtime.jsx)(
+    "div",
+    {
+      style: {
+        marginTop: 20,
+        fontSize: align === "center" ? 70 : 58,
+        lineHeight: 1.04,
+        fontWeight: 800,
+        letterSpacing: "-0.055em",
+        color: BRAND.text
+      },
+      children: title
+    }
+  ),
+  subtitle ? /* @__PURE__ */ (0,jsx_runtime.jsx)(
+    "div",
+    {
+      style: {
+        marginTop: 16,
+        fontSize: 22,
+        lineHeight: 1.45,
+        color: BRAND.textMuted,
+        fontWeight: 500
+      },
+      children: subtitle
+    }
+  ) : null
+] });
+const GlassCard = ({ children, style, title }) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
   "div",
   {
     style: {
@@ -556,12 +558,12 @@ const GlassCard = ({ title, style, children }) => /* @__PURE__ */ (0,jsx_runtime
         "div",
         {
           style: {
-            fontSize: 14,
+            fontSize: 13,
             textTransform: "uppercase",
             letterSpacing: "0.24em",
             color: BRAND.textSoft,
             fontWeight: 800,
-            marginBottom: 16
+            marginBottom: 14
           },
           children: title
         }
@@ -574,17 +576,17 @@ const ScreenshotCard = ({
   src,
   frame,
   delay = 0,
-  scaleFrom = 0.94,
+  style,
   xFrom = 0,
   yFrom = 24,
-  rotation = 0,
-  style
+  scaleFrom = 0.96,
+  rotation = 0
 }) => {
-  const progress = makeSpring(frame, delay, 30);
-  const opacity = (0,esm.interpolate)(progress, [0, 1], [0, 1]);
-  const scale = (0,esm.interpolate)(progress, [0, 1], [scaleFrom, 1]);
-  const x = (0,esm.interpolate)(progress, [0, 1], [xFrom, 0]);
-  const y = (0,esm.interpolate)(progress, [0, 1], [yFrom, 0]);
+  const p = scaleIn(frame, delay, 28);
+  const opacity = (0,esm.interpolate)(p, [0, 1], [0, 1]);
+  const x = (0,esm.interpolate)(p, [0, 1], [xFrom, 0]);
+  const y = (0,esm.interpolate)(p, [0, 1], [yFrom, 0]);
+  const scale = (0,esm.interpolate)(p, [0, 1], [scaleFrom, 1]);
   return /* @__PURE__ */ (0,jsx_runtime.jsx)(
     "div",
     {
@@ -592,7 +594,7 @@ const ScreenshotCard = ({
         borderRadius: 30,
         border: `1px solid ${BRAND.border}`,
         background: "rgba(255,255,255,0.06)",
-        boxShadow: "0 34px 90px rgba(0,0,0,0.4)",
+        boxShadow: "0 34px 90px rgba(0,0,0,0.42)",
         overflow: "hidden",
         opacity,
         transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotation}deg)`,
@@ -613,25 +615,14 @@ const ScreenshotCard = ({
     }
   );
 };
-const FloatingBadge = ({ title, value, tone = "indigo", frame, delay = 0, style }) => {
-  const colors = {
-    indigo: BRAND.indigo,
-    cyan: BRAND.cyan,
-    purple: BRAND.purple,
-    green: BRAND.green
-  };
-  const rise = (0,esm.interpolate)(
-    makeSpring(frame, delay),
-    [0, 1],
-    [20, 0]
-  );
+const MetricBadge = ({ label, value, tone = BRAND.indigo, frame, delay = 0, style }) => {
+  const p = scaleIn(frame, delay, 24);
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
     GlassCard,
     {
       style: {
-        width: 240,
-        opacity: makeSpring(frame, delay),
-        transform: `translateY(${rise}px)`,
+        opacity: p,
+        transform: `translateY(${(0,esm.interpolate)(p, [0, 1], [20, 0])}px)`,
         ...style
       },
       children: [
@@ -645,7 +636,7 @@ const FloatingBadge = ({ title, value, tone = "indigo", frame, delay = 0, style 
               color: BRAND.textSoft,
               fontWeight: 800
             },
-            children: title
+            children: label
           }
         ),
         /* @__PURE__ */ (0,jsx_runtime.jsx)(
@@ -667,17 +658,17 @@ const FloatingBadge = ({ title, value, tone = "indigo", frame, delay = 0, style 
               marginTop: 14,
               height: 8,
               borderRadius: 999,
-              background: "rgba(255,255,255,0.08)",
-              overflow: "hidden"
+              overflow: "hidden",
+              background: "rgba(255,255,255,0.08)"
             },
             children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
               "div",
               {
                 style: {
-                  width: "70%",
+                  width: "72%",
                   height: "100%",
                   borderRadius: 999,
-                  background: `linear-gradient(90deg, ${colors[tone]}66, ${colors[tone]})`
+                  background: `linear-gradient(90deg, ${tone}66, ${tone})`
                 }
               }
             )
@@ -687,72 +678,206 @@ const FloatingBadge = ({ title, value, tone = "indigo", frame, delay = 0, style 
     }
   );
 };
-const VoiceActionCard = ({ label, value, frame, delay }) => {
-  const enter = makeSpring(frame, delay, 26);
-  const opacity = (0,esm.interpolate)(enter, [0, 1], [0, 1]);
-  const y = (0,esm.interpolate)(enter, [0, 1], [26, 0]);
-  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+const OrbitCard = ({ label, accent, angle, radius, frame, delay = 0 }) => {
+  const p = scaleIn(frame, delay, 26);
+  const x = Math.cos(angle) * radius * p;
+  const y = Math.sin(angle) * radius * p;
+  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
     "div",
     {
       style: {
-        borderRadius: 22,
-        border: `1px solid ${BRAND.border}`,
-        background: "rgba(255,255,255,0.06)",
-        padding: "18px 20px",
-        opacity,
-        transform: `translateY(${y}px)`
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: `translate(${x - 92}px, ${y - 34}px)`,
+        opacity: p
       },
-      children: [
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              color: BRAND.textSoft,
-              fontSize: 12,
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              fontWeight: 800
-            },
-            children: label
-          }
-        ),
-        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-          "div",
-          {
-            style: {
-              marginTop: 10,
-              fontSize: 22,
-              fontWeight: 800,
-              color: BRAND.text
-            },
-            children: value
-          }
-        )
-      ]
+      children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        "div",
+        {
+          style: {
+            borderRadius: 18,
+            border: `1px solid ${accent}55`,
+            background: `${accent}18`,
+            padding: "14px 18px",
+            color: BRAND.text,
+            fontSize: 18,
+            fontWeight: 700,
+            minWidth: 184,
+            textAlign: "center",
+            boxShadow: "0 18px 44px rgba(0,0,0,0.28)"
+          },
+          children: label
+        }
+      )
     }
   );
 };
-const TypewriterLine = ({
+const ConnectionLine = ({ from, to, frame, delay = 0 }) => {
+  const p = scaleIn(frame, delay, 24);
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  return /* @__PURE__ */ (0,jsx_runtime.jsx)(
+    "div",
+    {
+      style: {
+        position: "absolute",
+        left: from.x,
+        top: from.y,
+        width: length * p,
+        height: 4,
+        transformOrigin: "left center",
+        transform: `rotate(${angle}deg)`,
+        borderRadius: 999,
+        background: "linear-gradient(90deg, rgba(6,182,212,0.05), rgba(6,182,212,0.95), rgba(98,95,255,0.95))",
+        boxShadow: "0 0 18px rgba(6,182,212,0.45)"
+      }
+    }
+  );
+};
+const Typewriter = ({
   text,
   frame,
   start
 }) => {
   const count = Math.floor(
-    (0,esm.interpolate)(frame, [start, start + 44], [0, text.length], {
+    (0,esm.interpolate)(frame, [start, start + 34], [0, text.length], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp"
     })
   );
   return /* @__PURE__ */ (0,jsx_runtime.jsx)(jsx_runtime.Fragment, { children: text.slice(0, count) });
 };
-const OpeningScene = () => {
+const Cue = ({ from, duration = 30, src, volume = 0.35 }) => /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from, durationInFrames: duration, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Audio, { src, volume }) });
+const ShellTop = () => /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 50 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) });
+const Shot1Intro = () => {
   const frame = (0,esm.useCurrentFrame)();
-  const hero = makeSpring(frame, 8, 30);
-  const hubScale = (0,esm.interpolate)(hero, [0, 1], [0.8, 1]);
+  const show = (0,esm.interpolate)(frame, [16, 38], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp"
+  });
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 48 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      "div",
+      {
+        style: {
+          margin: "auto",
+          textAlign: "center",
+          transform: `scale(${(0,esm.interpolate)(frame, [0, 50], [0.96, 1], {
+            extrapolateRight: "clamp"
+          })})`
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              fontSize: 84,
+              lineHeight: 1.02,
+              fontWeight: 800,
+              letterSpacing: "-0.06em",
+              color: BRAND.text,
+              opacity: show
+            },
+            children: "Your Business."
+          }
+        )
+      }
+    )
+  ] });
+};
+const Shot2Chaos = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  const items = [
+    { label: "Ringing phone", x: 220, y: 240, color: BRAND.red },
+    { label: "Invoice card", x: 1320, y: 210, color: BRAND.purple },
+    { label: "Missed call", x: 260, y: 620, color: BRAND.amber },
+    { label: "Order slip", x: 1240, y: 650, color: BRAND.cyan },
+    { label: "Inventory box", x: 540, y: 740, color: BRAND.green },
+    { label: "Report chart", x: 980, y: 760, color: BRAND.indigo }
+  ];
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      "div",
+      {
+        style: {
+          fontSize: 84,
+          lineHeight: 1.02,
+          fontWeight: 800,
+          letterSpacing: "-0.06em",
+          color: BRAND.text
+        },
+        children: "Your Business."
+      }
+    ) }),
+    items.map((item, index) => {
+      const p = scaleIn(frame, index * 4, 22);
+      return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+        "div",
+        {
+          style: {
+            position: "absolute",
+            left: item.x,
+            top: item.y,
+            borderRadius: 18,
+            border: `1px solid ${BRAND.border}`,
+            background: "rgba(255,255,255,0.06)",
+            padding: "14px 16px",
+            color: BRAND.text,
+            fontSize: 18,
+            fontWeight: 700,
+            opacity: p,
+            transform: `translateY(${(0,esm.interpolate)(p, [0, 1], [28, 0])}px)`,
+            boxShadow: "0 16px 36px rgba(0,0,0,0.26)"
+          },
+          children: [
+            /* @__PURE__ */ (0,jsx_runtime.jsx)(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  width: 10,
+                  height: 10,
+                  borderRadius: 999,
+                  background: item.color,
+                  marginRight: 10,
+                  boxShadow: `0 0 18px ${item.color}`
+                }
+              }
+            ),
+            item.label
+          ]
+        },
+        item.label
+      );
+    })
+  ] });
+};
+const Shot3Organize = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  const p = scaleIn(frame, 8, 24);
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: `translate(-50%, -50%) scale(${(0,esm.interpolate)(p, [0, 1], [0.7, 1])})`,
+          width: 260,
+          height: 260,
+          borderRadius: 999,
+          background: "radial-gradient(circle, rgba(98,95,255,0.42) 0%, rgba(172,75,255,0.24) 42%, rgba(6,182,212,0.1) 74%, transparent 100%)",
+          boxShadow: "0 0 140px rgba(98,95,255,0.55)"
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
       "div",
       {
         style: {
@@ -761,137 +886,69 @@ const OpeningScene = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          flexDirection: "column",
-          gap: 28
+          flexDirection: "column"
         },
-        children: [
-          /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-            "div",
-            {
-              style: {
-                position: "relative",
-                width: 660,
-                height: 300,
-                transform: `scale(${hubScale})`
-              },
-              children: [
-                [
-                  { label: "Missed Calls", x: 40, y: 70, color: BRAND.red },
-                  { label: "Invoices Due", x: 460, y: 44, color: BRAND.purple },
-                  { label: "Stock Sheet", x: 90, y: 204, color: BRAND.cyan },
-                  { label: "Order Slip", x: 432, y: 220, color: BRAND.green }
-                ].map((item, index) => {
-                  const float = (0,esm.interpolate)(
-                    (frame + index * 8) % 80,
-                    [0, 40, 80],
-                    [-8, 8, -8]
-                  );
-                  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(
-                    "div",
-                    {
-                      style: {
-                        position: "absolute",
-                        left: item.x,
-                        top: item.y + float,
-                        padding: "16px 18px",
-                        borderRadius: 20,
-                        border: `1px solid ${BRAND.border}`,
-                        background: "rgba(255,255,255,0.06)",
-                        boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
-                        color: BRAND.text,
-                        fontSize: 18,
-                        fontWeight: 700
-                      },
-                      children: [
-                        /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                          "span",
-                          {
-                            style: {
-                              display: "inline-block",
-                              width: 10,
-                              height: 10,
-                              marginRight: 10,
-                              borderRadius: 999,
-                              background: item.color,
-                              boxShadow: `0 0 18px ${item.color}`
-                            }
-                          }
-                        ),
-                        item.label
-                      ]
-                    },
-                    item.label
-                  );
-                }),
-                /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                  "div",
-                  {
-                    style: {
-                      position: "absolute",
-                      left: "50%",
-                      top: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: 210,
-                      height: 210,
-                      borderRadius: 999,
-                      background: "radial-gradient(circle, rgba(98,95,255,0.38) 0%, rgba(172,75,255,0.2) 48%, rgba(6,182,212,0.08) 72%, transparent 100%)",
-                      border: `1px solid ${BRAND.border}`,
-                      boxShadow: "0 0 120px rgba(98,95,255,0.4)"
-                    }
-                  }
-                )
-              ]
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { textAlign: "center" }, children: [
-            /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              "div",
-              {
-                style: {
-                  fontSize: 72,
-                  lineHeight: 1.02,
-                  fontWeight: 800,
-                  letterSpacing: "-0.06em",
-                  color: BRAND.text
-                },
-                children: "Your Business."
-              }
-            ),
-            /* @__PURE__ */ (0,jsx_runtime.jsx)(
-              "div",
-              {
-                style: {
-                  marginTop: 10,
-                  fontSize: 72,
-                  lineHeight: 1.02,
-                  fontWeight: 800,
-                  letterSpacing: "-0.06em",
-                  background: "linear-gradient(90deg, #ffffff, #c4cbff 38%, #8bbdff 74%, #8af3ff 100%)",
-                  backgroundClip: "text",
-                  color: "transparent"
-                },
-                children: "Automated by AI."
-              }
-            )
-          ] })
-        ]
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              fontSize: 84,
+              lineHeight: 1.02,
+              fontWeight: 800,
+              letterSpacing: "-0.06em",
+              background: "linear-gradient(90deg, #ffffff, #c4cbff 36%, #8bbdff 72%, #8af3ff 100%)",
+              backgroundClip: "text",
+              color: "transparent"
+            },
+            children: "Automated by AI."
+          }
+        )
       }
     )
   ] });
 };
-const DashboardScene = () => {
+const Shot4DashboardReveal = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 48 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 140 }, children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Intelligent ERP Command Center" }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 170 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "ERP Dashboard" }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "One intelligent platform", maxWidth: 560 })
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.dashboard,
+        frame,
+        delay: 10,
+        xFrom: 70,
+        yFrom: 30,
+        scaleFrom: 0.85,
+        style: {
+          position: "absolute",
+          right: 70,
+          top: 180,
+          width: 1140,
+          height: 720
+        }
+      }
+    )
+  ] });
+};
+const Shot5DashboardFull = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 150 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Core Operations" }),
       /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        TextBlock,
+        Headline,
         {
           title: "One intelligent platform for business operations.",
-          subtitle: "Sales, customers, products, finance, reports, and AI assistance in one clean daily workspace.",
-          maxWidth: 700
+          subtitle: "Sales, customers, products, invoices, finance, and reports built into one clean daily workspace.",
+          maxWidth: 650
         }
       )
     ] }),
@@ -900,54 +957,228 @@ const DashboardScene = () => {
       {
         src: SHOTS.dashboard,
         frame,
-        delay: 14,
-        xFrom: 48,
-        yFrom: 30,
+        delay: 6,
         style: {
           position: "absolute",
-          right: 62,
-          top: 170,
-          width: 1120,
-          height: 760
+          right: 70,
+          top: 220,
+          width: 1100,
+          height: 660
         }
       }
     ),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      FloatingBadge,
+      MetricBadge,
       {
-        title: "Total revenue",
-        value: "PKR 839,999.9",
-        tone: "indigo",
+        label: "Sales",
+        value: "PKR 839K",
+        tone: BRAND.indigo,
         frame,
-        delay: 34,
-        style: { position: "absolute", left: 80, bottom: 166 }
+        delay: 18,
+        style: { position: "absolute", left: 88, bottom: 138, width: 230 }
       }
     ),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      FloatingBadge,
+      MetricBadge,
       {
-        title: "Enterprise health",
-        value: "84 / 100",
-        tone: "green",
+        label: "Customers",
+        value: "500",
+        tone: BRAND.cyan,
         frame,
-        delay: 46,
-        style: { position: "absolute", left: 350, bottom: 110 }
+        delay: 26,
+        style: { position: "absolute", left: 338, bottom: 106, width: 220 }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      MetricBadge,
+      {
+        label: "Invoices",
+        value: "300",
+        tone: BRAND.purple,
+        frame,
+        delay: 34,
+        style: { position: "absolute", left: 578, bottom: 138, width: 220 }
       }
     )
   ] });
 };
-const ManagementScene = () => {
+const Shot6CommandCenter = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 54 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 150 }, children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Customers + Products", accent: BRAND.cyan }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 160 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Command Center", accent: BRAND.cyan }),
       /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        TextBlock,
+        Headline,
         {
-          title: "Organize customers, products, and inventory.",
-          subtitle: "Built around the real WhatsQuery interface, with clean tables, direct actions, and room to scale.",
+          title: "Manage everything from one command center.",
+          subtitle: "A single view for business intelligence, transactions, cloud sync, and guided AI actions.",
+          maxWidth: 650
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.dashboard,
+        frame,
+        delay: 10,
+        style: {
+          position: "absolute",
+          right: 60,
+          top: 218,
+          width: 1120,
+          height: 680
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          right: 570,
+          top: 370,
+          width: 440,
+          height: 220,
+          borderRadius: 999,
+          border: "3px solid rgba(98,95,255,0.55)",
+          boxShadow: "0 0 36px rgba(98,95,255,0.28)",
+          opacity: (0,esm.interpolate)(frame, [18, 40, 58], [0, 1, 0.8], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp"
+          })
+        }
+      }
+    )
+  ] });
+};
+const Shot7Modules = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 158 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Connected Modules", accent: BRAND.purple }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        Headline,
+        {
+          title: "Customers. Products. Sales. Finance.",
+          subtitle: "Every module connects through one intelligent operational hub.",
+          maxWidth: 650
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          right: 180,
+          top: 240,
+          width: 760,
+          height: 560
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            ScreenshotCard,
+            {
+              src: SHOTS.dashboard,
+              frame,
+              delay: 6,
+              style: {
+                position: "absolute",
+                left: 140,
+                top: 120,
+                width: 480,
+                height: 320
+              }
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            OrbitCard,
+            {
+              label: "Customers",
+              accent: BRAND.cyan,
+              angle: -1.6,
+              radius: 210,
+              frame,
+              delay: 16
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            OrbitCard,
+            {
+              label: "Products",
+              accent: BRAND.indigo,
+              angle: -0.5,
+              radius: 235,
+              frame,
+              delay: 24
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            OrbitCard,
+            {
+              label: "Inventory",
+              accent: BRAND.green,
+              angle: 0.45,
+              radius: 230,
+              frame,
+              delay: 32
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            OrbitCard,
+            {
+              label: "Sales",
+              accent: BRAND.purple,
+              angle: 1.2,
+              radius: 218,
+              frame,
+              delay: 40
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            OrbitCard,
+            {
+              label: "Finance",
+              accent: BRAND.amber,
+              angle: 2.2,
+              radius: 220,
+              frame,
+              delay: 48
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            OrbitCard,
+            {
+              label: "Reports",
+              accent: BRAND.red,
+              angle: 3.05,
+              radius: 204,
+              frame,
+              delay: 56
+            }
+          )
+        ]
+      }
+    )
+  ] });
+};
+const Shot8Customers = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 150 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Customer Directory", accent: BRAND.cyan }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        Headline,
+        {
+          title: "Organize customers and suppliers.",
+          subtitle: "Real WhatsQuery-style customer tables, balances, and quick actions \u2014 all in one workspace.",
           maxWidth: 680
         }
       )
@@ -957,63 +1188,193 @@ const ManagementScene = () => {
       {
         src: SHOTS.customers,
         frame,
-        delay: 18,
-        xFrom: -38,
-        yFrom: 28,
-        rotation: -1.2,
+        delay: 10,
+        xFrom: 54,
+        style: {
+          position: "absolute",
+          right: 70,
+          top: 250,
+          width: 1120,
+          height: 620
+        }
+      }
+    )
+  ] });
+};
+const Shot9CustomerDetails = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.customers,
+        frame,
+        delay: 8,
         style: {
           position: "absolute",
           left: 70,
-          bottom: 90,
-          width: 900,
-          height: 520
+          top: 160,
+          width: 1080,
+          height: 680
         }
       }
     ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Customer details saved",
+        style: {
+          position: "absolute",
+          right: 92,
+          top: 250,
+          width: 430,
+          opacity: scaleIn(frame, 18)
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "grid", gap: 14 }, children: [
+          "Name \xB7 Ali Traders",
+          "Phone \xB7 041-7736891",
+          "Balance \xB7 PKR 100,000",
+          "Recent invoice \xB7 INV-041372"
+        ].map((row, index) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+          "div",
+          {
+            style: {
+              borderRadius: 18,
+              border: `1px solid ${BRAND.border}`,
+              background: "rgba(255,255,255,0.05)",
+              padding: "14px 16px",
+              fontSize: 18,
+              color: BRAND.text,
+              fontWeight: 700,
+              display: "flex",
+              justifyContent: "space-between"
+            },
+            children: [
+              /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { children: row }),
+              /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { style: { color: index === 2 ? BRAND.red : BRAND.green }, children: index === 2 ? "Due" : "Saved" })
+            ]
+          },
+          row
+        )) })
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 110, bottom: 122 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      Headline,
+      {
+        title: "Every relationship, clearly tracked.",
+        maxWidth: 420
+      }
+    ) })
+  ] });
+};
+const Shot10Products = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 146 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Products + Inventory", accent: BRAND.green }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        Headline,
+        {
+          title: "Track products and inventory in real time.",
+          subtitle: "Stock counts, pricing, categories, and inventory-aware product management in one clean interface.",
+          maxWidth: 690
+        }
+      )
+    ] }),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
       ScreenshotCard,
       {
         src: SHOTS.products,
         frame,
-        delay: 32,
-        xFrom: 50,
-        yFrom: 28,
-        rotation: 1.1,
+        delay: 10,
         style: {
           position: "absolute",
           right: 70,
-          bottom: 126,
-          width: 860,
-          height: 500
+          top: 242,
+          width: 1120,
+          height: 640
         }
-      }
-    ),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      FloatingBadge,
-      {
-        title: "Customer export",
-        value: "Approval ready",
-        tone: "purple",
-        frame,
-        delay: 48,
-        style: { position: "absolute", right: 190, top: 248 }
       }
     )
   ] });
 };
-const SalesScene = () => {
+const Shot11InventoryUpdate = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 54 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 140 }, children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Sales + Invoices", accent: BRAND.purple }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.products,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          left: 70,
+          top: 170,
+          width: 1100,
+          height: 660
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ConnectionLine,
+      {
+        from: { x: 1110, y: 510 },
+        to: { x: 1510, y: 370 },
+        frame,
+        delay: 18
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      GlassCard,
+      {
+        title: "Inventory updated",
+        style: {
+          position: "absolute",
+          right: 90,
+          top: 290,
+          width: 380,
+          opacity: scaleIn(frame, 24)
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 26, fontWeight: 800, color: BRAND.text }, children: "Order synced to stock" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 12,
+                color: BRAND.textMuted,
+                fontSize: 18,
+                lineHeight: 1.5
+              },
+              children: "Quantity adjusted automatically after the sale moved through the workflow."
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 100, bottom: 138 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "Inventory updates as work moves.", maxWidth: 420 }) })
+  ] });
+};
+const Shot12SalesWorkflow = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 152 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Sales Workflow", accent: BRAND.purple }),
       /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        TextBlock,
+        Headline,
         {
-          title: "Create invoices. Track payments. Stay in control.",
-          subtitle: "Quote to invoice, payment tracking, and export-ready documents from one consistent sales ledger.",
-          maxWidth: 700
+          title: "Create sales in seconds.",
+          subtitle: "Customer selected, products added, invoice prepared \u2014 all inside one consistent sales workspace.",
+          maxWidth: 680
         }
       )
     ] }),
@@ -1022,52 +1383,129 @@ const SalesScene = () => {
       {
         src: SHOTS.salesA,
         frame,
-        delay: 12,
-        xFrom: -24,
-        yFrom: 34,
+        delay: 10,
         style: {
           position: "absolute",
-          left: 70,
-          bottom: 92,
-          width: 850,
-          height: 490
+          right: 70,
+          top: 250,
+          width: 1120,
+          height: 620
         }
       }
-    ),
+    )
+  ] });
+};
+const Shot13InvoiceGenerated = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
       ScreenshotCard,
       {
         src: SHOTS.salesB,
         frame,
-        delay: 24,
-        xFrom: 40,
-        yFrom: 20,
+        delay: 8,
         style: {
           position: "absolute",
-          right: 74,
-          bottom: 122,
-          width: 840,
-          height: 460
+          left: 70,
+          top: 170,
+          width: 1040,
+          height: 640
         }
       }
     ),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
       GlassCard,
       {
-        title: "Invoice workflow",
+        title: "Invoice generated",
         style: {
           position: "absolute",
-          left: 960,
-          top: 238,
-          width: 340,
-          opacity: makeSpring(frame, 40)
+          right: 96,
+          top: 250,
+          width: 430,
+          opacity: scaleIn(frame, 22)
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gap: 14 }, children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                fontSize: 28,
+                fontWeight: 800,
+                color: BRAND.text
+              },
+              children: "INV-303317"
+            }
+          ),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 18, color: BRAND.textMuted }, children: "Customer \xB7 Ahmed Electronics" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 18, color: BRAND.textMuted }, children: "Total \xB7 PKR 349,999.9" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                borderRadius: 999,
+                display: "inline-flex",
+                padding: "10px 16px",
+                background: "rgba(16,185,129,0.18)",
+                color: BRAND.green,
+                fontWeight: 800,
+                fontSize: 14,
+                textTransform: "uppercase",
+                letterSpacing: "0.18em",
+                width: "fit-content"
+              },
+              children: "Generated"
+            }
+          )
+        ] })
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 98, bottom: 110 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      Headline,
+      {
+        title: "Invoices, payments, and records \u2014 connected.",
+        maxWidth: 420
+      }
+    ) })
+  ] });
+};
+const Shot14PaymentTracking = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.salesB,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          left: 70,
+          top: 180,
+          width: 980,
+          height: 620
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Payment tracking",
+        style: {
+          position: "absolute",
+          right: 90,
+          top: 234,
+          width: 450,
+          opacity: scaleIn(frame, 16)
         },
         children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { display: "grid", gap: 12 }, children: [
-          "Customer selected",
-          "Products added",
-          "Invoice generated",
-          "Payment status updated"
-        ].map((step, index) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+          { label: "Paid", tone: BRAND.green },
+          { label: "Pending", tone: BRAND.amber },
+          { label: "Due", tone: BRAND.red }
+        ].map((item, index) => /* @__PURE__ */ (0,jsx_runtime.jsxs)(
           "div",
           {
             style: {
@@ -1076,42 +1514,147 @@ const SalesScene = () => {
               background: "rgba(255,255,255,0.05)",
               padding: "14px 16px",
               display: "flex",
-              alignItems: "center",
-              gap: 12
+              justifyContent: "space-between",
+              alignItems: "center"
             },
             children: [
+              /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { fontSize: 20, fontWeight: 700, color: BRAND.text }, children: [
+                "Invoice batch ",
+                index + 1
+              ] }),
               /* @__PURE__ */ (0,jsx_runtime.jsx)(
                 "div",
                 {
                   style: {
-                    width: 26,
-                    height: 26,
                     borderRadius: 999,
-                    background: index < 3 ? "linear-gradient(135deg, rgba(172,75,255,0.95), rgba(98,95,255,0.85))" : "linear-gradient(135deg, rgba(16,185,129,0.95), rgba(6,182,212,0.75))"
-                  }
+                    padding: "8px 14px",
+                    background: `${item.tone}22`,
+                    color: item.tone,
+                    fontWeight: 800,
+                    fontSize: 13,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase"
+                  },
+                  children: item.label
                 }
-              ),
-              /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 18, fontWeight: 700, color: BRAND.text }, children: step })
+              )
             ]
           },
-          step
+          item.label
         )) })
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 102, bottom: 108 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      Headline,
+      {
+        title: "Track payments without losing control.",
+        maxWidth: 430
+      }
+    ) })
+  ] });
+};
+const Shot15FinanceSummary = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 170 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Finance Summary", accent: BRAND.green }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(
+        Headline,
+        {
+          title: "Know where your business stands.",
+          subtitle: "Revenue, expenses, balance, and cashflow surfaced as one clean financial pulse.",
+          maxWidth: 640
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      MetricBadge,
+      {
+        label: "Revenue",
+        value: "PKR 840K",
+        tone: BRAND.indigo,
+        frame,
+        delay: 10,
+        style: { position: "absolute", left: 86, bottom: 170, width: 260 }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      MetricBadge,
+      {
+        label: "Expenses",
+        value: "PKR 0",
+        tone: BRAND.red,
+        frame,
+        delay: 18,
+        style: { position: "absolute", left: 366, bottom: 132, width: 240 }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      MetricBadge,
+      {
+        label: "Net Profit",
+        value: "PKR 40K",
+        tone: BRAND.green,
+        frame,
+        delay: 26,
+        style: { position: "absolute", left: 626, bottom: 170, width: 250 }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Cashflow pulse",
+        style: {
+          position: "absolute",
+          right: 90,
+          top: 250,
+          width: 720,
+          height: 360,
+          opacity: scaleIn(frame, 20)
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "repeat(8, 1fr)",
+              alignItems: "end",
+              gap: 16,
+              height: 220,
+              marginTop: 34
+            },
+            children: [64, 72, 58, 80, 88, 74, 96, 104].map((bar, index) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
+              "div",
+              {
+                style: {
+                  height: `${bar}%`,
+                  borderRadius: "20px 20px 8px 8px",
+                  background: "linear-gradient(180deg, rgba(98,95,255,0.95), rgba(6,182,212,0.76))",
+                  boxShadow: "0 0 24px rgba(98,95,255,0.2)"
+                }
+              },
+              `${bar}-${index}`
+            ))
+          }
+        )
       }
     )
   ] });
 };
-const ReportsScene = () => {
+const Shot16Reports = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 56 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 150 }, children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Reports + Analytics", accent: BRAND.green }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 150 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Reports + Analytics", accent: BRAND.cyan }),
       /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        TextBlock,
+        Headline,
         {
-          title: "Turn operations into clear business insights.",
-          subtitle: "Filter by cycle, review revenue, and surface decision-ready trends without leaving the ERP.",
+          title: "Turn daily operations into clear insights.",
+          subtitle: "Use real report filters, KPIs, and business trends to understand performance at a glance.",
           maxWidth: 700
         }
       )
@@ -1121,55 +1664,82 @@ const ReportsScene = () => {
       {
         src: SHOTS.reports,
         frame,
-        delay: 18,
-        xFrom: 54,
-        yFrom: 32,
+        delay: 10,
         style: {
           position: "absolute",
           right: 70,
-          top: 220,
-          width: 1140,
-          height: 680
+          top: 250,
+          width: 1120,
+          height: 620
         }
-      }
-    ),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      FloatingBadge,
-      {
-        title: "Net profit",
-        value: "PKR 40,000",
-        tone: "green",
-        frame,
-        delay: 36,
-        style: { position: "absolute", left: 86, bottom: 170 }
-      }
-    ),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      FloatingBadge,
-      {
-        title: "Total revenue",
-        value: "PKR 840,000",
-        tone: "indigo",
-        frame,
-        delay: 50,
-        style: { position: "absolute", left: 356, bottom: 104 }
       }
     )
   ] });
 };
-const AssistantScene = () => {
+const Shot17Insight = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 56 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 148 }, children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Built-in AI Assistant", accent: BRAND.indigo }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.reports,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          left: 70,
+          top: 170,
+          width: 1080,
+          height: 660
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      GlassCard,
+      {
+        title: "AI insight",
+        style: {
+          position: "absolute",
+          right: 98,
+          top: 270,
+          width: 430,
+          opacity: scaleIn(frame, 18)
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 28, fontWeight: 800, color: BRAND.text }, children: "Sales increased today" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 12,
+                fontSize: 18,
+                color: BRAND.textMuted,
+                lineHeight: 1.5
+              },
+              children: "Top product: Sample Item. Revenue trend is ahead of the last cycle."
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 110, bottom: 126 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "See patterns faster.", maxWidth: 420 }) })
+  ] });
+};
+const Shot18Assistant = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 150 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Smart Assistant", accent: BRAND.indigo }),
       /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        TextBlock,
+        Headline,
         {
-          title: "Built-in AI assistance for faster decisions.",
-          subtitle: "Ask in plain language, review a safe action preview, and move from question to workflow in seconds.",
-          maxWidth: 710
+          title: "Built-in AI assistance.",
+          subtitle: "The assistant understands natural requests, prepares safe previews, and keeps your workflow moving.",
+          maxWidth: 620
         }
       )
     ] }),
@@ -1178,149 +1748,382 @@ const AssistantScene = () => {
       {
         src: SHOTS.assistant,
         frame,
-        delay: 16,
-        xFrom: 36,
-        yFrom: 30,
+        delay: 10,
         style: {
           position: "absolute",
           right: 70,
-          top: 222,
-          width: 1110,
+          top: 238,
+          width: 1120,
+          height: 640
+        }
+      }
+    )
+  ] });
+};
+const Shot19AssistantAction = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.assistant,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          left: 70,
+          top: 170,
+          width: 1120,
           height: 650
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ConnectionLine,
+      {
+        from: { x: 1140, y: 440 },
+        to: { x: 1560, y: 360 },
+        frame,
+        delay: 20
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Live prompt",
+        style: {
+          position: "absolute",
+          right: 90,
+          top: 270,
+          width: 420,
+          opacity: scaleIn(frame, 24)
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+          "div",
+          {
+            style: {
+              fontSize: 24,
+              lineHeight: 1.5,
+              fontWeight: 700,
+              color: BRAND.text
+            },
+            children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+              Typewriter,
+              {
+                text: "Show today's sales. Then highlight unpaid invoices.",
+                frame,
+                start: 24
+              }
+            )
+          }
+        )
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 106, bottom: 126 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "Ask. Analyze. Act faster.", maxWidth: 390 }) })
+  ] });
+};
+const Shot20VoiceIntro = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.dashboard,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          left: 70,
+          top: 190,
+          width: 860,
+          height: 560
         }
       }
     ),
     /* @__PURE__ */ (0,jsx_runtime.jsxs)(
       GlassCard,
       {
-        title: "Live command",
+        title: "Incoming call",
         style: {
           position: "absolute",
-          left: 84,
-          bottom: 110,
-          width: 540,
-          opacity: makeSpring(frame, 40)
+          right: 100,
+          top: 300,
+          width: 450,
+          opacity: scaleIn(frame, 14)
         },
         children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 30, fontWeight: 800, color: BRAND.text }, children: "Ahmed Electronics" }),
           /* @__PURE__ */ (0,jsx_runtime.jsx)(
             "div",
             {
               style: {
-                fontSize: 24,
-                lineHeight: 1.5,
-                fontWeight: 700,
-                color: BRAND.text
+                marginTop: 12,
+                fontSize: 18,
+                color: BRAND.textMuted
               },
-              children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
-                TypewriterLine,
-                {
-                  text: "Show today's sales and unpaid invoices for Ali Traders.",
-                  frame,
-                  start: 44
-                }
-              )
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                marginTop: 18,
-                fontSize: 16,
-                color: BRAND.textMuted,
-                lineHeight: 1.5
-              },
-              children: "Deterministic assistant. Preview-first. Role-safe execution."
+              children: "Voice workflow detected"
             }
           )
         ]
       }
-    )
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 100, top: 104 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "WhatsQuery Voice", accent: BRAND.cyan }),
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "Meet WhatsQuery Voice.", maxWidth: 520 })
+    ] })
   ] });
 };
-const VoiceScene = () => {
+const Shot21CallAnswered = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  const pulse = (0,esm.interpolate)(frame % 36, [0, 18, 36], [0.6, 1, 0.6]);
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      GlassCard,
+      {
+        title: "AI call answered",
+        style: {
+          position: "absolute",
+          left: 120,
+          top: 230,
+          width: 740,
+          height: 380
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 46, fontWeight: 800, color: BRAND.text }, children: "AI Call Answered" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 20,
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 10,
+                height: 140
+              },
+              children: [24, 60, 90, 50, 110, 68, 88, 36, 72, 120].map((bar, index) => /* @__PURE__ */ (0,jsx_runtime.jsx)(
+                "div",
+                {
+                  style: {
+                    width: 22,
+                    height: bar * pulse,
+                    borderRadius: 999,
+                    background: "linear-gradient(180deg, rgba(6,182,212,0.9), rgba(98,95,255,0.82))"
+                  }
+                },
+                `${bar}-${index}`
+              ))
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 120, top: 270 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      Headline,
+      {
+        title: "AI receptionist for business calls.",
+        subtitle: "Voice-ready workflows that connect the call layer to your business system.",
+        maxWidth: 520
+      }
+    ) })
+  ] });
+};
+const Shot22Booking = () => {
   const frame = (0,esm.useCurrentFrame)();
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 70, top: 56 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(BrandLockup, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 70, top: 146 }, children: [
-      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "WhatsQuery Voice", accent: BRAND.cyan }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      GlassCard,
+      {
+        title: "Table booking request",
+        style: {
+          position: "absolute",
+          left: 180,
+          top: 280,
+          width: 520,
+          opacity: scaleIn(frame, 12)
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 30, fontWeight: 800, color: BRAND.text }, children: "Reservation for tomorrow \xB7 7:30 PM" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { marginTop: 16, fontSize: 18, color: BRAND.textMuted }, children: "Caller details saved for staff review." }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 20,
+                display: "inline-flex",
+                borderRadius: 999,
+                background: "rgba(16,185,129,0.18)",
+                color: BRAND.green,
+                padding: "10px 16px",
+                fontWeight: 800,
+                fontSize: 14,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase"
+              },
+              children: "Request saved"
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", right: 150, top: 314 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "Bookings captured automatically.", maxWidth: 500 }) })
+  ] });
+};
+const Shot23OrderSynced = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.salesA,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          right: 90,
+          top: 210,
+          width: 920,
+          height: 520
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      GlassCard,
+      {
+        title: "Order request",
+        style: {
+          position: "absolute",
+          left: 110,
+          top: 320,
+          width: 400,
+          opacity: scaleIn(frame, 10)
+        },
+        children: /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 26, fontWeight: 800, color: BRAND.text }, children: "Caller requested 2 white raw cloth rolls" })
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ConnectionLine,
+      {
+        from: { x: 514, y: 430 },
+        to: { x: 1010, y: 420 },
+        frame,
+        delay: 18
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 110, top: 206 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Headline, { title: "Orders move into your system.", maxWidth: 420 }) })
+  ] });
+};
+const Shot24CustomerSaved = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.customers,
+        frame,
+        delay: 8,
+        style: {
+          position: "absolute",
+          right: 70,
+          top: 200,
+          width: 960,
+          height: 560
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)(
+      GlassCard,
+      {
+        title: "Customer saved",
+        style: {
+          position: "absolute",
+          left: 110,
+          top: 310,
+          width: 420,
+          opacity: scaleIn(frame, 12)
+        },
+        children: [
+          /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 28, fontWeight: 800, color: BRAND.text }, children: "New contact added to the workspace" }),
+          /* @__PURE__ */ (0,jsx_runtime.jsx)(
+            "div",
+            {
+              style: {
+                marginTop: 12,
+                fontSize: 18,
+                color: BRAND.textMuted
+              },
+              children: "Calls become organized business records with structured customer history."
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", left: 110, top: 214 }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      Headline,
+      {
+        title: "Calls become organized business records.",
+        maxWidth: 470
+      }
+    ) })
+  ] });
+};
+const Shot25Unified = () => {
+  const frame = (0,esm.useCurrentFrame)();
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(ShellTop, {}),
+    /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: 80, top: 110 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)(Eyebrow, { label: "Unified Ecosystem", accent: BRAND.cyan }),
       /* @__PURE__ */ (0,jsx_runtime.jsx)(
-        TextBlock,
+        Headline,
         {
-          title: "AI Receptionist for calls, bookings, and orders.",
-          subtitle: "Voice-ready expansion for inbound business workflows, lead capture, and connected ERP updates.",
-          maxWidth: 730
+          title: "ERP + AI Receptionist",
+          subtitle: "Connected in one intelligent ecosystem.",
+          maxWidth: 620
         }
       )
     ] }),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
-      GlassCard,
+      ScreenshotCard,
       {
-        title: "Voice-ready workflow",
+        src: SHOTS.dashboard,
+        frame,
+        delay: 10,
         style: {
           position: "absolute",
-          left: 70,
-          bottom: 110,
-          width: 720,
-          height: 460
-        },
-        children: /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }, children: [
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            VoiceActionCard,
-            {
-              label: "Incoming call",
-              value: "Ahmed Electronics",
-              frame,
-              delay: 18
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            VoiceActionCard,
-            {
-              label: "AI call answered",
-              value: "Greeting delivered",
-              frame,
-              delay: 30
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            VoiceActionCard,
-            {
-              label: "Order synced",
-              value: "2 items pushed",
-              frame,
-              delay: 42
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            VoiceActionCard,
-            {
-              label: "Customer saved",
-              value: "Lead captured",
-              frame,
-              delay: 54
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            VoiceActionCard,
-            {
-              label: "Table booked",
-              value: "Tomorrow \xB7 7:30 PM",
-              frame,
-              delay: 66
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            VoiceActionCard,
-            {
-              label: "Invoice generated",
-              value: "INV-4081 draft",
-              frame,
-              delay: 78
-            }
-          )
-        ] })
+          left: 110,
+          top: 280,
+          width: 760,
+          height: 430
+        }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ScreenshotCard,
+      {
+        src: SHOTS.assistant,
+        frame,
+        delay: 20,
+        xFrom: -30,
+        yFrom: 18,
+        style: {
+          position: "absolute",
+          right: 140,
+          top: 250,
+          width: 620,
+          height: 350
+        }
       }
     ),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(
@@ -1328,23 +2131,41 @@ const VoiceScene = () => {
       {
         src: SHOTS.integrations,
         frame,
-        delay: 26,
-        xFrom: 42,
-        yFrom: 28,
+        delay: 30,
+        xFrom: 40,
+        yFrom: 18,
         style: {
           position: "absolute",
-          right: 70,
-          bottom: 96,
-          width: 980,
-          height: 560
+          right: 100,
+          bottom: 120,
+          width: 660,
+          height: 320
         }
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ConnectionLine,
+      {
+        from: { x: 870, y: 484 },
+        to: { x: 1180, y: 418 },
+        frame,
+        delay: 26
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      ConnectionLine,
+      {
+        from: { x: 1260, y: 596 },
+        to: { x: 1260, y: 724 },
+        frame,
+        delay: 36
       }
     )
   ] });
 };
-const OutroScene = () => {
+const Shot26Outro = () => {
   const frame = (0,esm.useCurrentFrame)();
-  const scale = makeSpring(frame, 8, 28);
+  const p = scaleIn(frame, 8, 28);
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
     /* @__PURE__ */ (0,jsx_runtime.jsx)(PageBackground, {}),
     /* @__PURE__ */ (0,jsx_runtime.jsxs)(
@@ -1363,7 +2184,7 @@ const OutroScene = () => {
             "div",
             {
               style: {
-                transform: `scale(${(0,esm.interpolate)(scale, [0, 1], [0.9, 1])})`
+                transform: `scale(${(0,esm.interpolate)(p, [0, 1], [0.92, 1])})`
               },
               children: /* @__PURE__ */ (0,jsx_runtime.jsxs)(
                 "div",
@@ -1383,11 +2204,7 @@ const OutroScene = () => {
                       esm.Img,
                       {
                         src: SHOTS.logo,
-                        style: {
-                          width: 74,
-                          height: 74,
-                          objectFit: "contain"
-                        }
+                        style: { width: 76, height: 76, objectFit: "contain" }
                       }
                     ),
                     /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { children: [
@@ -1395,7 +2212,7 @@ const OutroScene = () => {
                         "div",
                         {
                           style: {
-                            fontSize: 48,
+                            fontSize: 50,
                             fontWeight: 800,
                             letterSpacing: "-0.05em",
                             color: BRAND.text
@@ -1414,7 +2231,7 @@ const OutroScene = () => {
                             letterSpacing: "0.26em",
                             textTransform: "uppercase"
                           },
-                          children: "ERP + AI Receptionist"
+                          children: "Your Business. Automated by AI."
                         }
                       )
                     ] })
@@ -1427,22 +2244,10 @@ const OutroScene = () => {
             "div",
             {
               style: {
-                marginTop: 36,
-                fontSize: 30,
-                color: BRAND.text,
-                fontWeight: 700
-              },
-              children: "Launch your AI-powered business system."
-            }
-          ),
-          /* @__PURE__ */ (0,jsx_runtime.jsx)(
-            "div",
-            {
-              style: {
-                marginTop: 14,
-                fontSize: 22,
+                marginTop: 34,
+                fontSize: 24,
                 color: BRAND.textMuted,
-                fontWeight: 500
+                fontWeight: 600
               },
               children: "whatsquery.com"
             }
@@ -1454,14 +2259,77 @@ const OutroScene = () => {
 };
 const WhatsQueryDemo = () => {
   return /* @__PURE__ */ (0,jsx_runtime.jsxs)(esm.AbsoluteFill, { style: { fontFamily: fontFamily }, children: [
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(OpeningScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 90, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(DashboardScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 300, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(ManagementScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 510, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(SalesScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 720, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(ReportsScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 930, durationInFrames: 210, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(AssistantScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1140, durationInFrames: 270, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(VoiceScene, {}) }),
-    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1410, durationInFrames: 390, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(OutroScene, {}) })
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      esm.Audio,
+      {
+        src: AUDIO.music,
+        volume: (frame) => (0,esm.interpolate)(frame, [0, 30, 1740, 1800], [0, 0.12, 0.12, 0])
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(
+      esm.Audio,
+      {
+        src: AUDIO.voiceover,
+        volume: (frame) => (0,esm.interpolate)(frame, [0, 12, 1710, 1755], [0, 1, 1, 0])
+      }
+    ),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 52, duration: 18, src: AUDIO.whoosh, volume: 0.34 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 112, duration: 22, src: AUDIO.whoosh, volume: 0.42 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 178, duration: 18, src: AUDIO.pulse, volume: 0.28 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 208, duration: 10, src: AUDIO.click, volume: 0.3 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 226, duration: 10, src: AUDIO.click, volume: 0.26 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 242, duration: 10, src: AUDIO.click, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 300, duration: 16, src: AUDIO.whoosh, volume: 0.28 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 370, duration: 10, src: AUDIO.click, volume: 0.24 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 388, duration: 10, src: AUDIO.click, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 406, duration: 10, src: AUDIO.click, volume: 0.2 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 492, duration: 12, src: AUDIO.click, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 560, duration: 20, src: AUDIO.chime, volume: 0.24 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 612, duration: 20, src: AUDIO.pulse, volume: 0.25 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 686, duration: 16, src: AUDIO.sync, volume: 0.28 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 764, duration: 10, src: AUDIO.click, volume: 0.2 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 782, duration: 10, src: AUDIO.click, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 838, duration: 22, src: AUDIO.chime, volume: 0.26 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 934, duration: 20, src: AUDIO.chime, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1024, duration: 24, src: AUDIO.pulse, volume: 0.24 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1110, duration: 26, src: AUDIO.sync, volume: 0.24 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1190, duration: 22, src: AUDIO.chime, volume: 0.24 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1262, duration: 18, src: AUDIO.click, volume: 0.18 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1318, duration: 22, src: AUDIO.pulse, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1388, duration: 22, src: AUDIO.ringtone, volume: 0.2 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1445, duration: 16, src: AUDIO.click, volume: 0.2 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1452, duration: 26, src: AUDIO.pulse, volume: 0.18 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1516, duration: 20, src: AUDIO.chime, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1570, duration: 26, src: AUDIO.sync, volume: 0.24 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1630, duration: 20, src: AUDIO.chime, volume: 0.22 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1690, duration: 24, src: AUDIO.whoosh, volume: 0.28 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(Cue, { from: 1760, duration: 40, src: AUDIO.logoSting, volume: 0.25 }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot1Intro, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 60, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot2Chaos, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 120, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot3Organize, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 180, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot4DashboardReveal, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 240, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot5DashboardFull, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 300, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot6CommandCenter, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 360, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot7Modules, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 450, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot8Customers, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 540, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot9CustomerDetails, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 600, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot10Products, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 690, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot11InventoryUpdate, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 750, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot12SalesWorkflow, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 840, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot13InvoiceGenerated, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 930, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot14PaymentTracking, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1020, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot15FinanceSummary, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1080, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot16Reports, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1170, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot17Insight, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1230, durationInFrames: 90, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot18Assistant, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1320, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot19AssistantAction, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1380, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot20VoiceIntro, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1440, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot21CallAnswered, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1500, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot22Booking, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1560, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot23OrderSynced, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1620, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot24CustomerSaved, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1680, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot25Unified, {}) }),
+    /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: 1740, durationInFrames: 60, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(Shot26Outro, {}) })
   ] });
 };
 
@@ -1900,11 +2768,11 @@ ___CSS_LOADER_EXPORT___.push([module.id, `/*! tailwindcss v4.2.0 | MIT License |
   .absolute {
     position: absolute;
   }
-  .relative {
-    position: relative;
-  }
   .start {
     inset-inline-start: var(--spacing);
+  }
+  .end {
+    inset-inline-end: var(--spacing);
   }
   .block {
     display: block;
@@ -1978,7 +2846,7 @@ html, body, #root {
     }
   }
 }
-`, "",{"version":3,"sources":["webpack://./src/index.css"],"names":[],"mappings":"AAAA,gEAAgE;AAChE,iBAAiB;AACjB,yCAAyC;AACzC;EACE;IACE;6DACyD;IACzD;iDAC6C;IAC7C,kBAAkB;IAClB,uCAAuC;IACvC,wEAAwE;IACxE;;KAEC;IACD,4CAA4C;IAC5C;;KAEC;IACD;;KAEC;EACH;AACF;AACA;EACE;IACE,sBAAsB;IACtB,SAAS;IACT,UAAU;IACV,eAAe;EACjB;EACA;IACE,gBAAgB;IAChB,8BAA8B;IAC9B,WAAW;IACX,6JAA6J;IAC7J,mEAAmE;IACnE,yEAAyE;IACzE,wCAAwC;EAC1C;EACA;IACE,oBAAoB;EACtB;EACA;IACE,SAAS;IACT,cAAc;IACd,qBAAqB;EACvB;EACA;IACE,yCAAyC;IACzC,iCAAiC;EACnC;EACA;IACE,kBAAkB;IAClB,oBAAoB;EACtB;EACA;IACE,cAAc;IACd,gCAAgC;IAChC,wBAAwB;EAC1B;EACA;IACE,mBAAmB;EACrB;EACA;IACE,kJAAkJ;IAClJ,0EAA0E;IAC1E,8EAA8E;IAC9E,cAAc;EAChB;EACA;IACE,cAAc;EAChB;EACA;IACE,cAAc;IACd,cAAc;IACd,kBAAkB;IAClB,wBAAwB;EAC1B;EACA;IACE,eAAe;EACjB;EACA;IACE,WAAW;EACb;EACA;IACE,cAAc;IACd,qBAAqB;IACrB,yBAAyB;EAC3B;EACA;IACE,aAAa;EACf;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,kBAAkB;EACpB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,cAAc;IACd,sBAAsB;EACxB;EACA;IACE,eAAe;IACf,YAAY;EACd;EACA;IACE,aAAa;IACb,8BAA8B;IAC9B,gCAAgC;IAChC,uBAAuB;IACvB,cAAc;IACd,gBAAgB;IAChB,6BAA6B;IAC7B,UAAU;EACZ;EACA;IACE,mBAAmB;EACrB;EACA;IACE,0BAA0B;EAC5B;EACA;IACE,sBAAsB;EACxB;EACA;IACE,UAAU;IACV,mBAAmB;IACnB;MACE,yDAAyD;IAC3D;EACF;EACA;IACE,gBAAgB;EAClB;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,eAAe;IACf,mBAAmB;EACrB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,UAAU;EACZ;EACA;IACE,gBAAgB;EAClB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,YAAY;EACd;EACA;IACE,wBAAwB;EAC1B;AACF;AACA;EACE;IACE,kBAAkB;EACpB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,kCAAkC;EACpC;EACA;IACE,cAAc;EAChB;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,qBAAqB;EACvB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,0GAA0G;EAC5G;EACA;IACE,oCAAoC;IACpC,iBAAiB;EACnB;EACA;IACE,yBAAyB;EAC3B;AACF;AACA;EACE,SAAS;EACT,WAAW;EACX,YAAY;EACZ,mBAAmB;AACrB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;EACf,oBAAoB;AACtB;AACA;EACE;IACE;MACE,sBAAsB;MACtB,sBAAsB;MACtB,sBAAsB;MACtB,oBAAoB;MACpB,oBAAoB;MACpB,wBAAwB;IAC1B;EACF;AACF","sourcesContent":["/*! tailwindcss v4.2.0 | MIT License | https://tailwindcss.com */\n@layer properties;\n@layer theme, base, components, utilities;\n@layer theme {\n  :root, :host {\n    --font-sans: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,\n      \"Liberation Mono\", \"Courier New\", monospace;\n    --spacing: 0.25rem;\n    --default-font-family: var(--font-sans);\n    --default-font-feature-settings: var(--font-sans--font-feature-settings);\n    --default-font-variation-settings: var(\n      --font-sans--font-variation-settings\n    );\n    --default-mono-font-family: var(--font-mono);\n    --default-mono-font-feature-settings: var(\n      --font-mono--font-feature-settings\n    );\n    --default-mono-font-variation-settings: var(\n      --font-mono--font-variation-settings\n    );\n  }\n}\n@layer base {\n  *, ::after, ::before, ::backdrop, ::file-selector-button {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n    border: 0 solid;\n  }\n  html, :host {\n    line-height: 1.5;\n    -webkit-text-size-adjust: 100%;\n    tab-size: 4;\n    font-family: var( --default-font-family, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\" );\n    font-feature-settings: var(--default-font-feature-settings, normal);\n    font-variation-settings: var( --default-font-variation-settings, normal );\n    -webkit-tap-highlight-color: transparent;\n  }\n  body {\n    line-height: inherit;\n  }\n  hr {\n    height: 0;\n    color: inherit;\n    border-top-width: 1px;\n  }\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n  h1, h2, h3, h4, h5, h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n  b, strong {\n    font-weight: bolder;\n  }\n  code, kbd, samp, pre {\n    font-family: var( --default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace );\n    font-feature-settings: var( --default-mono-font-feature-settings, normal );\n    font-variation-settings: var( --default-mono-font-variation-settings, normal );\n    font-size: 1em;\n  }\n  small {\n    font-size: 80%;\n  }\n  sub, sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n  sub {\n    bottom: -0.25em;\n  }\n  sup {\n    top: -0.5em;\n  }\n  table {\n    text-indent: 0;\n    border-color: inherit;\n    border-collapse: collapse;\n  }\n  :-moz-focusring {\n    outline: auto;\n  }\n  progress {\n    vertical-align: baseline;\n  }\n  summary {\n    display: list-item;\n  }\n  ol, ul, menu {\n    list-style: none;\n  }\n  img, svg, video, canvas, audio, iframe, embed, object {\n    display: block;\n    vertical-align: middle;\n  }\n  img, video {\n    max-width: 100%;\n    height: auto;\n  }\n  button, input, select, optgroup, textarea, ::file-selector-button {\n    font: inherit;\n    font-feature-settings: inherit;\n    font-variation-settings: inherit;\n    letter-spacing: inherit;\n    color: inherit;\n    border-radius: 0;\n    background-color: transparent;\n    opacity: 1;\n  }\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n  ::placeholder {\n    opacity: 1;\n    color: currentColor;\n    @supports (color: color-mix(in lab, red, red)) {\n      color: color-mix(in oklab, currentColor 50%, transparent);\n    }\n  }\n  textarea {\n    resize: vertical;\n  }\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n  ::-webkit-date-and-time-value {\n    min-height: 1lh;\n    text-align: inherit;\n  }\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n  button, input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]), ::file-selector-button {\n    appearance: button;\n  }\n  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {\n    height: auto;\n  }\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n@layer utilities {\n  .absolute {\n    position: absolute;\n  }\n  .relative {\n    position: relative;\n  }\n  .start {\n    inset-inline-start: var(--spacing);\n  }\n  .block {\n    display: block;\n  }\n  .flex {\n    display: flex;\n  }\n  .grid {\n    display: grid;\n  }\n  .hidden {\n    display: none;\n  }\n  .inline-block {\n    display: inline-block;\n  }\n  .inline-flex {\n    display: inline-flex;\n  }\n  .transform {\n    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);\n  }\n  .border {\n    border-style: var(--tw-border-style);\n    border-width: 1px;\n  }\n  .uppercase {\n    text-transform: uppercase;\n  }\n}\nhtml, body, #root {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  background: #020617;\n}\n@property --tw-rotate-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-z {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-border-style {\n  syntax: \"*\";\n  inherits: false;\n  initial-value: solid;\n}\n@layer properties {\n  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {\n    *, ::before, ::after, ::backdrop {\n      --tw-rotate-x: initial;\n      --tw-rotate-y: initial;\n      --tw-rotate-z: initial;\n      --tw-skew-x: initial;\n      --tw-skew-y: initial;\n      --tw-border-style: solid;\n    }\n  }\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/index.css"],"names":[],"mappings":"AAAA,gEAAgE;AAChE,iBAAiB;AACjB,yCAAyC;AACzC;EACE;IACE;6DACyD;IACzD;iDAC6C;IAC7C,kBAAkB;IAClB,uCAAuC;IACvC,wEAAwE;IACxE;;KAEC;IACD,4CAA4C;IAC5C;;KAEC;IACD;;KAEC;EACH;AACF;AACA;EACE;IACE,sBAAsB;IACtB,SAAS;IACT,UAAU;IACV,eAAe;EACjB;EACA;IACE,gBAAgB;IAChB,8BAA8B;IAC9B,WAAW;IACX,6JAA6J;IAC7J,mEAAmE;IACnE,yEAAyE;IACzE,wCAAwC;EAC1C;EACA;IACE,oBAAoB;EACtB;EACA;IACE,SAAS;IACT,cAAc;IACd,qBAAqB;EACvB;EACA;IACE,yCAAyC;IACzC,iCAAiC;EACnC;EACA;IACE,kBAAkB;IAClB,oBAAoB;EACtB;EACA;IACE,cAAc;IACd,gCAAgC;IAChC,wBAAwB;EAC1B;EACA;IACE,mBAAmB;EACrB;EACA;IACE,kJAAkJ;IAClJ,0EAA0E;IAC1E,8EAA8E;IAC9E,cAAc;EAChB;EACA;IACE,cAAc;EAChB;EACA;IACE,cAAc;IACd,cAAc;IACd,kBAAkB;IAClB,wBAAwB;EAC1B;EACA;IACE,eAAe;EACjB;EACA;IACE,WAAW;EACb;EACA;IACE,cAAc;IACd,qBAAqB;IACrB,yBAAyB;EAC3B;EACA;IACE,aAAa;EACf;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,kBAAkB;EACpB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,cAAc;IACd,sBAAsB;EACxB;EACA;IACE,eAAe;IACf,YAAY;EACd;EACA;IACE,aAAa;IACb,8BAA8B;IAC9B,gCAAgC;IAChC,uBAAuB;IACvB,cAAc;IACd,gBAAgB;IAChB,6BAA6B;IAC7B,UAAU;EACZ;EACA;IACE,mBAAmB;EACrB;EACA;IACE,0BAA0B;EAC5B;EACA;IACE,sBAAsB;EACxB;EACA;IACE,UAAU;IACV,mBAAmB;IACnB;MACE,yDAAyD;IAC3D;EACF;EACA;IACE,gBAAgB;EAClB;EACA;IACE,wBAAwB;EAC1B;EACA;IACE,eAAe;IACf,mBAAmB;EACrB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,UAAU;EACZ;EACA;IACE,gBAAgB;EAClB;EACA;IACE,gBAAgB;EAClB;EACA;IACE,kBAAkB;EACpB;EACA;IACE,YAAY;EACd;EACA;IACE,wBAAwB;EAC1B;AACF;AACA;EACE;IACE,kBAAkB;EACpB;EACA;IACE,kCAAkC;EACpC;EACA;IACE,gCAAgC;EAClC;EACA;IACE,cAAc;EAChB;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,aAAa;EACf;EACA;IACE,qBAAqB;EACvB;EACA;IACE,oBAAoB;EACtB;EACA;IACE,0GAA0G;EAC5G;EACA;IACE,oCAAoC;IACpC,iBAAiB;EACnB;EACA;IACE,yBAAyB;EAC3B;AACF;AACA;EACE,SAAS;EACT,WAAW;EACX,YAAY;EACZ,mBAAmB;AACrB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;AACjB;AACA;EACE,WAAW;EACX,eAAe;EACf,oBAAoB;AACtB;AACA;EACE;IACE;MACE,sBAAsB;MACtB,sBAAsB;MACtB,sBAAsB;MACtB,oBAAoB;MACpB,oBAAoB;MACpB,wBAAwB;IAC1B;EACF;AACF","sourcesContent":["/*! tailwindcss v4.2.0 | MIT License | https://tailwindcss.com */\n@layer properties;\n@layer theme, base, components, utilities;\n@layer theme {\n  :root, :host {\n    --font-sans: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\",\n      \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,\n      \"Liberation Mono\", \"Courier New\", monospace;\n    --spacing: 0.25rem;\n    --default-font-family: var(--font-sans);\n    --default-font-feature-settings: var(--font-sans--font-feature-settings);\n    --default-font-variation-settings: var(\n      --font-sans--font-variation-settings\n    );\n    --default-mono-font-family: var(--font-mono);\n    --default-mono-font-feature-settings: var(\n      --font-mono--font-feature-settings\n    );\n    --default-mono-font-variation-settings: var(\n      --font-mono--font-variation-settings\n    );\n  }\n}\n@layer base {\n  *, ::after, ::before, ::backdrop, ::file-selector-button {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n    border: 0 solid;\n  }\n  html, :host {\n    line-height: 1.5;\n    -webkit-text-size-adjust: 100%;\n    tab-size: 4;\n    font-family: var( --default-font-family, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\" );\n    font-feature-settings: var(--default-font-feature-settings, normal);\n    font-variation-settings: var( --default-font-variation-settings, normal );\n    -webkit-tap-highlight-color: transparent;\n  }\n  body {\n    line-height: inherit;\n  }\n  hr {\n    height: 0;\n    color: inherit;\n    border-top-width: 1px;\n  }\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n  h1, h2, h3, h4, h5, h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n  b, strong {\n    font-weight: bolder;\n  }\n  code, kbd, samp, pre {\n    font-family: var( --default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace );\n    font-feature-settings: var( --default-mono-font-feature-settings, normal );\n    font-variation-settings: var( --default-mono-font-variation-settings, normal );\n    font-size: 1em;\n  }\n  small {\n    font-size: 80%;\n  }\n  sub, sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n  sub {\n    bottom: -0.25em;\n  }\n  sup {\n    top: -0.5em;\n  }\n  table {\n    text-indent: 0;\n    border-color: inherit;\n    border-collapse: collapse;\n  }\n  :-moz-focusring {\n    outline: auto;\n  }\n  progress {\n    vertical-align: baseline;\n  }\n  summary {\n    display: list-item;\n  }\n  ol, ul, menu {\n    list-style: none;\n  }\n  img, svg, video, canvas, audio, iframe, embed, object {\n    display: block;\n    vertical-align: middle;\n  }\n  img, video {\n    max-width: 100%;\n    height: auto;\n  }\n  button, input, select, optgroup, textarea, ::file-selector-button {\n    font: inherit;\n    font-feature-settings: inherit;\n    font-variation-settings: inherit;\n    letter-spacing: inherit;\n    color: inherit;\n    border-radius: 0;\n    background-color: transparent;\n    opacity: 1;\n  }\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n  ::placeholder {\n    opacity: 1;\n    color: currentColor;\n    @supports (color: color-mix(in lab, red, red)) {\n      color: color-mix(in oklab, currentColor 50%, transparent);\n    }\n  }\n  textarea {\n    resize: vertical;\n  }\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n  ::-webkit-date-and-time-value {\n    min-height: 1lh;\n    text-align: inherit;\n  }\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n  button, input:where([type=\"button\"], [type=\"reset\"], [type=\"submit\"]), ::file-selector-button {\n    appearance: button;\n  }\n  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {\n    height: auto;\n  }\n  [hidden]:where(:not([hidden=\"until-found\"])) {\n    display: none !important;\n  }\n}\n@layer utilities {\n  .absolute {\n    position: absolute;\n  }\n  .start {\n    inset-inline-start: var(--spacing);\n  }\n  .end {\n    inset-inline-end: var(--spacing);\n  }\n  .block {\n    display: block;\n  }\n  .flex {\n    display: flex;\n  }\n  .grid {\n    display: grid;\n  }\n  .hidden {\n    display: none;\n  }\n  .inline-block {\n    display: inline-block;\n  }\n  .inline-flex {\n    display: inline-flex;\n  }\n  .transform {\n    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);\n  }\n  .border {\n    border-style: var(--tw-border-style);\n    border-width: 1px;\n  }\n  .uppercase {\n    text-transform: uppercase;\n  }\n}\nhtml, body, #root {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  background: #020617;\n}\n@property --tw-rotate-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-rotate-z {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-x {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-skew-y {\n  syntax: \"*\";\n  inherits: false;\n}\n@property --tw-border-style {\n  syntax: \"*\";\n  inherits: false;\n  initial-value: solid;\n}\n@layer properties {\n  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {\n    *, ::before, ::after, ::backdrop {\n      --tw-rotate-x: initial;\n      --tw-rotate-y: initial;\n      --tw-rotate-z: initial;\n      --tw-skew-x: initial;\n      --tw-skew-y: initial;\n      --tw-border-style: solid;\n    }\n  }\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

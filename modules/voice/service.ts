@@ -1,8 +1,58 @@
 import { prisma } from "@/lib/prisma";
+import { listVoiceAgents } from "@/modules/voice/agents/service";
 import { parseLeadCaptureFields } from "@/modules/voice/schema";
+import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
+
+const RESERVATION_KEYWORDS = ["reservation", "booking", "table", "appointment"];
+const ORDER_KEYWORDS = ["order", "takeaway", "pickup", "delivery", "burger", "meal", "food"];
+const CALLBACK_KEYWORDS = ["callback", "call back", "human", "staff", "support", "handoff"];
+
+type VoiceLeadListItem = {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  reasonForCall: string | null;
+  status: string;
+  notes: string | null;
+  source: string;
+  appointmentRequested: boolean;
+  createdAt: Date;
+};
+
+function textHasKeyword(value: string | null | undefined, keywords: string[]) {
+  if (!value) return false;
+  const normalized = value.toLowerCase();
+  return keywords.some((keyword) => normalized.includes(keyword));
+}
+
+export function isReservationLead(lead: Pick<VoiceLeadListItem, "appointmentRequested" | "source" | "reasonForCall" | "notes">) {
+  return (
+    lead.appointmentRequested ||
+    lead.source === "VAPI_TABLE_REQUEST" ||
+    textHasKeyword(lead.reasonForCall, RESERVATION_KEYWORDS) ||
+    textHasKeyword(lead.notes, RESERVATION_KEYWORDS)
+  );
+}
+
+export function isOrderLead(lead: Pick<VoiceLeadListItem, "source" | "reasonForCall" | "notes">) {
+  return (
+    lead.source === "VAPI_ORDER_REQUEST" ||
+    textHasKeyword(lead.reasonForCall, ORDER_KEYWORDS) ||
+    textHasKeyword(lead.notes, ORDER_KEYWORDS)
+  );
+}
+
+export function isCallbackLead(lead: Pick<VoiceLeadListItem, "source" | "reasonForCall" | "notes">) {
+  return (
+    lead.source === "VAPI_HANDOFF_REQUEST" ||
+    textHasKeyword(lead.reasonForCall, CALLBACK_KEYWORDS) ||
+    textHasKeyword(lead.notes, CALLBACK_KEYWORDS)
+  );
+}
 
 export async function getVoiceWorkspace(orgId: string) {
-  const [businessProfile, receptionistSettings, knowledgeBaseItems, leads, callLogs, integrationSettings] =
+  const [businessProfile, receptionistSettings, knowledgeBaseItems, leads, callLogs, integrationSettings, voiceAgents] =
     await Promise.all([
       prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
       prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
@@ -19,6 +69,7 @@ export async function getVoiceWorkspace(orgId: string) {
         orderBy: { createdAt: "desc" },
       }),
       prisma.voiceIntegrationSettings.findUnique({ where: { organizationId: orgId } }),
+      listVoiceAgents(orgId),
     ]);
 
   return {
@@ -28,31 +79,53 @@ export async function getVoiceWorkspace(orgId: string) {
     leads,
     callLogs,
     integrationSettings,
+    voiceAgents,
   };
 }
 
 export async function getVoiceDashboardSummary(orgId: string) {
+  const leads = await prisma.voiceLead.findMany({
+    where: { organizationId: orgId },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      reasonForCall: true,
+      status: true,
+      notes: true,
+      source: true,
+      appointmentRequested: true,
+      createdAt: true,
+    },
+  });
+
   const [
     businessProfile,
     receptionistSettings,
-    totalLeads,
+    integrationSettings,
+    voiceAgents,
     totalCalls,
     missedCalls,
     appointmentRequestedCalls,
-    appointmentRequestedLeads,
     knowledgeCount,
   ] = await Promise.all([
     prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
-    prisma.voiceLead.count({ where: { organizationId: orgId } }),
+    prisma.voiceIntegrationSettings.findUnique({ where: { organizationId: orgId } }),
+    listVoiceAgents(orgId),
     prisma.voiceCallLog.count({ where: { organizationId: orgId } }),
     prisma.voiceCallLog.count({ where: { organizationId: orgId, isMissed: true } }),
     prisma.voiceCallLog.count({ where: { organizationId: orgId, appointmentRequested: true } }),
-    prisma.voiceLead.count({ where: { organizationId: orgId, appointmentRequested: true } }),
     prisma.voiceKnowledgeBaseItem.count({
       where: { organizationId: orgId, isActive: true },
     }),
   ]);
+
+  const reservationLeads = leads.filter(isReservationLead);
+  const orderRequestLeads = leads.filter(isOrderLead);
+  const callbackLeads = leads.filter(isCallbackLead);
+  const defaultAgent = voiceAgents.find((agent) => agent.isDefault) || voiceAgents[0] || null;
 
   const setupChecklist = [
     { label: "Business profile", complete: !!businessProfile },
@@ -61,17 +134,23 @@ export async function getVoiceDashboardSummary(orgId: string) {
       complete: !!receptionistSettings?.greetingMessage && !!receptionistSettings?.fallbackMessage,
     },
     { label: "Knowledge base", complete: knowledgeCount > 0 },
-    { label: "Integrations", complete: false },
+    { label: "Default voice agent", complete: !!defaultAgent },
+    { label: "Integrations", complete: !!defaultAgent?.vapiAssistantId && !!defaultAgent?.vapiPhoneNumberId },
   ];
 
   return {
     businessProfile,
     receptionistSettings,
+    integrationSettings,
+    voiceAgents,
+    defaultAgent,
     stats: {
-      totalLeads,
+      totalLeads: leads.length,
       totalCalls,
       missedCalls,
-      appointmentsRequested: appointmentRequestedCalls + appointmentRequestedLeads,
+      appointmentsRequested: appointmentRequestedCalls + reservationLeads.length,
+      orderRequests: orderRequestLeads.length,
+      callbackRequests: callbackLeads.length,
       activeKnowledgeItems: knowledgeCount,
     },
     setupChecklist,
@@ -99,12 +178,16 @@ export async function getVoiceSettingsData(orgId: string) {
 }
 
 export async function getVoiceIntegrationsOverview(orgId: string) {
-  const settings = await prisma.voiceIntegrationSettings.findUnique({
-    where: { organizationId: orgId },
-  });
+  const [settings, voiceAgents] = await Promise.all([
+    prisma.voiceIntegrationSettings.findUnique({
+      where: { organizationId: orgId },
+    }),
+    listVoiceAgents(orgId),
+  ]);
 
+  const vapiStatus = getVapiEnvStatus();
   const envStatus = {
-    vapi: !!process.env.VOICE_VAPI_API_KEY,
+    vapi: vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey,
     twilio: !!process.env.VOICE_TWILIO_ACCOUNT_SID && !!process.env.VOICE_TWILIO_AUTH_TOKEN,
     googleCalendar: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
     whatsapp: !!process.env.VOICE_WHATSAPP_FOLLOW_UP_WEBHOOK_URL,
@@ -112,6 +195,20 @@ export async function getVoiceIntegrationsOverview(orgId: string) {
 
   return {
     settings,
+    voiceAgents,
     envStatus,
+  };
+}
+
+export async function getVoiceRequestQueues(orgId: string) {
+  const leads = await prisma.voiceLead.findMany({
+    where: { organizationId: orgId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return {
+    reservations: leads.filter(isReservationLead),
+    orders: leads.filter(isOrderLead),
+    callbacks: leads.filter(isCallbackLead),
   };
 }

@@ -14,12 +14,14 @@ export default async function VoiceDashboardPage() {
     ["Total leads", summary.stats.totalLeads, "Captured receptionist leads from the voice workspace database."],
     ["Total calls", summary.stats.totalCalls, "Call records will stay at zero until provider webhooks are connected."],
     ["Missed calls", summary.stats.missedCalls, "Missed state is database-backed and will rise once live call events arrive."],
-    ["Appointments requested", summary.stats.appointmentsRequested, "Tracks manual test leads and future booking-intent calls."],
+    ["Reservations", summary.stats.appointmentsRequested, "Tracks booking requests captured for team confirmation, not confirmed tables."],
+    ["Order requests", summary.stats.orderRequests, "Takeaway and order requests stay in the voice queue until staff confirms details."],
+    ["Callback requests", summary.stats.callbackRequests, "Human handoff requests are saved for follow-up without triggering outbound actions."],
   ] as const;
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-5 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {statCards.map(([label, value, description]) => (
           <div key={label} className="rounded-[26px] border border-white/10 bg-slate-950/35 p-5">
             <div className="text-[11px] font-black uppercase tracking-[0.28em] text-cyan-300">{label}</div>

@@ -1,149 +1,306 @@
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function VoiceCommandCenter({ overview }: { overview: any }) {
-  const { system, setup, assistant, operations } = overview;
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+type VoiceCommandCenterProps = {
+  overview: {
+    system: {
+      appStatus: string;
+      dbStatus: string;
+      vapiStatus: {
+        hasPrivateKey: boolean;
+        hasPublicKey: boolean;
+        hasWebhookSecret: boolean;
+        callingEnabled: boolean;
+        webhookUrl?: string | null;
+      };
+      lastWebhookAt: Date | null;
+      lastWebhookType: string | null;
+    };
+    setup: {
+      hasProfile: boolean;
+      hasSettings: boolean;
+      hasGreeting: boolean;
+      hasBusinessHours: boolean;
+      hasFallbackContact: boolean;
+      hasFaqs: boolean;
+      hasTenantMapping: boolean;
+      hasServices: boolean;
+      hasPromptSync: boolean;
+      trainingCompletion: number;
+    };
+    assistant: {
+      name: string;
+      languageMode: string;
+      greetingMessage: string;
+      fallbackMessage: string;
+      afterHoursBehavior: string;
+      providerAssistantId: string | null;
+      providerPhoneNumberId: string | null;
+      voiceAgentName: string;
+    };
+    operations: {
+      calls: { total: number; missed: number };
+      leads: { total: number; unresolved: number };
+      faqs: { total: number; active: number };
+      reservations: number;
+      orders: number;
+      callbacks: number;
+    };
+    training: {
+      checklist: Array<{ label: string; complete: boolean }>;
+      servicesCount: number;
+      activeFaqs: number;
+      lastPromptSyncedAt: Date | null;
+      promptPreview: string;
+      assistantMapped: boolean;
+      phoneMapped: boolean;
+      toolSummary: {
+        faqLookupEnabled: boolean;
+        businessHoursEnabled: boolean;
+        bookingRequestEnabled: boolean;
+        orderRequestEnabled: boolean;
+        handoffEnabled: boolean;
+        callbackCaptureEnabled: boolean;
+      };
+    };
+  };
+};
+
+export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
+  const { system, setup, assistant, operations, training } = overview;
   const vapi = system.vapiStatus;
 
-  const isSetupComplete = 
-    setup.hasProfile && 
-    setup.hasSettings && 
-    setup.hasGreeting && 
-    setup.hasBusinessHours && 
-    setup.hasFaqs && 
-    vapi.hasPrivateKey && 
-    vapi.hasDefaultAssistantId && 
-    vapi.hasDefaultPhoneNumberId;
+  const isSetupComplete =
+    setup.hasProfile &&
+    setup.hasSettings &&
+    setup.hasGreeting &&
+    setup.hasBusinessHours &&
+    setup.hasFaqs &&
+    setup.hasTenantMapping &&
+    setup.hasServices &&
+    vapi.hasPrivateKey &&
+    !!assistant.providerAssistantId &&
+    !!assistant.providerPhoneNumberId;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-white">Voice Command Center</h1>
-          <p className="mt-1 text-sm text-slate-400">Master control for your AI receptionist</p>
+          <p className="mt-1 text-sm text-slate-400">Master control for your AI receptionist demo flow.</p>
         </div>
-        <div className={`rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] ${vapi.callingEnabled ? 'bg-emerald-400/20 text-emerald-300' : 'bg-amber-400/20 text-amber-300'}`}>
-          {vapi.callingEnabled ? "CALLING LIVE" : "CALLING DISABLED"}
+        <div
+          className={`rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] ${
+            vapi.callingEnabled ? "bg-emerald-400/20 text-emerald-300" : "bg-amber-400/20 text-amber-300"
+          }`}
+        >
+          {vapi.callingEnabled ? "Calling enabled" : "Calling disabled"}
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {/* System Status */}
         <Card className="border-white/10 bg-slate-950/35">
           <CardHeader>
             <CardTitle className="text-white">System Status</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3 text-sm text-slate-300">
-              <li className="flex justify-between"><span>Database:</span> <span className="text-emerald-400">{system.dbStatus}</span></li>
-              <li className="flex justify-between"><span>Vapi API Keys:</span> <span>{vapi.hasPrivateKey ? "✅" : "❌"}</span></li>
-              <li className="flex justify-between"><span>Webhook Secret:</span> <span>{vapi.hasWebhookSecret ? "🔒 Secured" : "⚠️ Recommended"}</span></li>
+              <li className="flex justify-between">
+                <span>App</span>
+                <span className="text-emerald-400">{system.appStatus}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Database</span>
+                <span className="text-emerald-400">{system.dbStatus}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Vapi API Keys</span>
+                <span>{vapi.hasPrivateKey ? "Ready" : "Missing"}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Webhook Secret</span>
+                <span>{vapi.hasWebhookSecret ? "Secured" : "Recommended"}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Calling Enabled</span>
+                <span>{vapi.callingEnabled ? "Yes" : "No"}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Last webhook</span>
+                <span>{system.lastWebhookAt ? new Date(system.lastWebhookAt).toLocaleString() : "No events yet"}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Last event type</span>
+                <span>{system.lastWebhookType || "None"}</span>
+              </li>
             </ul>
           </CardContent>
         </Card>
 
-        {/* Readiness Checklist */}
         <Card className="border-white/10 bg-slate-950/35">
           <CardHeader>
             <CardTitle className="text-white">Readiness Checklist</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li className="flex justify-between"><span>Business Profile:</span> <span>{setup.hasProfile ? "✅" : "❌"}</span></li>
-              <li className="flex justify-between"><span>Receptionist Settings:</span> <span>{setup.hasSettings ? "✅" : "❌"}</span></li>
-              <li className="flex justify-between"><span>Greeting Configured:</span> <span>{setup.hasGreeting ? "✅" : "❌"}</span></li>
-              <li className="flex justify-between"><span>Business Hours:</span> <span>{setup.hasBusinessHours ? "✅" : "❌"}</span></li>
-              <li className="flex justify-between"><span>Active FAQs:</span> <span>{setup.hasFaqs ? "✅" : "❌"}</span></li>
-              <li className="flex justify-between"><span>Vapi Configured:</span> <span>{vapi.hasDefaultAssistantId ? "✅" : "❌"}</span></li>
+              <li className="flex justify-between"><span>Business Profile</span><span>{setup.hasProfile ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Receptionist Settings</span><span>{setup.hasSettings ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Greeting</span><span>{setup.hasGreeting ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Business Hours</span><span>{setup.hasBusinessHours ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Services/Menu</span><span>{setup.hasServices ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Active FAQs</span><span>{setup.hasFaqs ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Agent Mapping</span><span>{setup.hasTenantMapping ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Prompt Sync</span><span>{setup.hasPromptSync ? "Ready" : "Pending"}</span></li>
             </ul>
-            <div className={`mt-4 rounded-lg p-2 text-center text-xs font-bold ${isSetupComplete ? 'bg-emerald-400/10 text-emerald-300' : 'bg-rose-400/10 text-rose-300'}`}>
-              {isSetupComplete ? "Ready for Live Calls" : "Setup Incomplete"}
+            <div className="mt-4 rounded-lg bg-cyan-400/10 p-3 text-center text-xs font-bold text-cyan-300">
+              Training completion: {setup.trainingCompletion}%
+            </div>
+            <div
+              className={`mt-3 rounded-lg p-2 text-center text-xs font-bold ${
+                isSetupComplete ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"
+              }`}
+            >
+              {isSetupComplete ? "Ready for controlled demo calls" : "Setup incomplete"}
             </div>
           </CardContent>
         </Card>
 
-        {/* Safety / Tenant Isolation Panel */}
         <Card className="border-amber-400/30 bg-amber-500/10 xl:col-span-1 md:col-span-2">
           <CardHeader>
             <CardTitle className="text-amber-200">Security & Isolation</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-xs text-amber-100/80">
-              <li>✔️ Dashboard strictly protected</li>
-              <li>✔️ All data strictly tenant-scoped</li>
-              <li>✔️ Calls isolated to current business</li>
-              <li>✔️ No public logs or transcripts</li>
-              <li>✔️ Independent from ERP system</li>
+              <li>Dashboard strictly protected</li>
+              <li>All Voice data stays tenant-scoped</li>
+              <li>Calls stay isolated to the current business</li>
+              <li>No public logs or transcripts</li>
+              <li>No ERP writes in this demo flow</li>
             </ul>
           </CardContent>
         </Card>
 
-        {/* Operations */}
         <Card className="border-white/10 bg-slate-950/35">
           <CardHeader>
-            <CardTitle className="text-white">Call Logs</CardTitle>
+            <CardTitle className="text-white">Call Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between text-sm text-slate-300">
-              <div>Total: <span className="text-white font-bold">{operations.calls.total}</span></div>
-              <div>Missed: <span className="text-white font-bold">{operations.calls.missed}</span></div>
+            <div className="grid grid-cols-2 gap-3 text-sm text-slate-300">
+              <div>Total: <span className="font-bold text-white">{operations.calls.total}</span></div>
+              <div>Missed: <span className="font-bold text-white">{operations.calls.missed}</span></div>
+              <div>Reservations: <span className="font-bold text-white">{operations.reservations}</span></div>
+              <div>Orders: <span className="font-bold text-white">{operations.orders}</span></div>
+              <div>Callbacks: <span className="font-bold text-white">{operations.callbacks}</span></div>
             </div>
-            <Link href="/voice/dashboard/call-logs" className="mt-4 block text-xs text-cyan-400 hover:text-cyan-300">View Call Logs →</Link>
+            <Link href="/voice/dashboard/call-logs" className="mt-4 block text-xs text-cyan-400 hover:text-cyan-300">
+              View call logs →
+            </Link>
           </CardContent>
         </Card>
 
         <Card className="border-white/10 bg-slate-950/35">
           <CardHeader>
-            <CardTitle className="text-white">Leads</CardTitle>
+            <CardTitle className="text-white">Leads & Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between text-sm text-slate-300">
-              <div>Total: <span className="text-white font-bold">{operations.leads.total}</span></div>
-              <div>Unresolved: <span className="text-white font-bold">{operations.leads.unresolved}</span></div>
+            <div className="grid grid-cols-2 gap-3 text-sm text-slate-300">
+              <div>Total leads: <span className="font-bold text-white">{operations.leads.total}</span></div>
+              <div>Unresolved: <span className="font-bold text-white">{operations.leads.unresolved}</span></div>
+              <div>Active FAQs: <span className="font-bold text-white">{training.activeFaqs}</span></div>
+              <div>Services: <span className="font-bold text-white">{training.servicesCount}</span></div>
             </div>
-            <Link href="/voice/dashboard/leads" className="mt-4 block text-xs text-cyan-400 hover:text-cyan-300">View Leads →</Link>
+            <div className="mt-4 flex flex-wrap gap-3 text-xs">
+              <Link href="/voice/dashboard/leads" className="text-cyan-400 hover:text-cyan-300">View leads →</Link>
+              <Link href="/voice/dashboard/reservations" className="text-cyan-400 hover:text-cyan-300">Reservation queue →</Link>
+              <Link href="/voice/dashboard/orders" className="text-cyan-400 hover:text-cyan-300">Order queue →</Link>
+            </div>
           </CardContent>
         </Card>
 
         <Card className="border-white/10 bg-slate-950/35">
           <CardHeader>
-            <CardTitle className="text-white">Knowledge Base</CardTitle>
+            <CardTitle className="text-white">Tool Coverage</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between text-sm text-slate-300">
-              <div>Total FAQs: <span className="text-white font-bold">{operations.faqs.total}</span></div>
-              <div>Active FAQs: <span className="text-white font-bold">{operations.faqs.active}</span></div>
-            </div>
-            <Link href="/voice/dashboard/knowledge-base" className="mt-4 block text-xs text-cyan-400 hover:text-cyan-300">Manage FAQs →</Link>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li className="flex justify-between"><span>FAQ lookup</span><span>{training.toolSummary.faqLookupEnabled ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Business hours</span><span>{training.toolSummary.businessHoursEnabled ? "Ready" : "Missing"}</span></li>
+              <li className="flex justify-between"><span>Booking requests</span><span>{training.toolSummary.bookingRequestEnabled ? "Ready" : "Disabled"}</span></li>
+              <li className="flex justify-between"><span>Order requests</span><span>{training.toolSummary.orderRequestEnabled ? "Ready" : "Disabled"}</span></li>
+              <li className="flex justify-between"><span>Human handoff</span><span>{training.toolSummary.handoffEnabled ? "Ready" : "Disabled"}</span></li>
+              <li className="flex justify-between"><span>Callback capture</span><span>{training.toolSummary.callbackCaptureEnabled ? "Ready" : "Disabled"}</span></li>
+            </ul>
           </CardContent>
         </Card>
 
-        {/* Assistant Configuration */}
         <Card className="border-white/10 bg-slate-950/35 md:col-span-2 xl:col-span-3">
           <CardHeader>
             <CardTitle className="text-white">Assistant Configuration</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-slate-300">
+            <div className="grid grid-cols-2 gap-4 text-sm text-slate-300 md:grid-cols-4">
               <div>
-                <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Name</div>
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Name</div>
                 <div className="font-semibold text-white">{assistant.name}</div>
               </div>
               <div>
-                <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Language Mode</div>
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Voice Agent</div>
+                <div className="font-semibold text-white">{assistant.voiceAgentName}</div>
+              </div>
+              <div>
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Language Mode</div>
                 <div className="font-semibold text-white">{assistant.languageMode}</div>
               </div>
               <div className="col-span-2">
-                <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">After Hours</div>
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">After Hours</div>
                 <div className="font-semibold text-white">{assistant.afterHoursBehavior}</div>
               </div>
+              <div className="col-span-2">
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Assistant Mapping</div>
+                <div className="font-semibold text-white">{assistant.providerAssistantId || "Not mapped yet"}</div>
+              </div>
+              <div className="col-span-2">
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Phone Number Mapping</div>
+                <div className="font-semibold text-white">{assistant.providerPhoneNumberId || "Not mapped yet"}</div>
+              </div>
             </div>
-            <Link href="/voice/dashboard/settings" className="mt-6 inline-block bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-              Edit Settings
-            </Link>
-            <Link href="/voice/dashboard/integrations/vapi" className="mt-6 ml-3 inline-block bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-              Vapi Setup
-            </Link>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/voice/dashboard/settings"
+                className="inline-block rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+              >
+                Edit settings
+              </Link>
+              <Link
+                href="/voice/dashboard/training"
+                className="inline-block rounded-lg bg-cyan-500/20 px-4 py-2 text-sm font-semibold text-cyan-300 transition-colors hover:bg-cyan-500/30"
+              >
+                Open training center
+              </Link>
+              <Link
+                href="/voice/dashboard/integrations/vapi"
+                className="inline-block rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:border-cyan-300/40 hover:bg-white/5"
+              >
+                Vapi setup
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-slate-950/35 md:col-span-2 xl:col-span-3">
+          <CardHeader>
+            <CardTitle className="text-white">Assistant Prompt Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+              <span>Prompt sync: {training.lastPromptSyncedAt ? new Date(training.lastPromptSyncedAt).toLocaleString() : "Not synced yet"}</span>
+              <span>Assistant mapped: {training.assistantMapped ? "Yes" : "No"}</span>
+              <span>Phone mapped: {training.phoneMapped ? "Yes" : "No"}</span>
+            </div>
+            <div className="max-h-[320px] overflow-y-auto rounded-lg bg-black/50 p-4 font-mono text-xs whitespace-pre-wrap text-slate-300">
+              {training.promptPreview}
+            </div>
           </CardContent>
         </Card>
       </div>

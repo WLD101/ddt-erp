@@ -1,31 +1,32 @@
+import Link from "next/link";
+
 import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { getVoiceIntegrationsOverview } from "@/modules/voice/service";
 import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
-import Link from "next/link";
 
 const integrationCards = [
   {
     key: "vapi",
     title: "Vapi (AI Receptionist)",
     description: "Manage your AI receptionist, webhook configuration, and prompts.",
-    envs: ["VAPI_PRIVATE_API_KEY", "VAPI_PUBLIC_KEY", "VAPI_WEBHOOK_SECRET", "VAPI_DEFAULT_ASSISTANT_ID", "VAPI_DEFAULT_PHONE_NUMBER_ID"],
+    envs: ["VAPI_PRIVATE_API_KEY", "VAPI_PUBLIC_KEY", "VAPI_WEBHOOK_SECRET", "VAPI_SERVER_URL", "VOICE_PUBLIC_APP_URL"],
   },
   {
     key: "twilio",
     title: "Twilio",
-    description: "Future PSTN calling, phone numbers, and webhook ingestion",
+    description: "Future PSTN calling, phone numbers, and webhook ingestion.",
     envs: ["VOICE_TWILIO_ACCOUNT_SID", "VOICE_TWILIO_AUTH_TOKEN", "VOICE_TWILIO_PHONE_NUMBER"],
   },
   {
     key: "googleCalendar",
     title: "Google Calendar",
-    description: "Future appointment booking and availability sync",
+    description: "Future appointment booking and availability sync.",
     envs: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
   },
   {
     key: "whatsapp",
     title: "WhatsApp follow-up",
-    description: "Future post-call follow-up workflow",
+    description: "Future post-call follow-up workflow.",
     envs: ["VOICE_WHATSAPP_FOLLOW_UP_WEBHOOK_URL"],
   },
 ] as const;
@@ -33,7 +34,7 @@ const integrationCards = [
 export default async function VoiceIntegrationsPage() {
   const ctx = await getCurrentTenantContext();
   requireRole(ctx, "owner", "admin");
-  const { settings, envStatus } = await getVoiceIntegrationsOverview(ctx.organizationId);
+  const { settings, envStatus, voiceAgents } = await getVoiceIntegrationsOverview(ctx.organizationId);
 
   const currentStatuses = {
     vapi: settings?.vapiStatus ?? "NOT_CONNECTED",
@@ -43,6 +44,7 @@ export default async function VoiceIntegrationsPage() {
   } as const;
 
   const vapiStatus = getVapiEnvStatus();
+  const defaultAgent = voiceAgents.find((agent) => agent.isDefault) || voiceAgents[0] || null;
 
   return (
     <div className="space-y-6">
@@ -52,7 +54,8 @@ export default async function VoiceIntegrationsPage() {
             <div className="text-[11px] font-black uppercase tracking-[0.28em] text-amber-200">Production warning</div>
             <h2 className="mt-2 text-2xl font-black text-white">Calling is not live yet</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">
-              Vapi, Twilio, Google Calendar, and WhatsApp follow-up remain placeholder configurations in this phase. The dashboard can store readiness status, but no real phone calls, webhook ingestion, booking sync, or follow-up automation is active yet.
+              Vapi, Twilio, Google Calendar, and WhatsApp follow-up remain controlled demo configurations in this phase.
+              The dashboard can store readiness status, but real phone calls, booking sync, and follow-up automation are not fully live until the provider setup is completed and verified.
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3 text-sm font-semibold text-slate-200">
@@ -62,7 +65,7 @@ export default async function VoiceIntegrationsPage() {
       </div>
 
       <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 text-sm leading-7 text-slate-300">
-        These are config placeholders only. This phase checks environment readiness and stores integration status separately from the ERP. It does not make live provider calls yet.
+        These are provider configuration placeholders only. This phase checks environment readiness and stores integration status separately from the ERP.
       </div>
 
       <section className="grid gap-5 xl:grid-cols-2">
@@ -83,7 +86,7 @@ export default async function VoiceIntegrationsPage() {
                     enabled ? "bg-emerald-400/15 text-emerald-200" : "bg-slate-800 text-slate-300"
                   }`}
                 >
-                  {enabled ? "ENV READY" : "CONFIG REQUIRED"}
+                  {enabled ? "Env ready" : "Config required"}
                 </span>
               </div>
 
@@ -97,35 +100,37 @@ export default async function VoiceIntegrationsPage() {
                   ))}
                 </div>
               </div>
-              
-              {card.key === "vapi" && (
+
+              {card.key === "vapi" ? (
                 <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Vapi Status</div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Vapi status</div>
                     <Link href="/voice/dashboard/integrations/vapi" className="text-xs font-semibold text-cyan-400 hover:text-cyan-300">
-                      Manage Setup →
+                      Manage setup →
                     </Link>
                   </div>
                   <ul className="space-y-2 text-sm text-slate-300">
-                    <li className="flex justify-between"><span>API Keys:</span> <span>{vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey ? "✅ Connected" : "❌ Missing"}</span></li>
-                    <li className="flex justify-between"><span>Assistant ID:</span> <span>{vapiStatus.hasDefaultAssistantId ? "✅ Configured" : "❌ Missing"}</span></li>
-                    <li className="flex justify-between"><span>Phone Num ID:</span> <span>{vapiStatus.hasDefaultPhoneNumberId ? "✅ Configured" : "❌ Missing"}</span></li>
-                    <li className="flex justify-between"><span>Webhook Secret:</span> <span>{vapiStatus.hasWebhookSecret ? "🔒 Secured" : "⚠️ None"}</span></li>
-                    <li className="flex justify-between"><span>Live Calling:</span> <span>{vapiStatus.callingEnabled ? "🔴 ENABLED" : "⚫ DISABLED"}</span></li>
+                    <li className="flex justify-between"><span>API Keys</span><span>{vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey ? "Connected" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Default Agent</span><span>{defaultAgent?.name || "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Agent Assistant ID</span><span>{defaultAgent?.vapiAssistantId ? "Configured" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Agent Phone Number ID</span><span>{defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Webhook Secret</span><span>{vapiStatus.hasWebhookSecret ? "Secured" : "Recommended"}</span></li>
+                    <li className="flex justify-between"><span>Agent Mapping</span><span>{defaultAgent?.vapiAssistantId || defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Live Calling</span><span>{vapiStatus.callingEnabled ? "Enabled" : "Disabled"}</span></li>
                   </ul>
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Webhook URL (Copy to Vapi)</div>
-                    <code className="block rounded bg-black/50 p-2 text-xs text-amber-200 break-all select-all">
+                  <div className="mt-4 border-t border-white/10 pt-4">
+                    <div className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Webhook URL</div>
+                    <code className="block break-all rounded bg-black/50 p-2 text-xs text-amber-200 select-all">
                       {vapiStatus.webhookUrl || "Configure VOICE_PUBLIC_APP_URL"}
                     </code>
                   </div>
-                  {!vapiStatus.callingEnabled && (
+                  {!vapiStatus.callingEnabled ? (
                     <div className="mt-3 text-xs text-amber-400">
-                      ⚠️ Calling is currently disabled. Set VOICE_CALLING_ENABLED=true to allow live calls.
+                      Calling is currently disabled. Keep it disabled until the assistant and phone number are fully ready for the demo.
                     </div>
-                  )}
+                  ) : null}
                 </div>
-              )}
+              ) : null}
             </div>
           );
         })}

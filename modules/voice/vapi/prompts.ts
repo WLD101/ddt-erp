@@ -1,52 +1,83 @@
-// modules/voice/vapi/prompts.ts
+import { VoiceBusinessProfile, VoiceKnowledgeBaseItem, VoiceReceptionistSettings } from "@prisma/client";
 
-import { VoiceBusinessProfile, VoiceReceptionistSettings, VoiceKnowledgeBaseItem } from "@prisma/client";
+import { buildBusinessSpecificReceptionistPrompt } from "@/modules/voice/training/prompt-builder";
 
 export function buildReceptionistPrompt(
   profile: VoiceBusinessProfile | null,
   settings: VoiceReceptionistSettings | null,
-  knowledgeBase: VoiceKnowledgeBaseItem[]
+  knowledgeBase: VoiceKnowledgeBaseItem[],
 ): string {
-  const businessName = profile?.businessName || "the business";
-  const industry = profile?.industry || "service";
-  const languageMode = settings?.languageMode || "AUTO_DETECT";
-  const businessHours = settings?.businessHours || profile?.openingHours || "standard business hours";
-  
-  const kbSection = knowledgeBase.length > 0
-    ? `\nKNOWLEDGE BASE:\n${knowledgeBase.map(item => `Q: ${item.question}\nA: ${item.answer}`).join("\n\n")}`
-    : "\nKNOWLEDGE BASE:\n(No specific FAQs available. Fallback to general helpful responses.)";
-
-  let prompt = `You are a professional, polite, and helpful AI receptionist for ${businessName}, a ${industry} business.
-
-YOUR PRIMARY BEHAVIORS:
-1. Greet the user politely.
-2. Answer questions based ONLY on the provided KNOWLEDGE BASE or BUSINESS INFO. Do NOT hallucinate policies or make up facts.
-3. If a question is not covered in the knowledge base, do not guess. Say you don't have that specific information but you can take their contact details or pass a message to the team.
-4. If the user wants to book an appointment or request a callback, politely ask for their name, phone number, and a brief reason, then use the "capture_lead" or "request_appointment" tool. DO NOT confirm a specific booking time unless explicitly instructed. Let them know the team will reach out to confirm.
-5. Keep your answers concise, conversational, and natural for a phone call. Avoid long lists.
-
-BUSINESS INFO:
-- Name: ${businessName}
-- Hours: ${businessHours}
-${profile?.fallbackContactMethod ? `- Fallback Contact: ${profile.fallbackContactMethod}` : ""}
-
-LANGUAGE MODE: ${languageMode}
-If AUTO_DETECT, detect the user's language (e.g., English, Urdu, Roman Urdu) and match their language and tone.
-${kbSection}
-
-IMPORTANT RESTRICTIONS:
-- DO NOT provide medical, legal, or financial advice.
-- DO NOT promise refunds or specific pricing unless it is strictly listed in the knowledge base.
-- Speak naturally and do not sound like a robot reading a script.
-`;
-
-  if (settings?.greetingMessage) {
-    prompt += `\nREQUIRED GREETING: "${settings.greetingMessage}" (Use this or a close variation to start the call).`;
-  }
-  
-  if (settings?.fallbackMessage) {
-    prompt += `\nREQUIRED FALLBACK MESSAGE: "${settings.fallbackMessage}" (Use this if you cannot help the user).`;
-  }
-
-  return prompt;
+  return buildBusinessSpecificReceptionistPrompt({
+    businessIdentity: {
+      businessName: profile?.businessName || "WhatsQuery Voice Business",
+      industry: profile?.industry || "Service business",
+      primaryLanguage: settings?.languageMode || profile?.preferredLanguage || "AUTO_DETECT",
+      supportedLanguages: [settings?.languageMode || profile?.preferredLanguage || "AUTO_DETECT"],
+      tone: "PROFESSIONAL",
+      greetingMessage: settings?.greetingMessage || profile?.greetingMessage || null,
+      closingMessage: settings?.fallbackMessage || null,
+      openingHours: settings?.businessHours || profile?.openingHours || null,
+      fallbackContactMethod: profile?.fallbackContactMethod || null,
+      businessPhone: profile?.businessPhone || null,
+      website: profile?.website || null,
+      mainGoal: profile?.mainGoal || null,
+    },
+    agent: {
+      id: null,
+      name: settings?.receptionistName || "WhatsQuery Receptionist",
+      role: "AI_RECEPTIONIST",
+      languageMode: settings?.languageMode || profile?.preferredLanguage || "AUTO_DETECT",
+      supportedLanguages: [settings?.languageMode || profile?.preferredLanguage || "AUTO_DETECT"],
+      tone: "PROFESSIONAL",
+      voicePersona: "Professional, calm, and helpful",
+      allowedTools: [
+        "lookup_faq",
+        "get_business_hours",
+        "get_fallback_contact",
+        "capture_lead",
+        "summarize_call",
+      ],
+      assistantId: null,
+      assistantName: null,
+      phoneNumberId: null,
+      isDefault: true,
+      isActive: true,
+      lastPromptSyncedAt: null,
+    },
+    services: [],
+    knowledgeBase,
+    bookingRules: {
+      acceptsBookings: false,
+      bookingType: "APPOINTMENT",
+      bookingMode: "REQUEST_ONLY",
+      requiredFields: [],
+    },
+    orderRules: {
+      acceptsOrderRequests: false,
+      orderMode: "REQUEST_ONLY",
+      orderTypes: [],
+      requiredFields: [],
+    },
+    handoffRules: {
+      fallbackPhone: profile?.businessPhone || null,
+      fallbackEmail: null,
+      handoffTriggers: ["UNKNOWN_ANSWER"],
+    },
+    actionPolicy: {
+      allowedActions: ["ANSWER_FAQS", "CAPTURE_LEADS", "HANDOFF_TO_STAFF", "SUMMARIZE_CALL"],
+      blockedActions: [
+        "TAKE_PAYMENTS",
+        "CONFIRM_PAID_ORDERS",
+        "ISSUE_REFUNDS",
+        "CANCEL_BOOKINGS",
+        "CREATE_INVOICES",
+        "DELETE_RECORDS",
+        "CHANGE_ERP_FINANCIAL_DATA",
+        "GIVE_MEDICAL_LEGAL_FINANCIAL_ADVICE",
+        "PROMISE_DELIVERY_TIME_WITHOUT_CONFIGURED_RULE",
+      ],
+      erpWritesEnabled: false,
+      backendAutoConfirmationEnabled: false,
+    },
+  });
 }

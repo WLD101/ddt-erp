@@ -1,17 +1,35 @@
 // modules/voice/vapi/service.ts
 
+function getConfiguredWebhookUrl() {
+  if (process.env.VAPI_SERVER_URL) {
+    return process.env.VAPI_SERVER_URL;
+  }
+
+  if (process.env.VOICE_PUBLIC_APP_URL) {
+    return `${process.env.VOICE_PUBLIC_APP_URL}/api/voice/vapi/webhook`;
+  }
+
+  return undefined;
+}
+
+export function getVapiPrivateApiKey() {
+  return process.env.VAPI_PRIVATE_API_KEY || process.env.VOICE_VAPI_API_KEY || null;
+}
+
 export function getVapiEnvStatus() {
   const isEnabled = process.env.VOICE_CALLING_ENABLED === "true";
   
   return {
-    hasPrivateKey: !!process.env.VAPI_PRIVATE_API_KEY,
+    hasPrivateKey: !!getVapiPrivateApiKey(),
     hasPublicKey: !!process.env.VAPI_PUBLIC_KEY,
     hasWebhookSecret: !!process.env.VAPI_WEBHOOK_SECRET,
-    hasDefaultAssistantId: !!process.env.VAPI_DEFAULT_ASSISTANT_ID,
-    hasDefaultPhoneNumberId: !!process.env.VAPI_DEFAULT_PHONE_NUMBER_ID,
     callingEnabled: isEnabled,
-    webhookUrl: process.env.VAPI_SERVER_URL || process.env.VOICE_PUBLIC_APP_URL ? `${process.env.VOICE_PUBLIC_APP_URL}/api/voice/vapi/webhook` : undefined
+    webhookUrl: getConfiguredWebhookUrl(),
   };
+}
+
+export function getLegacyBootstrapPhoneNumberId() {
+  return process.env.VOICE_BOOTSTRAP_PHONE_NUMBER_ID || null;
 }
 
 export function validateWebhookSecret(secret: string | null): boolean {
@@ -24,7 +42,7 @@ export function validateWebhookSecret(secret: string | null): boolean {
 }
 
 export async function fetchAssistantDetails(assistantId: string) {
-  const apiKey = process.env.VAPI_PRIVATE_API_KEY;
+  const apiKey = getVapiPrivateApiKey();
   if (!apiKey) return null;
 
   try {
@@ -39,4 +57,31 @@ export async function fetchAssistantDetails(assistantId: string) {
     console.error("[Vapi Service] Failed to fetch assistant:", err);
     return null;
   }
+}
+
+export async function syncVapiAssistantPrompt(assistantId: string, prompt: string) {
+  const apiKey = getVapiPrivateApiKey();
+  if (!apiKey) {
+    throw new Error("Vapi private API key is not configured.");
+  }
+
+  const res = await fetch(`https://api.vapi.ai/assistant/${assistantId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: {
+        messages: [{ role: "system", content: prompt }],
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Vapi assistant sync failed (${res.status}): ${body || res.statusText}`);
+  }
+
+  return res.json();
 }

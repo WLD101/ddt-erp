@@ -39,7 +39,13 @@ type VoiceLeadsManagerProps = {
 export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const { register, control, handleSubmit, formState: { errors }, reset } = useForm<VoiceLeadValues>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<VoiceLeadValues>({
     resolver: zodResolver(voiceLeadSchema),
     defaultValues: {
       name: "",
@@ -96,7 +102,7 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
             <div className="space-y-2">
               <Label className="text-slate-200">Email</Label>
               <Input {...register("email")} disabled={isPending} />
-              {errors.email && <p className="text-xs text-rose-300">{errors.email.message}</p>}
+              {errors.email ? <p className="text-xs text-rose-300">{errors.email.message}</p> : null}
             </div>
             <div className="space-y-2">
               <Label className="text-slate-200">Status</Label>
@@ -111,13 +117,13 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
             <div className="space-y-2 md:col-span-2">
               <Label className="text-slate-200">Reason for call</Label>
               <Input {...register("reasonForCall")} disabled={isPending} placeholder="Appointment inquiry, pricing, support..." />
-              {errors.reasonForCall && <p className="text-xs text-rose-300">{errors.reasonForCall.message}</p>}
+              {errors.reasonForCall ? <p className="text-xs text-rose-300">{errors.reasonForCall.message}</p> : null}
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label className="text-slate-200">Notes</Label>
               <Textarea {...register("notes")} disabled={isPending} className="min-h-[110px]" />
             </div>
-            <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 md:col-span-2">
               <div>
                 <div className="text-sm font-semibold text-white">Appointment requested</div>
                 <div className="text-xs text-slate-400">Use this for businesses that want the receptionist to capture booking intent.</div>
@@ -130,7 +136,7 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
                 )}
               />
             </div>
-            <div className="md:col-span-2 flex justify-end">
+            <div className="flex justify-end md:col-span-2">
               <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
                 {isPending ? "Saving..." : "Add test lead"}
               </Button>
@@ -167,11 +173,11 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
                   {leads.map((lead) => (
                     <tr key={lead.id}>
                       <td className="px-4 py-3">{lead.name || "Unknown caller"}</td>
-                      <td className="px-4 py-3">{lead.phone || "—"}</td>
-                      <td className="px-4 py-3">{lead.email || "—"}</td>
-                      <td className="px-4 py-3">{lead.reasonForCall || "—"}</td>
+                      <td className="px-4 py-3">{lead.phone || "-"}</td>
+                      <td className="px-4 py-3">{lead.email || "-"}</td>
+                      <td className="px-4 py-3">{lead.reasonForCall || "-"}</td>
                       <td className="px-4 py-3">{lead.status}</td>
-                      <td className="px-4 py-3">{lead.notes || (lead.appointmentRequested ? "Appointment requested" : "—")}</td>
+                      <td className="px-4 py-3">{lead.notes || (lead.appointmentRequested ? "Appointment requested" : "-")}</td>
                       <td className="px-4 py-3">{new Date(lead.createdAt).toLocaleString()}</td>
                     </tr>
                   ))}

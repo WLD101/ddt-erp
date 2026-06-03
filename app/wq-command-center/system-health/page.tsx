@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { type CapacityBenchmarkReport } from "@/lib/monitoring/benchmarks";
 import { getSystemHealthSnapshot } from "@/lib/monitoring/system-health";
+import { getCollectiveSystemHealth } from "@/modules/admin/system-health/service";
 import { requirePlatformAdminPage } from "@/lib/security/guards";
 import { cn } from "@/lib/utils";
 
@@ -136,6 +137,24 @@ function BenchmarkGrid({ benchmark }: { benchmark: CapacityBenchmarkReport | nul
 export default async function SystemHealthPage() {
   await requirePlatformAdminPage();
   const snapshot = await getSystemHealthSnapshot();
+  const collective = await getCollectiveSystemHealth();
+
+  const diskUsage = collective.server.diskUsagePercent;
+  const ramUsage = collective.server.ramUsagePercent;
+
+  let capacityStatus = "Healthy";
+  let capacityTone = "default";
+  
+  if (diskUsage > 85 || ramUsage > 92) {
+    capacityStatus = "Urgent";
+    capacityTone = "critical";
+  } else if (diskUsage > 75 || ramUsage > 85) {
+    capacityStatus = "Plan Upgrade";
+    capacityTone = "warning";
+  } else if (diskUsage > 60 || ramUsage > 75) {
+    capacityStatus = "Monitor";
+    capacityTone = "warning";
+  }
 
   const cpuTone =
     (snapshot.infrastructure.cpu.percent ?? 0) >= 80 ? "critical" : (snapshot.infrastructure.cpu.percent ?? 0) >= 65 ? "warning" : "default";
@@ -187,6 +206,30 @@ export default async function SystemHealthPage() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Capacity Status"
+            value={capacityStatus}
+            helper="Based on Disk & RAM thresholds"
+            tone={capacityTone as "default" | "warning" | "critical"}
+          />
+          <MetricCard
+            label="Service Status"
+            value={collective.services.whatsqueryStatus === "active" ? "Running" : collective.services.whatsqueryStatus.slice(0, 15)}
+            helper={`Nginx: ${collective.services.nginxStatus.slice(0, 15)}`}
+          />
+          <MetricCard
+            label="ERP Tenants"
+            value={collective.productUsage.erpTenantCount.toLocaleString()}
+            helper={`${collective.productUsage.erp.customers.toLocaleString()} customers`}
+          />
+          <MetricCard
+            label="Voice Businesses"
+            value={collective.productUsage.voiceBusinessCount.toLocaleString()}
+            helper={`${collective.productUsage.voice.agents.toLocaleString()} AI Agents`}
+          />
         </section>
 
         <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">

@@ -43,7 +43,13 @@ type VoiceCallLogsManagerProps = {
 export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManagerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const { register, control, handleSubmit, formState: { errors }, reset } = useForm<VoiceCallLogValues>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<VoiceCallLogValues>({
     resolver: zodResolver(voiceCallLogSchema),
     defaultValues: {
       callerNumber: "",
@@ -93,7 +99,7 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
               <div className="space-y-2">
                 <Label className="text-slate-200">Caller number</Label>
                 <Input {...register("callerNumber")} disabled={isPending} />
-                {errors.callerNumber && <p className="text-xs text-rose-300">{errors.callerNumber.message}</p>}
+                {errors.callerNumber ? <p className="text-xs text-rose-300">{errors.callerNumber.message}</p> : null}
               </div>
               <div className="space-y-2">
                 <Label className="text-slate-200">Duration (seconds)</Label>
@@ -122,13 +128,13 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
               <div className="space-y-2 md:col-span-2">
                 <Label className="text-slate-200">Summary</Label>
                 <Textarea {...register("summary")} disabled={isPending} className="min-h-[100px]" />
-                {errors.summary && <p className="text-xs text-rose-300">{errors.summary.message}</p>}
+                {errors.summary ? <p className="text-xs text-rose-300">{errors.summary.message}</p> : null}
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label className="text-slate-200">Transcript placeholder</Label>
                 <Textarea {...register("transcriptPlaceholder")} disabled={isPending} className="min-h-[110px]" />
               </div>
-              <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 md:col-span-2">
                 <div>
                   <div className="text-sm font-semibold text-white">Appointment requested</div>
                   <div className="text-xs text-slate-400">Marks the call as booking-related for dashboard metrics.</div>
@@ -141,7 +147,7 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
                   )}
                 />
               </div>
-              <div className="md:col-span-2 flex justify-end">
+              <div className="flex justify-end md:col-span-2">
                 <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
                   {isPending ? "Saving..." : "Create test call log"}
                 </Button>
@@ -155,7 +161,7 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
         <CardHeader>
           <CardTitle className="text-white">Call logs</CardTitle>
           <CardDescription className="text-slate-300">
-            Real telephony events are not connected yet. Until then, this page shows zero-state or development-only test entries clearly.
+            Real telephony events are not fully connected yet. Until then, this page shows zero-state or development-only test entries clearly.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -180,18 +186,18 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
                     <tr key={log.id}>
                       <td className="px-4 py-3">{log.callerNumber}</td>
                       <td className="px-4 py-3">{log.callStatus}</td>
-                      <td className="px-4 py-3">{log.providerCallId || "—"}</td>
-                      <td className="px-4 py-3">{log.endedReason || "—"}</td>
-                      <td className="px-4 py-3">{log.summary || "—"}</td>
-                      <td className="px-4 py-3 max-w-xs truncate" title={log.transcript || log.transcriptPlaceholder || "Pending"}>
+                      <td className="px-4 py-3">{log.providerCallId || "-"}</td>
+                      <td className="px-4 py-3">{log.endedReason || "-"}</td>
+                      <td className="px-4 py-3">{log.summary || "-"}</td>
+                      <td className="max-w-xs px-4 py-3 truncate" title={log.transcript || log.transcriptPlaceholder || "Pending"}>
                         {log.transcript || log.transcriptPlaceholder || "Pending live telephony"}
-                        {log.recordingUrl && (
-                          <a href={log.recordingUrl} target="_blank" rel="noreferrer" className="block text-cyan-400 mt-1 hover:underline">
-                            Recording 🎵
+                        {log.recordingUrl ? (
+                          <a href={log.recordingUrl} target="_blank" rel="noreferrer" className="mt-1 block text-cyan-400 hover:underline">
+                            Recording
                           </a>
-                        )}
+                        ) : null}
                       </td>
-                      <td className="px-4 py-3">{typeof log.durationSeconds === "number" ? `${log.durationSeconds}s` : "—"}</td>
+                      <td className="px-4 py-3">{typeof log.durationSeconds === "number" ? `${log.durationSeconds}s` : "-"}</td>
                       <td className="px-4 py-3">{new Date(log.createdAt).toLocaleString()}</td>
                     </tr>
                   ))}
