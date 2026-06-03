@@ -71,6 +71,7 @@ export default async function proxy(req: NextRequest) {
 
   if (
     voiceHost &&
+    !pathname.startsWith("/voice") &&
     !pathname.startsWith("/api") &&
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/_next") &&
