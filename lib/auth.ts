@@ -32,6 +32,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   secret: authSecret,
   useSecureCookies: isProduction,
+  cookies: {
+    sessionToken: {
+      name: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+        domain: isProduction ? ".whatsquery.com" : undefined,
+      },
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
