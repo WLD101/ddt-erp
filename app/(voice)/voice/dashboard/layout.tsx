@@ -1,67 +1,9 @@
 import { redirect } from "next/navigation";
-
 import { auth } from "@/lib/auth";
-import { VoiceDashboardShell } from "@/components/voice/voice-dashboard-shell";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
-
-const navItems = [
-  {
-    label: "Command Center",
-    href: "/dashboard/command-center",
-    description: "Master operations, Vapi system status, and receptionist readiness.",
-  },
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    description: "Business profile, launch readiness, and live status once telephony is connected.",
-  },
-  {
-    label: "AI Agents",
-    href: "/dashboard/agents",
-    description: "Manage multiple receptionists, order-takers, and specialized voice personas.",
-  },
-  {
-    label: "Call Logs",
-    href: "/dashboard/call-logs",
-    description: "Inbound calls, outcomes, transcripts, escalation flags, and future quality review.",
-  },
-  {
-    label: "Knowledge Base",
-    href: "/dashboard/knowledge-base",
-    description: "Business FAQs, service menus, policy notes, and answer boundaries for the receptionist.",
-  },
-  {
-    label: "Training",
-    href: "/dashboard/training",
-    description: "Business-specific identity, business rules, menus, prompt preview, and action boundaries for the receptionist.",
-  },
-  {
-    label: "Leads & Appointments",
-    href: "/dashboard/leads",
-    description: "Captured callers, follow-ups, booking requests, and handoff destinations.",
-  },
-  {
-    label: "Reservations",
-    href: "/dashboard/reservations",
-    description: "Table booking requests captured from calls, ready for staff confirmation.",
-  },
-  {
-    label: "Orders",
-    href: "/dashboard/orders",
-    description: "Takeaway and order requests saved for follow-up without touching ERP.",
-  },
-  {
-    label: "Integrations",
-    href: "/dashboard/integrations",
-    description: "Provider placeholders for Vapi, Twilio, calendars, CRM, and future webhooks.",
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    description: "Business profile, receptionist tone, office hours, consent prompts, and routing defaults.",
-  },
-];
+import { VoiceSidebar } from "@/components/voice/voice-sidebar";
+import { Navbar } from "@/components/navbar";
 
 export default async function VoiceDashboardLayout({
   children,
@@ -81,16 +23,16 @@ export default async function VoiceDashboardLayout({
   requireRole(ctx, "owner", "admin");
 
   return (
-    <VoiceDashboardShell
-      title="Receptionist Workspace"
-      description="This dashboard is the standalone operating shell for WhatsQuery Voice. It is intentionally separated from ERP assistant actions and reserved for call handling, business scripts, caller data, and telephony setup."
-      homeHref={toVoiceExternalPath("/", host)}
-      navItems={navItems.map((item) => ({
-        ...item,
-        href: toVoiceExternalPath(item.href, host),
-      }))}
-    >
-      {children}
-    </VoiceDashboardShell>
+    <div className="flex min-h-screen w-full bg-surface-container-lowest overflow-hidden">
+      <VoiceSidebar />
+      <div className="flex flex-col flex-1 min-w-0 md:pl-[260px]">
+        <Navbar />
+        <main className="flex-1 overflow-auto bg-surface-container-low/20">
+          <div className="mx-auto max-w-6xl px-6 py-8">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
