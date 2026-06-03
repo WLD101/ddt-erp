@@ -24,13 +24,23 @@ async function main() {
       data: {
         name: orgName,
         slug: "test-voice-cafe",
-        industryType: "retail",
-        members: {
-          create: {
-            user: { connect: { id: user.id } },
-            role: "owner"
-          }
-        }
+        industryType: "retail"
+      }
+    });
+
+    const role = await prisma.role.create({
+      data: {
+        name: "owner",
+        organizationId: org.id,
+        permissions: ["ALL"]
+      }
+    });
+
+    await prisma.organizationUser.create({
+      data: {
+        userId: user.id,
+        organizationId: org.id,
+        roleId: role.id
       }
     });
   }
