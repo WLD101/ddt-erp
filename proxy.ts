@@ -13,6 +13,11 @@ export default async function proxy(req: NextRequest) {
   const pathname = nextUrl.pathname;
   const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
   const voiceHost = isVoiceHost(host);
+  const isPublicVoiceExternalRoute =
+    voiceHost &&
+    (pathname === "/" ||
+      pathname === "/login" ||
+      pathname === "/status");
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
@@ -45,6 +50,8 @@ export default async function proxy(req: NextRequest) {
   const isPublicRoute =
     pathname === "/" ||
     pathname === "/voice" ||
+    pathname === "/status" ||
+    pathname === "/login" ||
     pathname === "/book-demo" ||
     pathname === "/pricing" ||
     pathname === "/contact" ||
@@ -52,9 +59,10 @@ export default async function proxy(req: NextRequest) {
     pathname === "/features" ||
     pathname === "/partners" ||
     pathname === "/voice/login" ||
-    pathname === "/voice/onboarding" ||
+    pathname === "/voice/status" ||
     pathname.startsWith("/auth/verify") ||
-    pathname.startsWith("/industries");
+    pathname.startsWith("/industries") ||
+    isPublicVoiceExternalRoute;
 
   if (
     voiceHost &&
