@@ -31,8 +31,7 @@ async function main() {
     const role = await prisma.role.create({
       data: {
         name: "owner",
-        organizationId: org.id,
-        permissions: ["ALL"]
+        organizationId: org.id
       }
     });
 
