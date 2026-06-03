@@ -25,7 +25,7 @@ async function main() {
         name: orgName,
         slug: "test-voice-cafe",
         industryType: "retail",
-        users: {
+        members: {
           create: {
             userId: user.id,
             role: "owner"
