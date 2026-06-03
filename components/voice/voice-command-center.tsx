@@ -166,20 +166,7 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-amber-400/30 bg-amber-500/10 xl:col-span-1 md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-amber-200">Security & Isolation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-xs text-amber-100/80">
-              <li>Dashboard strictly protected</li>
-              <li>All Voice data stays tenant-scoped</li>
-              <li>Calls stay isolated to the current business</li>
-              <li>No public logs or transcripts</li>
-              <li>No ERP writes in this demo flow</li>
-            </ul>
-          </CardContent>
-        </Card>
+
 
         <Card className="border-white/10 bg-slate-950/35">
           <CardHeader>
