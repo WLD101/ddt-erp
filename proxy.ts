@@ -11,7 +11,12 @@ import { isVoiceHost, toVoiceInternalPath } from "@/lib/voice/routing";
 export default async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  const host =
+    forwardedHost?.split(",")[0]?.trim() ??
+    req.headers.get("host") ??
+    nextUrl.host;
   const voiceHost = isVoiceHost(host);
   const isPublicVoiceExternalRoute =
     voiceHost &&
@@ -77,9 +82,12 @@ export default async function proxy(req: NextRequest) {
     requestHeaders.set("x-pathname", rewritePath);
     requestHeaders.set("x-whatsquery-surface", "voice");
 
-    const rewriteUrl = new URL(rewritePath, req.url);
-    // Let Next.js handle it as an internal rewrite by keeping the original hostname/protocol.
-    // Overriding the hostname causes Next.js to treat it as an external proxy, which strips RSC headers and breaks client-side navigation.
+    const rewriteProtocol =
+      forwardedProto?.split(",")[0]?.trim() ?? nextUrl.protocol.replace(":", "");
+    const rewriteUrl = new URL(rewritePath, `${rewriteProtocol}://${host}`);
+    // Build the rewrite origin from forwarded headers instead of req.url.
+    // In production behind Nginx, req.url can be normalized to localhost:3000,
+    // which makes Next emit https://localhost rewrites and breaks plain HTTP upstream traffic.
 
     return NextResponse.rewrite(rewriteUrl, {
       request: {
