@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { voiceFallbackContactOptions } from "@/modules/voice/schema";
 
 export const voiceTrainingLanguageOptions = ["ENGLISH", "URDU", "ROMAN_URDU", "AUTO_DETECT"] as const;
 export const voiceTrainingToneOptions = ["PROFESSIONAL", "FRIENDLY", "PAKISTANI_POLITE", "LUXURY", "CASUAL"] as const;
@@ -83,7 +84,7 @@ export const voiceTrainingProfileSchema = z.object({
   businessPhone: requiredText("Business phone is required.", 5),
   openingHours: requiredText("Business hours are required.", 5),
   mainGoal: requiredText("Main goal is required."),
-  fallbackContactMethod: requiredText("Fallback contact method is required."),
+  fallbackContactMethod: z.enum(voiceFallbackContactOptions),
   holidayClosures: optionalText,
 });
 

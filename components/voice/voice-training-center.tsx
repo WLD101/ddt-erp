@@ -46,6 +46,7 @@ import {
   voiceTrainingProfileSchema,
   voiceTrainingToneOptions,
 } from "@/modules/voice/training/schema";
+import { voiceFallbackContactOptions } from "@/modules/voice/schema";
 
 type VoiceTrainingWorkspace = Awaited<ReturnType<typeof getVoiceTrainingWorkspace>>;
 type VoiceTrainingCenterProps = {
@@ -198,7 +199,13 @@ function TrainingIdentityForm({ initialValues }: { initialValues: TrainingProfil
         </div>
         <div className="space-y-2">
           <Label className="text-slate-200">Fallback contact method</Label>
-          <Input {...register("fallbackContactMethod")} disabled={isPending} />
+          <select {...register("fallbackContactMethod")} disabled={isPending} className={selectClassName}>
+            {voiceFallbackContactOptions.map((option) => (
+              <option key={option} value={option}>
+                {option.replaceAll("_", " ")}
+              </option>
+            ))}
+          </select>
           {errors.fallbackContactMethod && <p className="text-xs text-rose-300">{errors.fallbackContactMethod.message}</p>}
         </div>
         <div className="space-y-2">
@@ -798,7 +805,9 @@ export function VoiceTrainingCenter({ workspace }: VoiceTrainingCenterProps) {
             businessPhone: runtime.businessIdentity.businessPhone || "",
             openingHours: runtime.businessIdentity.openingHours || "",
             mainGoal: runtime.businessIdentity.mainGoal || "",
-            fallbackContactMethod: runtime.businessIdentity.fallbackContactMethod || "",
+            fallbackContactMethod: 
+              (runtime.businessIdentity.fallbackContactMethod as "WHATSAPP" | "SMS" | "EMAIL" | "HUMAN_TRANSFER" | "NONE" | undefined) ?? 
+              "WHATSAPP",
             holidayClosures: runtime.businessIdentity.holidayClosures || "",
           }}
         />

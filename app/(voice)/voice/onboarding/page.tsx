@@ -49,7 +49,9 @@ export default async function VoiceOnboardingPage() {
             mainGoal:
               (businessProfile?.mainGoal as "ANSWER_FAQS" | "CAPTURE_LEADS" | "BOOK_APPOINTMENTS" | "ROUTE_CALLS" | undefined) ??
               "ANSWER_FAQS",
-            fallbackContactMethod: businessProfile?.fallbackContactMethod ?? "",
+            fallbackContactMethod:
+              (businessProfile?.fallbackContactMethod as "WHATSAPP" | "SMS" | "EMAIL" | "HUMAN_TRANSFER" | "NONE" | undefined) ??
+              "WHATSAPP",
             greetingMessage: businessProfile?.greetingMessage ?? receptionistSettings?.greetingMessage ?? "",
           }}
         />

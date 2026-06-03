@@ -4,6 +4,7 @@ export const voiceLanguageOptions = ["ENGLISH", "URDU", "ROMAN_URDU", "AUTO_DETE
 export const voiceGoalOptions = ["ANSWER_FAQS", "CAPTURE_LEADS", "BOOK_APPOINTMENTS", "ROUTE_CALLS"] as const;
 export const voiceAfterHoursOptions = ["TAKE_MESSAGE", "TEXT_FALLBACK", "VOICEMAIL", "ESCALATE"] as const;
 export const voiceLeadCaptureFields = ["name", "phone", "email", "reason", "appointment_time"] as const;
+export const voiceFallbackContactOptions = ["WHATSAPP", "SMS", "EMAIL", "HUMAN_TRANSFER", "NONE"] as const;
 
 const optionalUrl = z
   .string()
@@ -20,7 +21,7 @@ export const voiceBusinessProfileSchema = z.object({
   preferredLanguage: z.enum(voiceLanguageOptions),
   openingHours: z.string().trim().min(5, "Opening hours are required."),
   mainGoal: z.enum(voiceGoalOptions),
-  fallbackContactMethod: z.string().trim().min(2, "Fallback contact method is required."),
+  fallbackContactMethod: z.enum(voiceFallbackContactOptions),
   greetingMessage: z.string().trim().min(8, "Greeting message is required."),
 });
 

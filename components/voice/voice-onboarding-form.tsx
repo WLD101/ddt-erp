@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { saveVoiceBusinessProfileAction } from "@/modules/voice/actions";
-import { voiceBusinessProfileSchema, voiceGoalOptions, voiceLanguageOptions } from "@/modules/voice/schema";
+import { voiceBusinessProfileSchema, voiceGoalOptions, voiceLanguageOptions, voiceFallbackContactOptions } from "@/modules/voice/schema";
 
 type VoiceBusinessProfileValues = z.input<typeof voiceBusinessProfileSchema>;
 
@@ -115,11 +115,13 @@ export function VoiceOnboardingForm({ initialValues, dashboardHref }: VoiceOnboa
           </div>
           <div className="space-y-2">
             <Label className="text-slate-200">Fallback contact method</Label>
-            <Input
-              {...register("fallbackContactMethod")}
-              disabled={isPending}
-              placeholder="WhatsApp, SMS, email, human transfer line"
-            />
+            <select {...register("fallbackContactMethod")} disabled={isPending} className={selectClassName}>
+              {voiceFallbackContactOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
             {errors.fallbackContactMethod && <p className="text-xs text-rose-300">{errors.fallbackContactMethod.message}</p>}
           </div>
           <div className="space-y-2 md:col-span-2">
