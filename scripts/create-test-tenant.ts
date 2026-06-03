@@ -51,7 +51,8 @@ async function main() {
         organizationId: org.id,
         businessName: orgName,
         description: "A test cafe for Voice AI.",
-        timezone: "Asia/Karachi"
+        timezone: "Asia/Karachi",
+        mainGoal: "book_appointments"
       }
     });
   }
