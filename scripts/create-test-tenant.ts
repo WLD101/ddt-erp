@@ -44,6 +44,18 @@ async function main() {
     });
   }
 
+  let branch = await prisma.branch.findFirst({ where: { organizationId: org.id } });
+  if (!branch) {
+    branch = await prisma.branch.create({
+      data: {
+        organizationId: org.id,
+        name: "Main HQ",
+        code: "HQ",
+        isMain: true,
+      }
+    });
+  }
+
   let voiceProfile = await prisma.voiceBusinessProfile.findUnique({ where: { organizationId: org.id } });
   if (!voiceProfile) {
     voiceProfile = await prisma.voiceBusinessProfile.create({
