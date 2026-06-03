@@ -27,7 +27,7 @@ async function main() {
         industryType: "retail",
         members: {
           create: {
-            userId: user.id,
+            user: { connect: { id: user.id } },
             role: "owner"
           }
         }
