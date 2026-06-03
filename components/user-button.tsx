@@ -78,7 +78,10 @@ export function UserButton({ user }: UserButtonProps) {
             <ShieldCheck className="mr-2 h-4 w-4 text-primary" />
             <span className="font-body-md">Org Settings</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-surface-container-low cursor-pointer">
+          <DropdownMenuItem 
+            className="focus:bg-surface-container-low cursor-pointer"
+            onClick={() => window.location.assign("/settings/security")}
+          >
             <User className="mr-2 h-4 w-4 text-primary" />
             <span className="font-body-md">My Profile</span>
           </DropdownMenuItem>
