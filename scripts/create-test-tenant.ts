@@ -50,8 +50,7 @@ async function main() {
       data: {
         organizationId: org.id,
         businessName: orgName,
-        description: "A test cafe for Voice AI.",
-        timezone: "Asia/Karachi",
+        industry: "Retail",
         mainGoal: "book_appointments"
       }
     });
