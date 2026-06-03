@@ -109,7 +109,7 @@ export default async function proxy(req: NextRequest) {
         return NextResponse.redirect(new URL("/wq-command-center", nextUrl));
       }
       if (!organizationId) {
-        return NextResponse.redirect(new URL("/onboarding/packages", nextUrl));
+        return NextResponse.redirect(new URL("/onboarding", nextUrl));
       }
       return NextResponse.redirect(new URL("/dashboard", nextUrl));
     }
@@ -127,7 +127,7 @@ export default async function proxy(req: NextRequest) {
   }
 
   if (isLoggedIn && !isSuperAdmin(userEmail) && !organizationId && !pathname.startsWith("/onboarding") && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/onboarding/packages", nextUrl));
+    return NextResponse.redirect(new URL("/onboarding", nextUrl));
   }
 
   if (pathname === "/dashboard" && isSuperAdmin(userEmail)) {

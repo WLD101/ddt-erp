@@ -25,6 +25,16 @@ type PackageItem = {
   };
 };
 
+function readFeatureMeta(featureJson: string | null | undefined) {
+  if (!featureJson || typeof featureJson !== "string") return {};
+  try {
+    const parsed = JSON.parse(featureJson);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export function PackageSelectionClient({ 
   packages, 
   isDemoOrTrial = false 
@@ -90,8 +100,7 @@ export function PackageSelectionClient({
                 const pkg = packages.find(p => p.name.toLowerCase() === recommendation.planName.toLowerCase());
                 if (!pkg || pkg.isCustom) return <span className="text-sm font-bold text-slate-500 uppercase tracking-widest">Custom Activation</span>;
                 
-                let meta: any = {};
-                try { meta = JSON.parse(pkg.featureJson); } catch {}
+                const meta: any = readFeatureMeta(pkg.featureJson);
                 
                 const isDiscounted = (meta.discountEnabled === true || meta.discountEnabled === "true") && meta.originalMonthlyPrice && meta.discountedMonthlyPrice;
                 const displayPrice = isDiscounted ? meta.discountedMonthlyPrice : (meta.monthlyPrice ?? PLANS[recommendation.planId].price.monthly);
@@ -131,8 +140,7 @@ export function PackageSelectionClient({
 
       <div className="grid gap-6 md:grid-cols-3">
       {packages.map((pkg) => {
-        let meta: any = {};
-        try { meta = JSON.parse(pkg.featureJson); } catch {}
+        const meta: any = readFeatureMeta(pkg.featureJson);
         
         const isDiscounted = (meta.discountEnabled === true || meta.discountEnabled === "true") && meta.originalMonthlyPrice && meta.discountedMonthlyPrice;
         const displayPrice = isDiscounted ? meta.discountedMonthlyPrice : (meta.monthlyPrice ?? PLANS[pkg.planId].price.monthly);
