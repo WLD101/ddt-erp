@@ -1,5 +1,7 @@
 "use client";
 
+import { VoiceStatusPill, type VoiceStatusVariant } from "@/components/voice/ui/voice-status-pill";
+
 type VoiceRequestQueueProps = {
   title: string;
   description: string;
@@ -40,38 +42,63 @@ export function VoiceRequestQueue({
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-slate-950/40 p-6 shadow-xl backdrop-blur">
         {rows.length === 0 ? (
-          <div className="rounded-[24px] border border-dashed border-white/10 bg-white/5 px-5 py-10 text-center text-sm text-slate-300">
+          <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/20 px-5 py-10 text-center text-sm text-slate-300">
             {emptyMessage}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[24px] border border-white/10">
-            <table className="min-w-full divide-y divide-white/10 text-sm">
-              <thead className="bg-slate-950/45 text-slate-300">
-                <tr>
-                  {["Caller", "Phone", "Email", "Request", "Source", "Status", "Notes", "Created"].map((heading) => (
-                    <th key={heading} className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.22em]">
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10 bg-white/5 text-slate-100">
-                {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td className="px-4 py-3">{row.name || "Unknown caller"}</td>
-                    <td className="px-4 py-3">{row.phone || "-"}</td>
-                    <td className="px-4 py-3">{row.email || "-"}</td>
-                    <td className="px-4 py-3">{row.reasonForCall || "-"}</td>
-                    <td className="px-4 py-3">{row.source}</td>
-                    <td className="px-4 py-3">{row.status}</td>
-                    <td className="max-w-md px-4 py-3 whitespace-pre-wrap">{row.notes || "-"}</td>
-                    <td className="px-4 py-3">{new Date(row.createdAt).toLocaleString()}</td>
+          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/40 shadow-xl backdrop-blur">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-950/60 text-slate-400">
+                  <tr>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Caller</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Contact</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Request</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Status</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Notes</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-white/5 bg-transparent">
+                  {rows.map((row) => {
+                    const getStatusVariant = (s: string): VoiceStatusVariant => {
+                      if (s === "NEW") return "warning";
+                      if (s === "CONTACTED") return "online";
+                      if (s === "QUALIFIED") return "online";
+                      if (s === "CLOSED") return "default";
+                      return "default";
+                    };
+
+                    return (
+                      <tr key={row.id} className="transition-colors hover:bg-white/5">
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="font-bold text-white">{row.name || "Unknown caller"}</div>
+                          <div className="text-[9px] uppercase tracking-wider font-bold text-slate-500 mt-1">{row.source}</div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="text-slate-200">{row.phone || "-"}</div>
+                          <div className="text-slate-400 text-xs mt-0.5">{row.email || "-"}</div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-300 max-w-[200px] truncate" title={row.reasonForCall || ""}>
+                          {row.reasonForCall || "-"}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <VoiceStatusPill variant={getStatusVariant(row.status)} label={row.status} />
+                        </td>
+                        <td className="px-6 py-4 text-slate-300 max-w-xs truncate" title={row.notes || ""}>
+                          {row.notes || "-"}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-slate-400 text-xs">
+                          {new Date(row.createdAt).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>

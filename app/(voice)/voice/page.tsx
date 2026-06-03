@@ -3,22 +3,32 @@ import Link from "next/link";
 import { VoiceMarketingShell } from "@/components/voice/voice-marketing-shell";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 
-const foundationCards = [
+import { VoiceWaveform } from "@/components/voice/ui/voice-waveform";
+
+const featureCards = [
   {
-    title: "Inbound Call Flows",
-    description: "Prepare business-specific greetings, routing rules, after-hours handling, and fallback handoff paths.",
+    title: "AI Call Answering",
+    description: "Handle inbound calls instantly with natural, low-latency AI trained on your business profile.",
   },
   {
-    title: "Lead & Appointment Capture",
-    description: "Collect caller details, booking intent, appointment windows, and qualification notes without mixing into ERP actions.",
+    title: "Lead Capture",
+    description: "Extract names, numbers, and intents automatically without manual data entry.",
   },
   {
-    title: "Knowledge Base",
-    description: "Load FAQs, pricing summaries, service menus, and escalation guidance for receptionist-safe answers later.",
+    title: "Table Booking Requests",
+    description: "Take table and appointment requests gracefully, enforcing your specific booking rules.",
   },
   {
-    title: "Telephony Integrations",
-    description: "Keep Vapi/Twilio-ready settings isolated until live phone numbers, webhooks, and credentials are approved.",
+    title: "Order Requests",
+    description: "Allow customers to request takeaway or delivery directly through conversation.",
+  },
+  {
+    title: "Multilingual Support",
+    description: "Detect language automatically. Speak fluent English, Urdu, or Roman Urdu seamlessly.",
+  },
+  {
+    title: "Voice Command Center",
+    description: "Monitor live calls, review transcripts, and configure agents from a premium dashboard.",
   },
 ];
 
@@ -34,30 +44,30 @@ export default async function VoiceLandingPage() {
       <main className="mx-auto max-w-7xl px-6 py-16">
         <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div className="space-y-6">
-            <div className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.3em] text-cyan-200">
-              Separate product foundation
+            <div className="inline-flex items-center gap-3 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.3em] text-cyan-200">
+              <VoiceWaveform active className="w-12" />
+              <span>Voice AI Receptionist</span>
             </div>
             <div className="space-y-4">
               <h1 className="max-w-4xl text-5xl font-black tracking-tight text-white sm:text-6xl">
-                AI receptionist infrastructure for <span className="text-cyan-300">voice.whatsquery.com</span>
+                AI Receptionists for <span className="bg-gradient-to-r from-cyan-300 to-violet-400 bg-clip-text text-transparent">Modern Businesses</span>
               </h1>
               <p className="max-w-3xl text-lg leading-8 text-slate-300">
-                This product is intentionally separated from the ERP assistant. It is the foundation for inbound call handling,
-                business profiles, telephony integration, call logs, lead capture, and appointment workflows on the same VPS.
+                Answer calls, capture leads, handle requests, and turn conversations into business records seamlessly connected to your WhatsQuery ERP.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href={onboardingHref}
-                className="rounded-full bg-cyan-400 px-6 py-3 text-sm font-black text-slate-950 shadow-[0_16px_32px_rgba(34,211,238,0.35)] transition hover:bg-cyan-300"
+                className="rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 px-8 py-3.5 text-sm font-black text-slate-950 shadow-[0_16px_32px_rgba(34,211,238,0.35)] transition hover:brightness-110 hover:shadow-[0_16px_40px_rgba(34,211,238,0.5)]"
               >
-                Launch business onboarding
+                Start Setup
               </Link>
               <Link
                 href={dashboardHref}
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-slate-100 transition hover:border-cyan-300/40 hover:bg-white/5"
+                className="rounded-full border border-white/15 bg-white/5 backdrop-blur px-8 py-3.5 text-sm font-bold text-slate-100 transition hover:border-cyan-300/40 hover:bg-white/10"
               >
-                Preview dashboard shell
+                View Dashboard
               </Link>
             </div>
           </div>
@@ -83,11 +93,12 @@ export default async function VoiceLandingPage() {
           </div>
         </section>
 
-        <section id="features" className="mt-16 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {foundationCards.map((card) => (
-            <div key={card.title} className="rounded-[28px] border border-white/10 bg-white/5 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.22)]">
+        <section id="features" className="mt-20 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {featureCards.map((card) => (
+            <div key={card.title} className="group relative overflow-hidden rounded-[28px] border border-white/10 bg-white/5 p-8 shadow-[0_12px_30px_rgba(15,23,42,0.22)] transition-all hover:bg-white/10">
+              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-cyan-400/10 blur-3xl transition-all group-hover:bg-cyan-400/20"></div>
               <h2 className="text-xl font-black tracking-tight text-white">{card.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">{card.description}</p>
+              <p className="mt-4 text-sm leading-6 text-slate-300">{card.description}</p>
             </div>
           ))}
         </section>

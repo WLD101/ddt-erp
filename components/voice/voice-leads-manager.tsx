@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { VoiceStatusPill, type VoiceStatusVariant } from "@/components/voice/ui/voice-status-pill";
 import { createVoiceLeadAction } from "@/modules/voice/actions";
 import { voiceLeadSchema } from "@/modules/voice/schema";
 
@@ -154,35 +155,59 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
         </CardHeader>
         <CardContent>
           {leads.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-white/5 px-5 py-10 text-center text-sm text-slate-300">
-              No leads captured yet.
+            <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/20 px-5 py-10 text-center text-sm text-slate-300">
+              No leads captured yet. AI leads will appear here.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-[24px] border border-white/10">
-              <table className="min-w-full divide-y divide-white/10 text-sm">
-                <thead className="bg-slate-950/45 text-slate-300">
-                  <tr>
-                    {["Name", "Phone", "Email", "Reason", "Status", "Notes", "Created"].map((heading) => (
-                      <th key={heading} className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.22em]">
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10 bg-white/5 text-slate-100">
-                  {leads.map((lead) => (
-                    <tr key={lead.id}>
-                      <td className="px-4 py-3">{lead.name || "Unknown caller"}</td>
-                      <td className="px-4 py-3">{lead.phone || "-"}</td>
-                      <td className="px-4 py-3">{lead.email || "-"}</td>
-                      <td className="px-4 py-3">{lead.reasonForCall || "-"}</td>
-                      <td className="px-4 py-3">{lead.status}</td>
-                      <td className="px-4 py-3">{lead.notes || (lead.appointmentRequested ? "Appointment requested" : "-")}</td>
-                      <td className="px-4 py-3">{new Date(lead.createdAt).toLocaleString()}</td>
+            <div className="overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/40 shadow-xl backdrop-blur">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-950/60 text-slate-400">
+                    <tr>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Name</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Contact</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Reason</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Status</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 bg-transparent">
+                    {leads.map((lead) => {
+                      const getStatusVariant = (s: string): VoiceStatusVariant => {
+                        if (s === "NEW") return "warning";
+                        if (s === "CONTACTED") return "online";
+                        if (s === "QUALIFIED") return "online";
+                        if (s === "CLOSED") return "default";
+                        return "default";
+                      };
+
+                      return (
+                        <tr key={lead.id} className="transition-colors hover:bg-white/5">
+                          <td className="whitespace-nowrap px-6 py-4">
+                            <div className="font-bold text-white">{lead.name || "Unknown caller"}</div>
+                            {lead.appointmentRequested && (
+                              <div className="text-[9px] uppercase tracking-wider font-bold text-cyan-400 mt-1">Appointment Requested</div>
+                            )}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            <div className="text-slate-200">{lead.phone || "-"}</div>
+                            <div className="text-slate-400 text-xs mt-0.5">{lead.email || "-"}</div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-300 max-w-[200px] truncate" title={lead.reasonForCall || ""}>
+                            {lead.reasonForCall || "-"}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            <VoiceStatusPill variant={getStatusVariant(lead.status)} label={lead.status} />
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4 text-slate-400 text-xs">
+                            {new Date(lead.createdAt).toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

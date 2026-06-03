@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { VoiceStatusPill, type VoiceStatusVariant } from "@/components/voice/ui/voice-status-pill";
 import { createVoiceCallLogAction } from "@/modules/voice/actions";
 import { voiceCallLogSchema } from "@/modules/voice/schema";
 
@@ -166,43 +167,58 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-white/5 px-5 py-10 text-center text-sm text-slate-300">
-              No call logs yet.
+            <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/20 px-5 py-10 text-center text-sm text-slate-300">
+              No call logs yet. AI conversations will appear here.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-[24px] border border-white/10">
-              <table className="min-w-full divide-y divide-white/10 text-sm">
-                <thead className="bg-slate-950/45 text-slate-300">
-                  <tr>
-                    {["Caller", "Status", "Provider ID", "Reason", "Summary", "Transcript", "Duration", "Created"].map((heading) => (
-                      <th key={heading} className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.22em]">
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10 bg-white/5 text-slate-100">
-                  {logs.map((log) => (
-                    <tr key={log.id}>
-                      <td className="px-4 py-3">{log.callerNumber}</td>
-                      <td className="px-4 py-3">{log.callStatus}</td>
-                      <td className="px-4 py-3">{log.providerCallId || "-"}</td>
-                      <td className="px-4 py-3">{log.endedReason || "-"}</td>
-                      <td className="px-4 py-3">{log.summary || "-"}</td>
-                      <td className="max-w-xs px-4 py-3 truncate" title={log.transcript || log.transcriptPlaceholder || "Pending"}>
-                        {log.transcript || log.transcriptPlaceholder || "Pending live telephony"}
-                        {log.recordingUrl ? (
-                          <a href={log.recordingUrl} target="_blank" rel="noreferrer" className="mt-1 block text-cyan-400 hover:underline">
-                            Recording
-                          </a>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-3">{typeof log.durationSeconds === "number" ? `${log.durationSeconds}s` : "-"}</td>
-                      <td className="px-4 py-3">{new Date(log.createdAt).toLocaleString()}</td>
+            <div className="overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/40 shadow-xl backdrop-blur">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-950/60 text-slate-400">
+                    <tr>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Caller</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Status</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Direction</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Duration</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Summary</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 bg-transparent">
+                    {logs.map((log) => {
+                      const getStatusVariant = (s: string): VoiceStatusVariant => {
+                        if (s === "COMPLETED") return "online";
+                        if (s === "MISSED" || s === "FAILED") return "error";
+                        if (s === "IN_PROGRESS") return "warning";
+                        return "default";
+                      };
+
+                      return (
+                        <tr key={log.id} className="transition-colors hover:bg-white/5">
+                          <td className="whitespace-nowrap px-6 py-4 font-medium text-white">{log.callerNumber}</td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            <VoiceStatusPill variant={getStatusVariant(log.callStatus)} label={log.callStatus} />
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            <span className="text-[11px] font-bold tracking-widest uppercase text-slate-300">
+                              {log.callDirection}
+                            </span>
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4 text-slate-300">
+                            {typeof log.durationSeconds === "number" ? `${Math.floor(log.durationSeconds / 60)}m ${log.durationSeconds % 60}s` : "-"}
+                          </td>
+                          <td className="px-6 py-4 text-slate-300 max-w-xs truncate" title={log.summary || log.transcriptPlaceholder || ""}>
+                            {log.summary || log.transcriptPlaceholder || "Pending live telephony"}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4 text-slate-400 text-xs">
+                            {new Date(log.createdAt).toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

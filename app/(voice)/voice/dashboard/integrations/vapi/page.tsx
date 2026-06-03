@@ -2,6 +2,8 @@ import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { listVoiceAgents } from "@/modules/voice/agents/service";
 import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
 import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
+import { VoiceStatusPill } from "@/components/voice/ui/voice-status-pill";
+import { VoiceWaveform } from "@/components/voice/ui/voice-waveform";
 
 export default async function VapiSetupPage() {
   const ctx = await getCurrentTenantContext();
@@ -24,6 +26,7 @@ export default async function VapiSetupPage() {
           <h1 className="text-2xl font-black text-white">Vapi Assistant Setup</h1>
           <p className="mt-1 text-sm text-slate-400">Configure your AI receptionist integration for the demo call flow.</p>
         </div>
+        <VoiceWaveform active={vapiStatus.callingEnabled} className="w-16" />
       </div>
 
       <div className="rounded-[28px] border border-amber-400/30 bg-amber-500/10 p-6">
@@ -35,19 +38,17 @@ export default async function VapiSetupPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
-          <div className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">
-            <h2 className="mb-4 text-lg font-black text-white">Setup Checklist</h2>
-            <ul className="space-y-3 text-sm text-slate-300">
-              <li className="flex justify-between"><span>Vapi Private Key</span><span>{vapiStatus.hasPrivateKey ? "Ready" : "Missing"}</span></li>
-              <li className="flex justify-between"><span>Vapi Public Key</span><span>{vapiStatus.hasPublicKey ? "Ready" : "Missing"}</span></li>
-              <li className="flex justify-between"><span>Default Voice Agent</span><span>{defaultAgent?.name || "Missing"}</span></li>
-              <li className="flex justify-between"><span>Agent Assistant ID</span><span>{defaultAgent?.vapiAssistantId ? "Configured" : "Missing"}</span></li>
-              <li className="flex justify-between"><span>Agent Phone Number ID</span><span>{defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
-              <li className="flex justify-between"><span>Webhook Secret</span><span>{vapiStatus.hasWebhookSecret ? "Secured" : "Recommended"}</span></li>
-              <li className="flex justify-between"><span>Live Calling Enabled</span><span>{vapiStatus.callingEnabled ? "Yes" : "No"}</span></li>
-              <li className="flex justify-between"><span>Agent Assistant Mapping</span><span>{defaultAgent?.vapiAssistantId ? "Mapped" : "Missing"}</span></li>
-              <li className="flex justify-between"><span>Agent Phone Mapping</span><span>{defaultAgent?.vapiPhoneNumberId ? "Mapped" : "Missing"}</span></li>
-              <li className="flex justify-between"><span>Last Webhook</span><span>{integration?.lastWebhookAt ? new Date(integration.lastWebhookAt).toLocaleString() : "No events yet"}</span></li>
+          <div className="rounded-[28px] border border-white/10 bg-slate-950/40 p-8 shadow-xl backdrop-blur">
+            <h2 className="mb-6 text-lg font-black text-white tracking-tight">Setup Checklist</h2>
+            <ul className="space-y-4 text-sm text-slate-300">
+              <li className="flex items-center justify-between"><span>Vapi Private Key</span><VoiceStatusPill variant={vapiStatus.hasPrivateKey ? "online" : "error"} label={vapiStatus.hasPrivateKey ? "Ready" : "Missing"} /></li>
+              <li className="flex items-center justify-between"><span>Vapi Public Key</span><VoiceStatusPill variant={vapiStatus.hasPublicKey ? "online" : "warning"} label={vapiStatus.hasPublicKey ? "Ready" : "Missing"} /></li>
+              <li className="flex items-center justify-between"><span>Default Voice Agent</span><span className="font-semibold text-white">{defaultAgent?.name || "Missing"}</span></li>
+              <li className="flex items-center justify-between"><span>Agent Assistant ID</span><VoiceStatusPill variant={defaultAgent?.vapiAssistantId ? "online" : "warning"} label={defaultAgent?.vapiAssistantId ? "Configured" : "Missing"} /></li>
+              <li className="flex items-center justify-between"><span>Agent Phone Number ID</span><VoiceStatusPill variant={defaultAgent?.vapiPhoneNumberId ? "online" : "warning"} label={defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"} /></li>
+              <li className="flex items-center justify-between"><span>Webhook Secret</span><VoiceStatusPill variant={vapiStatus.hasWebhookSecret ? "online" : "warning"} label={vapiStatus.hasWebhookSecret ? "Secured" : "Recommended"} /></li>
+              <li className="flex items-center justify-between"><span>Live Calling Enabled</span><VoiceStatusPill variant={vapiStatus.callingEnabled ? "online" : "offline"} label={vapiStatus.callingEnabled ? "Enabled" : "Disabled"} pulse={vapiStatus.callingEnabled} /></li>
+              <li className="flex items-center justify-between mt-4 pt-4 border-t border-white/5"><span>Last Webhook</span><span className="text-xs">{integration?.lastWebhookAt ? new Date(integration.lastWebhookAt).toLocaleString() : "No events yet"}</span></li>
             </ul>
           </div>
 

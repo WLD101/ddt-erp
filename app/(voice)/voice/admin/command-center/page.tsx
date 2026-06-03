@@ -17,7 +17,6 @@ export default async function VoiceAdminCommandCenterPage() {
     failedCalls,
     missedCalls,
     totalLeads,
-    webhookAudits,
     voicePackagesCount,
     recentErrors,
   ] = await Promise.all([
@@ -31,11 +30,6 @@ export default async function VoiceAdminCommandCenterPage() {
     prisma.voiceCallLog.count({ where: { callStatus: { in: ["FAILED", "ERROR"] } } }),
     prisma.voiceCallLog.count({ where: { isMissed: true } }),
     prisma.voiceLead.count(),
-    prisma.voiceActionAuditLog.findMany({
-      where: { action: { contains: "webhook" } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
     prisma.package.count({ where: { productType: "VOICE" } }),
     prisma.voiceActionAuditLog.findMany({
       where: { status: { not: "SUCCESS" } },
@@ -132,7 +126,7 @@ export default async function VoiceAdminCommandCenterPage() {
               <div key={err.id} className="p-4 rounded-xl border border-error/30 bg-error/10 flex justify-between items-center text-error">
                 <div>
                   <p className="text-sm font-bold">{err.action}</p>
-                  <p className="text-xs">{err.summary} - {err.organization.name}</p>
+                  <p className="text-xs">{err.summary} - {err.organization?.name || "Unknown Organization"}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-bold">{err.status}</p>

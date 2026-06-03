@@ -67,16 +67,21 @@ function SectionCard({
   title,
   description,
   children,
+  badge,
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
+  badge?: React.ReactNode;
 }) {
   return (
-    <Card className="border-white/10 bg-slate-950/35 text-slate-50">
-      <CardHeader>
-        <CardTitle className="text-white">{title}</CardTitle>
-        <CardDescription className="text-slate-300">{description}</CardDescription>
+    <Card className="border-white/10 bg-slate-950/40 text-slate-50 shadow-xl backdrop-blur">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-4 mb-4">
+        <div>
+          <CardTitle className="text-lg font-black text-white tracking-tight">{title}</CardTitle>
+          <CardDescription className="text-xs text-slate-400 mt-1">{description}</CardDescription>
+        </div>
+        {badge}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
@@ -735,7 +740,7 @@ function PromptPreviewCard({
             </Button>
           </div>
           {!syncAvailable ? (
-            <p className="text-xs text-slate-400">
+            <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mt-2">
               Sync becomes available only when Vapi keys and a business-specific Vapi assistant ID are configured.
             </p>
           ) : null}

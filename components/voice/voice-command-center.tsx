@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { VoiceStatusPill } from "./ui/voice-status-pill";
+import { VoiceWaveform } from "./ui/voice-waveform";
 
 type VoiceCommandCenterProps = {
   overview: {
@@ -90,13 +92,11 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
           <h1 className="text-2xl font-black text-white">Voice Command Center</h1>
           <p className="mt-1 text-sm text-slate-400">Master control for your AI receptionist demo flow.</p>
         </div>
-        <div
-          className={`rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] ${
-            vapi.callingEnabled ? "bg-emerald-400/20 text-emerald-300" : "bg-amber-400/20 text-amber-300"
-          }`}
-        >
-          {vapi.callingEnabled ? "Calling enabled" : "Calling disabled"}
-        </div>
+        <VoiceStatusPill 
+          variant={vapi.callingEnabled ? "online" : "warning"}
+          label={vapi.callingEnabled ? "Calling enabled" : "Calling disabled"}
+          pulse={vapi.callingEnabled}
+        />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -106,33 +106,29 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3 text-sm text-slate-300">
-              <li className="flex justify-between">
+              <li className="flex items-center justify-between">
                 <span>App</span>
-                <span className="text-emerald-400">{system.appStatus}</span>
+                <VoiceStatusPill variant={system.appStatus === "online" ? "online" : "default"} label={system.appStatus} />
               </li>
-              <li className="flex justify-between">
+              <li className="flex items-center justify-between">
                 <span>Database</span>
-                <span className="text-emerald-400">{system.dbStatus}</span>
+                <VoiceStatusPill variant={system.dbStatus === "online" ? "online" : "default"} label={system.dbStatus} />
               </li>
-              <li className="flex justify-between">
+              <li className="flex items-center justify-between">
                 <span>Vapi API Keys</span>
-                <span>{vapi.hasPrivateKey ? "Ready" : "Missing"}</span>
+                <VoiceStatusPill variant={vapi.hasPrivateKey ? "online" : "error"} label={vapi.hasPrivateKey ? "Ready" : "Missing"} />
               </li>
-              <li className="flex justify-between">
+              <li className="flex items-center justify-between">
                 <span>Webhook Secret</span>
-                <span>{vapi.hasWebhookSecret ? "Secured" : "Recommended"}</span>
+                <VoiceStatusPill variant={vapi.hasWebhookSecret ? "online" : "warning"} label={vapi.hasWebhookSecret ? "Secured" : "Recommended"} />
               </li>
-              <li className="flex justify-between">
-                <span>Calling Enabled</span>
-                <span>{vapi.callingEnabled ? "Yes" : "No"}</span>
-              </li>
-              <li className="flex justify-between">
+              <li className="flex items-center justify-between">
                 <span>Last webhook</span>
-                <span>{system.lastWebhookAt ? new Date(system.lastWebhookAt).toLocaleString() : "No events yet"}</span>
+                <span className="text-xs">{system.lastWebhookAt ? new Date(system.lastWebhookAt).toLocaleString() : "No events yet"}</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex items-center justify-between">
                 <span>Last event type</span>
-                <span>{system.lastWebhookType || "None"}</span>
+                <span className="text-xs">{system.lastWebhookType || "None"}</span>
               </li>
             </ul>
           </CardContent>
@@ -222,11 +218,12 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
         </Card>
 
         <Card className="border-white/10 bg-slate-950/35 md:col-span-2 xl:col-span-3">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-white">Assistant Configuration</CardTitle>
+            <VoiceWaveform active={vapi.callingEnabled} />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm text-slate-300 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-6 text-sm text-slate-300 md:grid-cols-4 mt-2">
               <div>
                 <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Name</div>
                 <div className="font-semibold text-white">{assistant.name}</div>
