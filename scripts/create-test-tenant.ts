@@ -12,8 +12,7 @@ async function main() {
       data: {
         name: "Voice Tester",
         email,
-        password,
-        role: "USER"
+        password
       }
     });
   }
