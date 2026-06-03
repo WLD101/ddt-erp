@@ -78,12 +78,8 @@ export default async function proxy(req: NextRequest) {
     requestHeaders.set("x-whatsquery-surface", "voice");
 
     const rewriteUrl = new URL(rewritePath, req.url);
-    // Force http for internal rewrite to prevent Next.js from trying to fetch https://localhost:3000
-    if (rewriteUrl.hostname === 'localhost' || rewriteUrl.hostname === '127.0.0.1' || req.headers.get("x-forwarded-proto") === "https") {
-      rewriteUrl.protocol = 'http:';
-      rewriteUrl.hostname = '127.0.0.1';
-      rewriteUrl.port = '3000';
-    }
+    // Let Next.js handle it as an internal rewrite by keeping the original hostname/protocol.
+    // Overriding the hostname causes Next.js to treat it as an external proxy, which strips RSC headers and breaks client-side navigation.
 
     return NextResponse.rewrite(rewriteUrl, {
       request: {
