@@ -122,7 +122,23 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
         // Force sign-out to clear the stale cookie, breaking any redirect loop.
         redirect("/auth/force-signout");
       }
-      redirect("/onboarding");
+      
+      const { getVoiceRequestHost, isVoiceHost, toVoiceExternalPath } = await import("@/lib/voice/routing");
+      const host = await getVoiceRequestHost();
+      
+      if (isPlatformAdminEmail(session?.user?.email)) {
+        if (isVoiceHost(host)) {
+          redirect(toVoiceExternalPath("/admin/command-center", host));
+        } else {
+          redirect("/wq-command-center");
+        }
+      }
+      
+      if (isVoiceHost(host)) {
+        redirect(toVoiceExternalPath("/login", host));
+      } else {
+        redirect("/onboarding");
+      }
     }
   }
 
