@@ -70,23 +70,32 @@ export function getPostSignInRedirect(params: {
   email?: string | null;
   callbackUrl?: string | null;
   organizationId?: string | null;
+  isVoice?: boolean;
 }) {
   const fallback = params.organizationId ? DEFAULT_TENANT_HOME : "/";
   const callbackUrl = sanitizeRedirectPath(params.callbackUrl, fallback);
+  
   if (isPlatformAdminEmail(params.email)) {
+    const platformHome = params.isVoice ? "/admin/command-center" : PLATFORM_HOME;
+    
     if (callbackUrl === LEGACY_PLATFORM_PREFIX || callbackUrl.startsWith(`${LEGACY_PLATFORM_PREFIX}/`)) {
-      return PLATFORM_HOME;
+      return platformHome;
     }
     if (callbackUrl === PLATFORM_HOME || callbackUrl.startsWith(`${PLATFORM_HOME}/`)) {
-      return PLATFORM_HOME;
+      return platformHome;
+    }
+    if (params.isVoice && (callbackUrl === "/admin/command-center" || callbackUrl.startsWith("/admin/command-center/"))) {
+      return platformHome;
     }
     if (callbackUrl === "/" || callbackUrl === DEFAULT_TENANT_HOME) {
-      return PLATFORM_HOME;
+      return platformHome;
     }
     return callbackUrl;
   }
 
-  if (callbackUrl.startsWith(PLATFORM_HOME) || callbackUrl.startsWith(LEGACY_PLATFORM_PREFIX)) return DEFAULT_TENANT_HOME;
+  if (callbackUrl.startsWith(PLATFORM_HOME) || callbackUrl.startsWith(LEGACY_PLATFORM_PREFIX) || callbackUrl.startsWith("/admin/command-center")) {
+    return DEFAULT_TENANT_HOME;
+  }
 
   if (!params.organizationId && callbackUrl === DEFAULT_TENANT_HOME) {
     return "/onboarding";

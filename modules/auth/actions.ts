@@ -153,10 +153,14 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
   }
 
   const primaryMembership = user.memberships[0];
+  const requestHost = await import("@/lib/voice/routing").then(m => m.getVoiceRequestHost());
+  const isVoice = await import("@/lib/voice/routing").then(m => m.isVoiceHost(requestHost));
+
   const redirectTo = getPostSignInRedirect({
     email: user.email,
     callbackUrl,
     organizationId: primaryMembership?.organizationId,
+    isVoice,
   });
 
   let twoFactorRequirement:
