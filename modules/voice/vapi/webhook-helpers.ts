@@ -114,25 +114,27 @@ export async function upsertCallLog({
         : existing?.endedAt || null,
   };
 
+  let logRecord;
   if (existing) {
-    return prisma.voiceCallLog.update({
+    logRecord = await prisma.voiceCallLog.update({
       where: { id: existing.id },
       data: payload,
     });
+  } else {
+    logRecord = await prisma.voiceCallLog.create({
+      data: {
+        organizationId,
+        ...payload,
+      },
+    });
   }
-
-  return prisma.voiceCallLog.create({
-    data: {
-      organizationId,
-      ...payload,
-    },
-  });
 
   if (callStatus === "COMPLETED" || callStatus === "MISSED" || callStatus === "VOICEMAIL") {
-    // dynamically import to avoid circular dep if needed
-    const { incrementUsageStat } = await import("@/modules/voice/billing/usage");
-    await incrementUsageStat(organizationId, "calls", payload.durationSeconds || 1);
+    if (!existing || (existing.callStatus !== "COMPLETED" && existing.callStatus !== "MISSED" && existing.callStatus !== "VOICEMAIL")) {
+      const { incrementUsageStat } = await import("@/modules/voice/billing/usage");
+      await incrementUsageStat(organizationId, "calls", payload.durationSeconds || 1);
+    }
   }
 
-  return created;
+  return logRecord;
 }
