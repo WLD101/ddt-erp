@@ -90,10 +90,10 @@ export async function checkUsageLimits(organizationId: string) {
   const meter = await getVoiceUsageMeter(organizationId);
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
-    include: { subscription: { include: { package: true } } },
+    include: { subscription: { include: { Package: true } } },
   });
 
-  const voiceLimit = org?.subscription?.package?.maxVoiceCallsPerMonth || 50; // Hardcoded fallback limit for beta
+  const voiceLimit = org?.subscription?.Package?.maxVoiceCallsPerMonth || 50; // Hardcoded fallback limit for beta
 
   const warnings = [];
   let isBlocked = false;
