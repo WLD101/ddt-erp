@@ -45,6 +45,7 @@ export type SystemHealthMetrics = {
       agents: number;
       calls: number;
       leads: number;
+      failedWebhooks: number;
     };
   };
 };
@@ -131,6 +132,7 @@ export async function getCollectiveSystemHealth(): Promise<SystemHealthMetrics> 
     voiceAgents,
     voiceCalls,
     voiceLeads,
+    failedWebhooks,
   ] = await Promise.all([
     prisma.organization.count(),
     prisma.voiceBusinessProfile.count(),
@@ -141,6 +143,7 @@ export async function getCollectiveSystemHealth(): Promise<SystemHealthMetrics> 
     prisma.voiceAgent.count(),
     prisma.voiceCallLog.count(),
     prisma.voiceLead.count(),
+    prisma.voiceWebhookEvent.count({ where: { status: "failed" } }),
   ]);
 
   return {
@@ -176,6 +179,7 @@ export async function getCollectiveSystemHealth(): Promise<SystemHealthMetrics> 
         agents: voiceAgents,
         calls: voiceCalls,
         leads: voiceLeads,
+        failedWebhooks,
       },
     },
   };

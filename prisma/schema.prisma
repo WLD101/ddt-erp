@@ -244,6 +244,8 @@ model Organization {
   VoiceHandoffRules            VoiceHandoffRules?
   VoiceAllowedActionPolicy     VoiceAllowedActionPolicy?
   VoiceActionAuditLog          VoiceActionAuditLog[]
+  VoiceUsageMeter              VoiceUsageMeter?
+  VoiceNotificationLog         VoiceNotificationLog[]
 }
 
 model OrganizationUser {
@@ -529,6 +531,8 @@ model VoiceLead {
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceAgentId])
+  @@index([source])
+  @@index([status])
 }
 
 model VoiceCallLog {
@@ -565,6 +569,8 @@ model VoiceCallLog {
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceAgentId])
+  @@index([providerCallId])
+  @@index([callStatus])
 }
 
 model VoiceKnowledgeBaseItem {
@@ -580,30 +586,31 @@ model VoiceKnowledgeBaseItem {
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])
+  @@index([isActive])
 }
 
 model VoiceIntegrationSettings {
-  id                     String       @id @default(cuid())
-  organizationId         String       @unique
-  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  vapiStatus             String       @default("NOT_CONNECTED")
-  vapiAssistantId        String?
-  vapiAssistantName      String?
-  vapiPhoneNumberId      String?
-  vapiWebhookUrl         String?
-  lastWebhookAt          DateTime?
-  lastWebhookType        String?
-  twilioStatus           String       @default("NOT_CONNECTED")
-  googleCalendarStatus   String       @default("NOT_CONNECTED")
-  whatsappFollowUpStatus String       @default("NOT_CONNECTED")
-  whatsappNotificationsEnabled        Boolean  @default(false)
+  id                                  String       @id @default(cuid())
+  organizationId                      String       @unique
+  organization                        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vapiStatus                          String       @default("NOT_CONNECTED")
+  vapiAssistantId                     String?
+  vapiAssistantName                   String?
+  vapiPhoneNumberId                   String?
+  vapiWebhookUrl                      String?
+  lastWebhookAt                       DateTime?
+  lastWebhookType                     String?
+  twilioStatus                        String       @default("NOT_CONNECTED")
+  googleCalendarStatus                String       @default("NOT_CONNECTED")
+  whatsappFollowUpStatus              String       @default("NOT_CONNECTED")
+  whatsappNotificationsEnabled        Boolean      @default(false)
   staffWhatsAppNumber                 String?
-  customerWhatsAppConfirmationEnabled Boolean  @default(false)
+  customerWhatsAppConfirmationEnabled Boolean      @default(false)
   whatsappProvider                    String?
   whatsappNotificationEvents          String?
-  providerConfigNotes    String?
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  providerConfigNotes                 String?
+  createdAt                           DateTime     @default(now())
+  updatedAt                           DateTime     @updatedAt
 
   @@index([organizationId])
   @@index([vapiAssistantId])
@@ -611,42 +618,43 @@ model VoiceIntegrationSettings {
 }
 
 model VoiceAgent {
-  id                  String                        @id @default(cuid())
-  organizationId      String
-  organization        Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  businessProfileId   String?
-  businessProfile     VoiceBusinessProfile?         @relation(fields: [businessProfileId], references: [id], onDelete: SetNull)
-  trainingProfileId   String?
-  trainingProfile     VoiceBusinessTrainingProfile? @relation(fields: [trainingProfileId], references: [id], onDelete: SetNull)
-  name                String
-  role                String                        @default("AI_RECEPTIONIST")
-  languageMode        String                        @default("AUTO_DETECT")
-  supportedLanguages  String?
-  tone                String                        @default("PROFESSIONAL")
-  voicePersona        String?
-  allowedTools        String?
-  vapiAssistantId     String?
-  vapiAssistantName   String?
-  vapiPhoneNumberId   String?
+  id                      String                        @id @default(cuid())
+  organizationId          String
+  organization            Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessProfileId       String?
+  businessProfile         VoiceBusinessProfile?         @relation(fields: [businessProfileId], references: [id], onDelete: SetNull)
+  trainingProfileId       String?
+  trainingProfile         VoiceBusinessTrainingProfile? @relation(fields: [trainingProfileId], references: [id], onDelete: SetNull)
+  name                    String
+  role                    String                        @default("AI_RECEPTIONIST")
+  languageMode            String                        @default("AUTO_DETECT")
+  supportedLanguages      String?
+  tone                    String                        @default("PROFESSIONAL")
+  voicePersona            String?
+  allowedTools            String?
+  vapiAssistantId         String?
+  vapiAssistantName       String?
+  vapiPhoneNumberId       String?
   clientPublicPhoneNumber String?
   assignedVapiPhoneNumber String?
   forwardingStatus        String                        @default("DISABLED")
   forwardingInstructions  String?
   forwardingVerifiedAt    DateTime?
-  isDefault           Boolean                       @default(false)
-  isActive            Boolean                       @default(true)
-  lastPromptSyncedAt  DateTime?
-  createdAt           DateTime                      @default(now())
-  updatedAt           DateTime                      @updatedAt
-  callLogs            VoiceCallLog[]
-  leads               VoiceLead[]
-  VoiceActionAuditLog VoiceActionAuditLog[]
+  isDefault               Boolean                       @default(false)
+  isActive                Boolean                       @default(true)
+  lastPromptSyncedAt      DateTime?
+  createdAt               DateTime                      @default(now())
+  updatedAt               DateTime                      @updatedAt
+  callLogs                VoiceCallLog[]
+  leads                   VoiceLead[]
+  VoiceActionAuditLog     VoiceActionAuditLog[]
 
   @@unique([organizationId, name])
   @@index([organizationId, isDefault])
   @@index([organizationId, isActive])
   @@index([vapiAssistantId])
   @@index([vapiPhoneNumberId])
+  @@index([businessProfileId])
 }
 
 model VoiceBusinessTrainingProfile {
@@ -777,6 +785,102 @@ model VoiceActionAuditLog {
   @@index([voiceBusinessProfileId])
   @@index([voiceAgentId])
   @@index([action])
+}
+
+model VoiceWebhookEvent {
+  id                     String    @id @default(cuid())
+  organizationId         String?
+  voiceBusinessProfileId String?
+  voiceAgentId           String?
+  provider               String    @default("vapi")
+  providerEventId        String?
+  providerCallId         String?
+  providerAssistantId    String?
+  providerPhoneNumberId  String?
+  eventType              String
+  status                 String    @default("received") // received, processing, processed, failed, ignored, mapping_failed
+  rawPayloadJson         String?
+  errorMessage           String?
+  retryCount             Int       @default(0)
+  receivedAt             DateTime  @default(now())
+  processedAt            DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([providerCallId])
+  @@index([providerAssistantId])
+  @@index([providerPhoneNumberId])
+  @@index([voiceAgentId])
+  @@index([organizationId])
+  @@index([eventType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model VoiceJob {
+  id             String    @id @default(cuid())
+  organizationId String?
+  voiceAgentId   String?
+  type           String
+  status         String    @default("queued") // queued, processing, completed, failed, retrying
+  payloadJson    String?
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(3)
+  lastError      String?
+  scheduledAt    DateTime  @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([scheduledAt])
+  @@index([organizationId])
+  @@index([voiceAgentId])
+}
+
+model VoiceUsageMeter {
+  id                             String       @id @default(cuid())
+  organizationId                 String       @unique
+  organization                   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  callsToday                     Int          @default(0)
+  callsThisMonth                 Int          @default(0)
+  callMinutesToday               Int          @default(0)
+  callMinutesThisMonth           Int          @default(0)
+  leadsThisMonth                 Int          @default(0)
+  bookingRequestsThisMonth       Int          @default(0)
+  orderRequestsThisMonth         Int          @default(0)
+  whatsappNotificationsThisMonth Int          @default(0)
+  webhookEventsToday             Int          @default(0)
+  failedWebhookEventsToday       Int          @default(0)
+  storageUsedBytes               BigInt       @default(0)
+  resetPeriod                    DateTime     @default(now())
+  createdAt                      DateTime     @default(now())
+  updatedAt                      DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+model VoiceNotificationLog {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  voiceAgentId      String?
+  type              String
+  eventType         String
+  recipient         String
+  status            String       @default("queued") // queued, sent, failed, skipped
+  provider          String?
+  providerMessageId String?
+  errorMessage      String?
+  payloadJson       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // -----------------------------------------------------------------------------

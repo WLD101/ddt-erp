@@ -145,13 +145,13 @@ export default async function SystemHealthPage() {
   let capacityStatus = "Healthy";
   let capacityTone = "default";
   
-  if (diskUsage > 85 || ramUsage > 92) {
+  if (diskUsage > 85 || ramUsage > 92 || collective.productUsage.voice.failedWebhooks > 100) {
     capacityStatus = "Urgent";
     capacityTone = "critical";
   } else if (diskUsage > 75 || ramUsage > 85) {
     capacityStatus = "Plan Upgrade";
     capacityTone = "warning";
-  } else if (diskUsage > 60 || ramUsage > 75) {
+  } else if (diskUsage > 60 || ramUsage > 75 || collective.productUsage.voice.failedWebhooks > 20) {
     capacityStatus = "Monitor";
     capacityTone = "warning";
   }
