@@ -72,8 +72,7 @@ export async function POST(request: Request) {
     const rawMapping = await resolveVoiceAgentForWebhook({
       assistantId,
       phoneNumberId,
-      callerNumber,
-      systemPhoneNumber,
+      providerCallId: payload.call?.id,
     });
     resolvedMapping = rawMapping || null;
   }
