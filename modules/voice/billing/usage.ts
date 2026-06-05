@@ -93,7 +93,15 @@ export async function checkUsageLimits(organizationId: string) {
     include: { subscription: { include: { Package: true } } },
   });
 
-  const voiceLimit = org?.subscription?.Package?.maxVoiceCallsPerMonth || 50; // Hardcoded fallback limit for beta
+  let voiceLimit = 50; // Hardcoded fallback limit for beta
+  if (org?.subscription?.Package?.featureJson) {
+    try {
+      const feats = JSON.parse(org.subscription.Package.featureJson);
+      if (feats?.maxVoiceCallsPerMonth) {
+        voiceLimit = Number(feats.maxVoiceCallsPerMonth);
+      }
+    } catch(e) {}
+  }
 
   const warnings = [];
   let isBlocked = false;
