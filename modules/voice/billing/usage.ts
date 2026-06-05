@@ -122,3 +122,33 @@ export async function checkUsageLimits(organizationId: string) {
     limit: voiceLimit,
   };
 }
+
+export async function checkAndAcquireActiveCallSlot(organizationId: string) {
+  const meter = await getVoiceUsageMeter(organizationId);
+
+  if (meter.activeCalls >= meter.maxActiveCalls) {
+    return { acquired: false, reason: "CAPACITY_FULL" };
+  }
+
+  const usage = await checkUsageLimits(organizationId);
+  if (usage.isBlocked) {
+    return { acquired: false, reason: "MONTHLY_LIMIT_EXCEEDED" };
+  }
+
+  await prisma.voiceUsageMeter.update({
+    where: { id: meter.id },
+    data: { activeCalls: { increment: 1 } }
+  });
+
+  return { acquired: true };
+}
+
+export async function releaseActiveCallSlot(organizationId: string) {
+  const meter = await getVoiceUsageMeter(organizationId);
+  if (meter.activeCalls > 0) {
+    await prisma.voiceUsageMeter.update({
+      where: { id: meter.id },
+      data: { activeCalls: { decrement: 1 } }
+    });
+  }
+}

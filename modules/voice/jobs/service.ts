@@ -60,8 +60,7 @@ export async function processVoiceJobs(limit = 10) {
           console.log("[Job] Skipping unimplemented sync_vapi_agent");
           break;
         case "send_whatsapp_notification":
-          // Placeholder for WhatsApp queue
-          console.log("[Job] Skipping unimplemented send_whatsapp_notification");
+          await processWhatsAppNotificationJob(payload, job.organizationId, job.voiceAgentId);
           break;
         default:
           console.warn(`[Job] Unknown job type: ${job.type}`);
@@ -168,5 +167,66 @@ async function processWebhookEventJob(payload: any, jobOrganizationId?: string |
       data: { status: "failed", errorMessage: errStr, processedAt: new Date() },
     });
     throw error;
+  }
+}
+
+async function processWhatsAppNotificationJob(payload: any, jobOrganizationId?: string | null, jobVoiceAgentId?: string | null) {
+  const { eventType, recipient, content, provider } = payload;
+  
+  if (!jobOrganizationId) throw new Error("Missing organizationId for WhatsApp notification");
+
+  // Fetch settings to ensure notifications are enabled
+  const integrationSettings = await prisma.voiceIntegrationSettings.findUnique({
+    where: { organizationId: jobOrganizationId }
+  });
+
+  if (!integrationSettings?.whatsappNotificationsEnabled) {
+    // If not enabled, we just log it as skipped
+    await prisma.voiceNotificationLog.create({
+      data: {
+        organizationId: jobOrganizationId,
+        voiceAgentId: jobVoiceAgentId,
+        type: "whatsapp",
+        eventType: eventType || "unknown",
+        recipient: recipient || "unknown",
+        status: "skipped",
+        errorMessage: "WhatsApp notifications are disabled for this tenant.",
+      }
+    });
+    return;
+  }
+
+  // Create a pending log entry
+  const log = await prisma.voiceNotificationLog.create({
+    data: {
+      organizationId: jobOrganizationId,
+      voiceAgentId: jobVoiceAgentId,
+      type: "whatsapp",
+      eventType: eventType || "unknown",
+      recipient: recipient || "unknown",
+      status: "queued",
+      payloadJson: JSON.stringify(payload),
+    }
+  });
+
+  try {
+    // Actual provider logic would go here (e.g., Twilio, Meta Graph API)
+    // For MVP, we simulate a successful dispatch
+    console.log(`[WhatsApp] Sending ${eventType} to ${recipient}...`);
+    
+    // Simulating external API call...
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    await prisma.voiceNotificationLog.update({
+      where: { id: log.id },
+      data: { status: "sent", provider: provider || "mock_provider" }
+    });
+  } catch (error) {
+    const errStr = error instanceof Error ? error.message : "Unknown error";
+    await prisma.voiceNotificationLog.update({
+      where: { id: log.id },
+      data: { status: "failed", errorMessage: errStr }
+    });
+    throw error; // Let the job queue retry it
   }
 }

@@ -246,6 +246,8 @@ model Organization {
   VoiceActionAuditLog          VoiceActionAuditLog[]
   VoiceUsageMeter              VoiceUsageMeter?
   VoiceNotificationLog         VoiceNotificationLog[]
+  VoiceReservationRequest      VoiceReservationRequest[]
+  VoiceOrderRequest            VoiceOrderRequest[]
 }
 
 model OrganizationUser {
@@ -504,6 +506,7 @@ model VoiceReceptionistSettings {
   languageMode       String       @default("AUTO_DETECT")
   businessHours      String?
   afterHoursBehavior String       @default("TAKE_MESSAGE")
+  capacityMode       String       @default("direct_ai") // direct_ai, queue_then_ai, fallback_to_staff, take_message, voicemail_callback
   leadCaptureFields  String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
@@ -532,6 +535,48 @@ model VoiceLead {
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceAgentId])
   @@index([source])
+  @@index([status])
+}
+
+model VoiceReservationRequest {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  voiceAgentId    String?
+  voiceAgent      VoiceAgent?  @relation(fields: [voiceAgentId], references: [id], onDelete: SetNull)
+  customerName    String?
+  customerPhone   String?
+  partySize       Int?
+  requestedTime   DateTime?
+  specialRequests String?
+  status          String       @default("needs_staff_review") // requested, needs_staff_review, confirmed, rejected
+  providerCallId  String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([voiceAgentId])
+  @@index([status])
+}
+
+model VoiceOrderRequest {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  voiceAgentId     String?
+  voiceAgent       VoiceAgent?  @relation(fields: [voiceAgentId], references: [id], onDelete: SetNull)
+  customerName     String?
+  customerPhone    String?
+  customerAddress  String?
+  orderDetailsText String
+  totalEstimated   Float?
+  status           String       @default("needs_staff_review") // requested, needs_staff_review, confirmed, rejected
+  providerCallId   String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([voiceAgentId])
   @@index([status])
 }
 
@@ -648,6 +693,8 @@ model VoiceAgent {
   callLogs                VoiceCallLog[]
   leads                   VoiceLead[]
   VoiceActionAuditLog     VoiceActionAuditLog[]
+  VoiceReservationRequest VoiceReservationRequest[]
+  VoiceOrderRequest       VoiceOrderRequest[]
 
   @@unique([organizationId, name])
   @@index([organizationId, isDefault])
@@ -844,6 +891,8 @@ model VoiceUsageMeter {
   id                             String       @id @default(cuid())
   organizationId                 String       @unique
   organization                   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activeCalls                    Int          @default(0)
+  maxActiveCalls                 Int          @default(1)
   callsToday                     Int          @default(0)
   callsThisMonth                 Int          @default(0)
   callMinutesToday               Int          @default(0)

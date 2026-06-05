@@ -24,6 +24,8 @@ export default async function VoiceAdminCommandCenterPage() {
     failedJobs,
     whatsappQueued,
     whatsappFailed,
+    activeCallsData,
+    capacityFullEvents,
     topTenantsByCalls,
   ] = await Promise.all([
     prisma.voiceBusinessProfile.count(),
@@ -43,6 +45,8 @@ export default async function VoiceAdminCommandCenterPage() {
     prisma.voiceJob.count({ where: { status: "failed" } }),
     prisma.voiceNotificationLog.count({ where: { type: "whatsapp", status: "queued" } }),
     prisma.voiceNotificationLog.count({ where: { type: "whatsapp", status: "failed" } }),
+    prisma.voiceUsageMeter.aggregate({ _sum: { activeCalls: true } }),
+    prisma.voiceWebhookEvent.count({ where: { errorMessage: { contains: "CAPACITY_FULL" } } }),
     prisma.voiceUsageMeter.findMany({
       orderBy: { callsThisMonth: "desc" },
       take: 5,
@@ -52,10 +56,11 @@ export default async function VoiceAdminCommandCenterPage() {
 
   const disabledAgents = totalAgents - activeAgents;
   const connectedAgents = totalAgents - missingAssistantAgents;
+  const activeCalls = activeCallsData._sum.activeCalls || 0;
 
   let capacityStatus = "Healthy";
-  if (failedWebhooks > 50 || failedJobs > 50 || mappingFailures > 20) capacityStatus = "Monitor";
-  if (failedWebhooks > 200 || failedJobs > 200) capacityStatus = "Urgent";
+  if (failedWebhooks > 50 || failedJobs > 50 || mappingFailures > 20 || capacityFullEvents > 10) capacityStatus = "Monitor";
+  if (failedWebhooks > 200 || failedJobs > 200 || capacityFullEvents > 50) capacityStatus = "Urgent";
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 text-on-surface">
@@ -96,6 +101,11 @@ export default async function VoiceAdminCommandCenterPage() {
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Active AI Agents</p>
           <p className="mt-3 text-4xl font-black tracking-tight text-white">{activeAgents}</p>
           <p className="text-xs text-slate-400 mt-1">{disabledAgents} disabled</p>
+        </div>
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Active Calls Now</p>
+          <p className="mt-3 text-4xl font-black tracking-tight text-white">{activeCalls}</p>
+          <p className="text-xs text-amber-400 mt-1">{capacityFullEvents} capacity drops today</p>
         </div>
         <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Calls Today</p>

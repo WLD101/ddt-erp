@@ -3,6 +3,7 @@ import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
 import { resolveVoiceAgentForWebhook } from "@/modules/voice/agents/service";
 import { enqueueVoiceJob } from "@/modules/voice/jobs/service";
 import { prisma } from "@/lib/prisma";
+import { checkAndAcquireActiveCallSlot, releaseActiveCallSlot } from "@/modules/voice/billing/usage";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
@@ -98,6 +99,25 @@ export async function POST(request: Request) {
       rawPayloadJson: JSON.stringify(payload),
     }
   });
+
+  // Track capacity for active calls
+  if (resolvedMapping?.organizationId) {
+    if (type === "status-update" && payload.status === "in-progress") {
+      const slot = await checkAndAcquireActiveCallSlot(resolvedMapping.organizationId);
+      if (!slot.acquired) {
+         console.warn(`[Vapi Webhook] Capacity full for organization: ${resolvedMapping.organizationId}, reason: ${slot.reason}`);
+         // We log it, but since the call is already happening in Vapi, we let it proceed or rely on Vapi's end to handle concurrency.
+         // In a pre-call hook, we could block it entirely.
+         // Let's mark the webhook event specifically to show it was an over-capacity call.
+         await prisma.voiceWebhookEvent.update({
+           where: { id: webhookEvent.id },
+           data: { errorMessage: `CAPACITY_FULL: ${slot.reason}` }
+         });
+      }
+    } else if (type === "end-of-call-report" || (type === "status-update" && payload.status === "ended")) {
+      await releaseActiveCallSlot(resolvedMapping.organizationId);
+    }
+  }
 
   // 3. Enqueue job for background processing
   if (status !== "mapping_failed") {
