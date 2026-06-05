@@ -20,15 +20,15 @@ export async function POST(request: Request) {
 
   const secret = reqUrl.searchParams.get("secret");
   const authHeader = request.headers.get("authorization");
-  const expectedSecret = getVapiEnvStatus().webhookSecret;
+  const expectedSecret = process.env.VAPI_WEBHOOK_SECRET;
 
   if (expectedSecret) {
     if (secret && secret === expectedSecret) validSecret = true;
     if (authHeader && authHeader === `Bearer ${expectedSecret}`) validSecret = true;
     if (authHeader && authHeader === expectedSecret) validSecret = true;
     
-    if (!validSecret && sigHeader && getVapiEnvStatus().webhookSecret) {
-      const hmac = crypto.createHmac("sha256", getVapiEnvStatus().webhookSecret!);
+    if (!validSecret && sigHeader && process.env.VAPI_WEBHOOK_SECRET) {
+      const hmac = crypto.createHmac("sha256", process.env.VAPI_WEBHOOK_SECRET);
       const computedSig = hmac.update(rawBody).digest("hex");
       if (sigHeader === computedSig) {
         validSecret = true;
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     }
   }
 
-  if (getVapiEnvStatus().isDevelopment) {
+  if (process.env.NODE_ENV !== "production") {
     validSecret = true;
   }
 
