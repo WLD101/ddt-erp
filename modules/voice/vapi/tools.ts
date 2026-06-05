@@ -211,10 +211,7 @@ async function captureLead(args: Record<string, unknown>, organizationId: string
 
 async function requestAppointment(args: Record<string, unknown>, organizationId: string, context: VapiToolContext) {
   const runtime = await getVoiceTrainingRuntime(organizationId);
-  const bookingAllowed =
-    runtime.bookingRules.acceptsBookings &&
-    (runtime.actionPolicy.allowedActions.includes("CREATE_TABLE_BOOKING_REQUEST") ||
-      runtime.actionPolicy.allowedActions.includes("CREATE_APPOINTMENT_REQUEST"));
+  const bookingAllowed = runtime.bookingRules.acceptsBookings;
 
   if (!bookingAllowed) {
     return {
@@ -284,8 +281,7 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
 
 async function createOrderRequest(args: Record<string, unknown>, organizationId: string, context: VapiToolContext) {
   const runtime = await getVoiceTrainingRuntime(organizationId);
-  const orderAllowed =
-    runtime.orderRules.acceptsOrderRequests && runtime.actionPolicy.allowedActions.includes("CREATE_ORDER_REQUEST");
+  const orderAllowed = runtime.orderRules.acceptsOrderRequests;
 
   if (!orderAllowed) {
     return {

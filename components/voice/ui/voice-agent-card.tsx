@@ -11,8 +11,12 @@ type VoiceAgentCardProps = {
     tone: string;
     vapiAssistantId: string | null;
     vapiPhoneNumberId: string | null;
+    clientPublicPhoneNumber: string | null;
+    assignedVapiPhoneNumber: string | null;
+    forwardingStatus: string;
     toolsEnabled: number;
     lastSyncedAt: Date | null;
+    isActive: boolean;
   };
   hasProfile: boolean;
   hasSettings: boolean;
@@ -49,17 +53,25 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
           <div className="font-medium text-white">{agent.languageMode}</div>
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Tone</div>
-          <div className="font-medium text-white">{agent.tone}</div>
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Status</div>
+          <div className="font-medium text-white">{agent.isActive ? "Enabled" : "Disabled"}</div>
         </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Tools Active</div>
-          <div className="font-medium text-white">{agent.toolsEnabled}</div>
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Forwarding Number</div>
+          <div className="font-medium text-white truncate">
+            {agent.clientPublicPhoneNumber || "Not configured"}
+          </div>
         </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Last Sync</div>
-          <div className="font-medium text-white text-xs mt-0.5">
-            {agent.lastSyncedAt ? new Date(agent.lastSyncedAt).toLocaleDateString() : "Never"}
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">AI Receptionist Number</div>
+          <div className="font-medium text-white truncate">
+            {agent.assignedVapiPhoneNumber || "Not assigned"}
+          </div>
+        </div>
+        <div className="col-span-2 flex items-center justify-between">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Forwarding Status</div>
+          <div className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${agent.forwardingStatus === "VERIFIED" ? "bg-emerald-500/20 text-emerald-400" : agent.forwardingStatus === "PENDING_VERIFICATION" ? "bg-amber-500/20 text-amber-400" : "bg-slate-500/20 text-slate-400"}`}>
+            {agent.forwardingStatus.replace("_", " ")}
           </div>
         </div>
       </div>

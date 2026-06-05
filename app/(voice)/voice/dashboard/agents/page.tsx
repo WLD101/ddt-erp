@@ -32,8 +32,12 @@ export default async function VoiceDashboardAgentsPage() {
               tone: agent.tone,
               vapiAssistantId: agent.vapiAssistantId,
               vapiPhoneNumberId: agent.vapiPhoneNumberId,
+              clientPublicPhoneNumber: agent.clientPublicPhoneNumber,
+              assignedVapiPhoneNumber: agent.assignedVapiPhoneNumber,
+              forwardingStatus: agent.forwardingStatus,
               toolsEnabled: agent.allowedTools ? agent.allowedTools.split(",").length : 0,
               lastSyncedAt: agent.lastPromptSyncedAt,
+              isActive: agent.isActive,
             }}
             hasProfile={true}
             hasSettings={true}

@@ -1,5 +1,7 @@
 // modules/voice/vapi/service.ts
 
+import { timingSafeEqual } from "node:crypto";
+
 function getConfiguredWebhookUrl() {
   if (process.env.VAPI_SERVER_URL) {
     return process.env.VAPI_SERVER_URL;
@@ -35,10 +37,20 @@ export function getLegacyBootstrapPhoneNumberId() {
 export function validateWebhookSecret(secret: string | null): boolean {
   const configuredSecret = process.env.VAPI_WEBHOOK_SECRET;
   if (!configuredSecret) {
-    // If we haven't configured a secret, we allow it, but in production we should.
-    return true;
+    return process.env.NODE_ENV !== "production";
   }
-  return secret === configuredSecret;
+  if (!secret) {
+    return false;
+  }
+
+  const provided = Buffer.from(secret);
+  const expected = Buffer.from(configuredSecret);
+
+  if (provided.length !== expected.length) {
+    return false;
+  }
+
+  return timingSafeEqual(provided, expected);
 }
 
 export async function fetchAssistantDetails(assistantId: string) {

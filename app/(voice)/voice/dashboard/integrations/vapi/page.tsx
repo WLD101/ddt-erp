@@ -83,6 +83,21 @@ export default async function VapiSetupPage() {
               </p>
             ) : null}
           </div>
+
+          <div className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">
+            <h2 className="mb-2 text-lg font-black text-white">Use your existing business number</h2>
+            <p className="text-sm text-slate-300 mb-4">
+              Don&apos;t want to change your number? You can connect your existing phone number to your new AI Receptionist in 3 simple steps:
+            </p>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-slate-300 ml-2">
+              <li>Keep your current number with your provider.</li>
+              <li>Set up unconditional call forwarding from your provider&apos;s dashboard to your assigned WhatsQuery AI number.</li>
+              <li>The AI receptionist answers all forwarded calls and saves leads, orders, and requests right here in your dashboard.</li>
+            </ol>
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <p className="text-xs text-slate-400">Manage your forwarding numbers and verified status on the <a href="/voice/dashboard/agents" className="text-cyan-400 hover:underline">Agents page</a>.</p>
+            </div>
+          </div>
         </div>
 
         <div className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">

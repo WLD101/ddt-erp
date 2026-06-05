@@ -596,6 +596,11 @@ model VoiceIntegrationSettings {
   twilioStatus           String       @default("NOT_CONNECTED")
   googleCalendarStatus   String       @default("NOT_CONNECTED")
   whatsappFollowUpStatus String       @default("NOT_CONNECTED")
+  whatsappNotificationsEnabled        Boolean  @default(false)
+  staffWhatsAppNumber                 String?
+  customerWhatsAppConfirmationEnabled Boolean  @default(false)
+  whatsappProvider                    String?
+  whatsappNotificationEvents          String?
   providerConfigNotes    String?
   createdAt              DateTime     @default(now())
   updatedAt              DateTime     @updatedAt
@@ -623,6 +628,11 @@ model VoiceAgent {
   vapiAssistantId     String?
   vapiAssistantName   String?
   vapiPhoneNumberId   String?
+  clientPublicPhoneNumber String?
+  assignedVapiPhoneNumber String?
+  forwardingStatus        String                        @default("DISABLED")
+  forwardingInstructions  String?
+  forwardingVerifiedAt    DateTime?
   isDefault           Boolean                       @default(false)
   isActive            Boolean                       @default(true)
   lastPromptSyncedAt  DateTime?
@@ -724,6 +734,9 @@ model VoiceHandoffRules {
   fallbackEmail                String?
   staffNotificationPlaceholder String?
   handoffTriggers              String?
+  allowLiveTransfer            Boolean      @default(false)
+  transferPhoneNumber          String?
+  transferRules                String?
   createdAt                    DateTime     @default(now())
   updatedAt                    DateTime     @updatedAt
 
