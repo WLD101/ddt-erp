@@ -63,16 +63,19 @@ export async function POST(request: Request) {
   const callerNumber = payload.call?.customer?.number || payload.call?.customer?.phoneNumber;
   const assistantId = payload.call?.assistantId || payload.assistantId;
   const phoneNumberId = payload.call?.phoneNumberId;
+  const systemPhoneNumber = payload.call?.phoneNumber?.number;
 
   let resolvedMapping: { organizationId?: string; voiceBusinessProfileId?: string; voiceAgentId?: string } | null = null;
   let status = "received";
   
   if (assistantId || phoneNumberId) {
-    resolvedMapping = await resolveVoiceAgentForWebhook({
+    const rawMapping = await resolveVoiceAgentForWebhook({
       assistantId,
       phoneNumberId,
       callerNumber,
+      systemPhoneNumber,
     });
+    resolvedMapping = rawMapping || null;
   }
 
   if (!resolvedMapping || !resolvedMapping.organizationId) {
