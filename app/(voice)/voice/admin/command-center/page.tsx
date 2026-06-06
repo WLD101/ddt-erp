@@ -295,7 +295,7 @@ export default async function VoiceAdminCommandCenterPage() {
                     <div>
                       <div className="font-bold text-on-surface">{organizationMap.get(row.organizationId) || row.organizationId}</div>
                       <div className="text-xs text-on-surface-variant">
-                        {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                        {Math.round((row._sum.durationSeconds || 0) / 60)} min â€¢ {row._count._all} calls
                       </div>
                     </div>
                     <div className="font-black text-primary">${(row._sum.costUsd || 0).toFixed(2)}</div>
@@ -325,7 +325,7 @@ export default async function VoiceAdminCommandCenterPage() {
                         <div className="font-black text-primary">${(row._sum.costUsd || 0).toFixed(2)}</div>
                       </div>
                       <div className="mt-1 text-xs text-on-surface-variant">
-                        {agent?.internalName || "No internal key"} • {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                        {agent?.internalName || "No internal key"} â€¢ {Math.round((row._sum.durationSeconds || 0) / 60)} min â€¢ {row._count._all} calls
                       </div>
                     </div>
                   );
@@ -338,4 +338,3 @@ export default async function VoiceAdminCommandCenterPage() {
     </div>
   );
 }
-
