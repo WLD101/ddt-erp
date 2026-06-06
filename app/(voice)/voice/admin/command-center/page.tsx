@@ -1,5 +1,44 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
+const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+
+function MetricCard({
+  icon,
+  label,
+  value,
+  subtitle,
+  tone,
+}: {
+  icon: string;
+  label: string;
+  value: React.ReactNode;
+  subtitle?: string;
+  tone: "primary" | "secondary" | "error" | "default";
+}) {
+  const toneMap = {
+    primary: "bg-primary/10 text-primary",
+    secondary: "bg-secondary/10 text-secondary",
+    error: "bg-error/10 text-error",
+    default: "bg-outline-variant/20 text-on-surface-variant"
+  };
+  return (
+    <Card className={`${shellCardClassName} transition-transform duration-300 hover:-translate-y-1`}>
+      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-outline-variant/10">
+        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">{label}</CardTitle>
+        <div className={`rounded-2xl p-2 ${toneMap[tone]}`}>
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-6 pt-6">
+        <div className="text-4xl font-black tracking-tight text-on-surface">{value}</div>
+        {subtitle && <p className="mt-2 text-xs font-medium text-on-surface-variant">{subtitle}</p>}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default async function VoiceAdminCommandCenterPage() {
   const now = new Date();
@@ -138,222 +177,165 @@ export default async function VoiceAdminCommandCenterPage() {
   if (failedWebhooks > 200 || failedJobs > 200 || capacityFullEvents > 50) capacityStatus = "Urgent";
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-on-surface">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight text-white">Voice Command Center</h1>
-          <p className="text-sm text-slate-400 font-medium">
-            Super Admin view of all Voice SaaS operations, AI agents, and telephony connections.
-          </p>
-        </div>
-        <div className={`px-4 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${
-          capacityStatus === "Healthy" ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" :
-          capacityStatus === "Monitor" ? "bg-amber-500/20 border-amber-500/30 text-amber-400" :
-          "bg-red-500/20 border-red-500/30 text-red-400"
-        }`}>
-          Status: {capacityStatus}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-4 border-b border-white/10 pb-4">
-        <Link href="/voice/admin/tenants" className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-400 hover:underline bg-cyan-500/10 px-4 py-2 rounded-xl">
-          Tenants
-        </Link>
-        <Link href="/voice/admin/agents" className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-400 hover:underline border border-cyan-500/30 px-4 py-2 rounded-xl">
-          Agents
-        </Link>
-        <Link href="/wq-command-center/system-health" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300 hover:underline border border-white/10 px-4 py-2 rounded-xl">
-          System Health
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Live Tenants</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-cyan-400">{totalTenants}</p>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Active AI Agents</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-white">{activeAgents}</p>
-          <p className="text-xs text-slate-400 mt-1">{disabledAgents} disabled</p>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Active Calls Now</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-white">{activeCalls}</p>
-          <p className="text-xs text-amber-400 mt-1">{capacityFullEvents} capacity drops today</p>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Calls Today</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-white">{callsToday}</p>
-          <p className="text-xs text-slate-400 mt-1">{callsThisMonth} this month</p>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Total Leads</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-emerald-400">{totalLeads}</p>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Vapi Cost Today</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-white">${totalCostToday.toFixed(2)}</p>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Vapi Cost This Month</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-white">${totalCostThisMonth.toFixed(2)}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-500 border-b border-white/10 pb-3">Async Processing</h2>
-          <div className="space-y-3 text-sm text-slate-300">
-            <div className="flex justify-between"><span>Queued Jobs</span><span className="font-bold">{queuedJobs}</span></div>
-            <div className="flex justify-between text-red-400"><span>Failed Jobs</span><span className="font-bold">{failedJobs}</span></div>
-            <div className="flex justify-between"><span>Failed Webhooks</span><span className="font-bold text-red-400">{failedWebhooks}</span></div>
-            <div className="flex justify-between text-amber-400"><span>Mapping Failures</span><span className="font-bold">{mappingFailures}</span></div>
-          </div>
-        </div>
-
-        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-500 border-b border-white/10 pb-3">Telephony Health</h2>
-          <div className="space-y-3 text-sm text-slate-300">
-            <div className="flex justify-between"><span>Vapi Connected Agents</span><span className="font-bold">{connectedAgents}</span></div>
-            <div className="flex justify-between text-red-400"><span>Missing Assistant IDs</span><span className="font-bold">{missingAssistantAgents}</span></div>
-            <div className="flex justify-between text-red-400"><span>Missing Phone IDs</span><span className="font-bold">{missingPhoneAgents}</span></div>
-          </div>
-        </div>
-
-        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-500 border-b border-white/10 pb-3">Notifications Queue</h2>
-          <div className="space-y-3 text-sm text-slate-300">
-            <div className="flex justify-between"><span>WhatsApp Queued</span><span className="font-bold">{whatsappQueued}</span></div>
-            <div className="flex justify-between text-red-400"><span>WhatsApp Failed</span><span className="font-bold">{whatsappFailed}</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white">Top Tenants By Call Volume (This Month)</h2>
-        {topTenantsByCalls.length === 0 ? (
-          <p className="text-sm text-slate-400">No usage data found.</p>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {topTenantsByCalls.map((t) => (
-              <div key={t.id} className="p-4 rounded-xl border border-white/10 bg-slate-950/40 flex justify-between items-center text-slate-200">
-                <div>
-                  <p className="text-sm font-bold text-white">{t.organization.name}</p>
-                  <p className="text-xs text-cyan-400">Limit: {t.callsThisMonth} / ~</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-black text-white">{t.callsThisMonth}</p>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500">Calls</p>
-                </div>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),linear-gradient(180deg,#f8f9ff_0%,#eef4ff_100%)] text-on-surface pb-12">
+      <div className="mx-auto max-w-7xl space-y-8 px-6 pt-8">
+        
+        <section className="overflow-hidden rounded-[32px] border border-outline-variant/30 bg-linear-to-br from-surface via-surface to-surface-container-low shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col gap-8 px-8 py-8 xl:flex-row xl:items-end xl:justify-between">
+            <div className="space-y-4">
+              <Badge className="border-none bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20">
+                Command Center
+              </Badge>
+              <div className="space-y-3">
+                <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-on-surface sm:text-5xl">
+                  <span className="material-symbols-outlined text-[34px] text-primary sm:text-[40px]">graphic_eq</span>
+                  Voice Platform
+                </h1>
+                <p className="max-w-2xl text-sm font-medium leading-6 text-on-surface-variant sm:text-base">
+                  Platform Owner view of all Voice SaaS operations, AI agents, telephony costs, and tenant billing.
+                </p>
               </div>
-            ))}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">System Status</p>
+                <p className={`mt-3 text-2xl font-black tracking-tight ${capacityStatus === "Healthy" ? "text-emerald-500" : "text-amber-500"}`}>{capacityStatus}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Active monitoring active</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Live Tenants</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{totalTenants}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Voice workspaces</p>
+              </div>
+              <div className="rounded-3xl border border-outline-variant/30 bg-surface/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">AI Agents</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-on-surface">{activeAgents}</p>
+                <p className="mt-1 text-xs font-medium text-on-surface-variant">Configured in prod</p>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+          <div className="flex flex-wrap items-center gap-3 border-t border-outline-variant/20 px-8 py-4">
+            <Link href="/voice/admin/tenants" className="text-[11px] font-black uppercase tracking-[0.2em] text-primary hover:underline bg-primary/10 px-4 py-2 rounded-xl">
+              Manage Tenants
+            </Link>
+            <Link href="/voice/admin/packages" className="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant hover:underline border border-outline-variant/40 px-4 py-2 rounded-xl">
+              Packages
+            </Link>
+            <Link href="/voice/admin/agents" className="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant hover:underline border border-outline-variant/40 px-4 py-2 rounded-xl">
+              All Agents
+            </Link>
+          </div>
+        </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 className="text-lg font-black text-white">Top 10 Highest-Cost Tenants</h2>
-            <span className="text-xs text-slate-400">Monthly cost by business</span>
-          </div>
-          <div className="mt-4 space-y-3">
-            {costByBusinessRows.length === 0 ? (
-              <p className="text-sm text-slate-400">No cost data available yet.</p>
-            ) : (
-              costByBusinessRows.map((row) => (
-                <div key={row.organizationId} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">
-                  <div>
-                    <div className="font-bold text-white">{organizationMap.get(row.organizationId) || row.organizationId}</div>
-                    <div className="text-xs text-slate-400">
-                      {Math.round((row._sum.durationSeconds || 0) / 60)} min â€¢ {row._count._all} calls
-                    </div>
-                  </div>
-                  <div className="font-black text-cyan-300">${(row._sum.costUsd || 0).toFixed(2)}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <MetricCard icon="call" label="Active Calls Now" value={activeCalls} tone="primary" subtitle={`${capacityFullEvents} capacity drops`} />
+          <MetricCard icon="today" label="Calls Today" value={callsToday} tone="default" subtitle={`${callsThisMonth} this month`} />
+          <MetricCard icon="contact_mail" label="Total Leads Captured" value={totalLeads} tone="secondary" subtitle="Since inception" />
+          <MetricCard icon="payments" label="Vapi Cost Today" value={`$${totalCostToday.toFixed(2)}`} tone="default" subtitle={`$${totalCostThisMonth.toFixed(2)} this month`} />
+        </section>
 
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 className="text-lg font-black text-white">Cost by VoiceAgent</h2>
-            <span className="text-xs text-slate-400">Monthly</span>
-          </div>
-          <div className="mt-4 space-y-3">
-            {costByAgentRows.length === 0 ? (
-              <p className="text-sm text-slate-400">No agent-linked cost data available yet.</p>
-            ) : (
-              costByAgentRows.map((row) => {
-                const agent = row.voiceAgentId ? agentMap.get(row.voiceAgentId) : null;
-                return (
-                  <div key={row.voiceAgentId || "unmapped"} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="font-bold text-white">{agent?.displayName || agent?.name || row.voiceAgentId || "Unmapped agent"}</div>
-                      <div className="font-black text-cyan-300">${(row._sum.costUsd || 0).toFixed(2)}</div>
-                    </div>
-                    <div className="mt-1 text-xs text-slate-400">
-                      {agent?.internalName || "No internal key"} â€¢ {Math.round((row._sum.durationSeconds || 0) / 60)} min â€¢ {row._count._all} calls
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        <section className="grid gap-6 md:grid-cols-3">
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[18px]">sync_problem</span>
+                Async Processing
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 py-4 space-y-3 text-sm text-on-surface">
+              <div className="flex justify-between"><span>Queued Jobs</span><span className="font-bold">{queuedJobs}</span></div>
+              <div className="flex justify-between text-error"><span>Failed Jobs</span><span className="font-bold">{failedJobs}</span></div>
+              <div className="flex justify-between"><span>Failed Webhooks</span><span className="font-bold text-error">{failedWebhooks}</span></div>
+              <div className="flex justify-between text-amber-500"><span>Mapping Failures</span><span className="font-bold">{mappingFailures}</span></div>
+            </CardContent>
+          </Card>
 
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 className="text-lg font-black text-white">Cost by Phone Number</h2>
-            <span className="text-xs text-slate-400">Monthly</span>
-          </div>
-          <div className="mt-4 space-y-3">
-            {costByPhoneRows.length === 0 ? (
-              <p className="text-sm text-slate-400">No phone-number cost data available yet.</p>
-            ) : (
-              costByPhoneRows.map((row) => {
-                const linkedAgent = agents.find((agent) => agent.vapiPhoneNumberId === row.providerPhoneNumberId);
-                return (
-                  <div key={row.providerPhoneNumberId || "unknown-phone"} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="font-bold text-white">
-                        {linkedAgent?.vapiPhoneNumberName || row.providerPhoneNumberId || "Unlabelled phone"}
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[18px]">phonelink_ring</span>
+                Telephony Health
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 py-4 space-y-3 text-sm text-on-surface">
+              <div className="flex justify-between"><span>Vapi Connected Agents</span><span className="font-bold">{connectedAgents}</span></div>
+              <div className="flex justify-between text-error"><span>Missing Assistant IDs</span><span className="font-bold">{missingAssistantAgents}</span></div>
+              <div className="flex justify-between text-error"><span>Missing Phone IDs</span><span className="font-bold">{missingPhoneAgents}</span></div>
+            </CardContent>
+          </Card>
+
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[18px]">warning</span>
+                Tracking Exceptions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 py-4 space-y-3 text-sm text-on-surface">
+              <div className="flex justify-between text-amber-500"><span>Calls without cost</span><span className="font-bold">{callsWithoutCostData}</span></div>
+              <div className="flex justify-between text-error"><span>Calls unmapped</span><span className="font-bold">{callsWithoutMappedTenantOrAgent}</span></div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">store</span>
+                Top 10 Highest-Cost Tenants
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-4 space-y-3">
+              {costByBusinessRows.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No cost data available yet.</p>
+              ) : (
+                costByBusinessRows.map((row) => (
+                  <div key={row.organizationId} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
+                    <div>
+                      <div className="font-bold text-on-surface">{organizationMap.get(row.organizationId) || row.organizationId}</div>
+                      <div className="text-xs text-on-surface-variant">
+                        {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
                       </div>
-                      <div className="font-black text-cyan-300">${(row._sum.costUsd || 0).toFixed(2)}</div>
                     </div>
-                    <div className="mt-1 text-xs text-slate-400">
-                      {Math.round((row._sum.durationSeconds || 0) / 60)} min â€¢ {row._count._all} calls
-                    </div>
+                    <div className="font-black text-primary">${(row._sum.costUsd || 0).toFixed(2)}</div>
                   </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
-        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 className="text-lg font-black text-white">Cost Tracking Exceptions</h2>
-            <span className="text-xs text-slate-400">Monthly</span>
-          </div>
-          <div className="mt-4 space-y-3 text-sm text-slate-300">
-            <div className="flex justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-              <span>Calls without cost data</span>
-              <span className="font-black text-amber-300">{callsWithoutCostData}</span>
-            </div>
-            <div className="flex justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-              <span>Calls without mapped tenant or agent</span>
-              <span className="font-black text-rose-300">{callsWithoutMappedTenantOrAgent}</span>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-xs leading-6 text-slate-400">
-              Internal Vapi tracking names stay separate from the caller-facing business name. Admin cost views can use the
-              tracking names without exposing another tenant&apos;s billing data in tenant dashboards.
-            </div>
-          </div>
-        </div>
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">smart_toy</span>
+                Cost by VoiceAgent
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-4 space-y-3">
+              {costByAgentRows.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No agent-linked cost data available yet.</p>
+              ) : (
+                costByAgentRows.map((row) => {
+                  const agent = row.voiceAgentId ? agentMap.get(row.voiceAgentId) : null;
+                  return (
+                    <div key={row.voiceAgentId || "unmapped"} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-on-surface">{agent?.displayName || agent?.name || row.voiceAgentId || "Unmapped agent"}</div>
+                        <div className="font-black text-primary">${(row._sum.costUsd || 0).toFixed(2)}</div>
+                      </div>
+                      <div className="mt-1 text-xs text-on-surface-variant">
+                        {agent?.internalName || "No internal key"} • {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+        </section>
       </div>
     </div>
   );
 }
+
