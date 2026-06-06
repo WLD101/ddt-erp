@@ -29,8 +29,9 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
         data: {
           organizationId,
           businessName: org?.name || "Business",
-          businessType: "retail",
+          industry: "retail",
           preferredLanguage: "en",
+          mainGoal: "Customer Service",
         }
       });
     }
