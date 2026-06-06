@@ -7,6 +7,8 @@ import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
 
 const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
 
+import { assignVoicePackage } from "./actions";
+
 export default async function AdminTenantVoicePage({ params, searchParams }: { params: { id: string }, searchParams: { tab?: string } }) {
   const organizationId = params.id;
   const currentTab = searchParams.tab || "overview";
@@ -177,12 +179,7 @@ export default async function AdminTenantVoicePage({ params, searchParams }: { p
               </div>
             </div>
 
-            <form action={async (fd: FormData) => {
-               "use server"
-               const pkgId = fd.get("packageId") as string;
-               const status = fd.get("status") as string;
-               // server action placeholder to manually save voice package logic
-            }} className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm space-y-4">
+            <form action={assignVoicePackage.bind(null, org.id)} className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm space-y-4">
                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 border-b border-outline-variant/20 pb-2">Manual Assignment Override</h3>
                <div className="space-y-3">
                  <label className="text-[10px] font-bold text-on-surface-variant uppercase">Assign Package</label>

@@ -25,23 +25,28 @@ export default async function VoicePackagesPage() {
                 Voice Platform
               </Badge>
               <div className="space-y-3">
-                <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-on-surface sm:text-5xl">
-                  <span className="material-symbols-outlined text-[34px] text-primary sm:text-[40px]">inventory_2</span>
-                  Packages
-                </h1>
-                <p className="max-w-2xl text-sm font-medium leading-6 text-on-surface-variant sm:text-base">
-                  Manage subscription packages for the Voice product, define feature limits, and map Stripe products.
-                </p>
-              </div>
+                <h1 className="text-4xl font-black tracking-tight text-on-surface flex items-center gap-3">
+                <span className="material-symbols-outlined text-[32px] text-primary">inventory_2</span>
+                Packages
+              </h1>
+              <p className="text-sm text-on-surface-variant max-w-2xl">
+                Manage subscription packages for the Voice product, define feature limits, and map Stripe products.
+              </p>
             </div>
-            <div>
+            <div className="flex items-center gap-3">
+              <Link href="/voice/admin/command-center">
+                <Button variant="outline" className="h-10 rounded-2xl border-outline-variant/40 px-4 text-[11px] font-black uppercase tracking-[0.2em]">
+                  &larr; Command Center
+                </Button>
+              </Link>
               <Link href="/voice/admin/packages/new">
-                <Button className="h-12 rounded-2xl bg-primary px-6 text-[12px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:opacity-90">
-                  <span className="material-symbols-outlined mr-2 text-[20px]">add</span>
+                <Button className="h-10 rounded-2xl bg-primary px-6 text-[11px] font-black uppercase tracking-widest text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary/90">
+                  <span className="material-symbols-outlined mr-2 text-[16px]">add</span>
                   Create Package
                 </Button>
               </Link>
             </div>
+          </div>
           </div>
         </section>
 

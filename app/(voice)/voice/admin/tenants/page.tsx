@@ -49,6 +49,12 @@ export default async function AdminTenantsPage() {
                   &larr; Command Center
                 </Button>
               </Link>
+              <Link href="/voice/admin/tenants/new">
+                <Button className="h-10 rounded-2xl bg-primary px-6 text-[11px] font-black uppercase tracking-widest text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary/90">
+                  <span className="material-symbols-outlined mr-2 text-[16px]">add</span>
+                  Create Tenant
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
