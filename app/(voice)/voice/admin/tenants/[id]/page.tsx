@@ -83,8 +83,8 @@ export default async function AdminTenantVoicePage({ params, searchParams }: { p
                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 border-b border-outline-variant/20 pb-2">Business Profile</h3>
                <div className="space-y-4">
                  <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Name</span><span className="font-bold">{org.voiceBusinessProfile?.businessName || "Not set"}</span></div>
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Phone</span><span className="font-bold">{org.voiceBusinessProfile?.contactPhone || "Not set"}</span></div>
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Language</span><span className="font-bold">{org.voiceBusinessProfile?.defaultLanguage || "Not set"}</span></div>
+                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Phone</span><span className="font-bold">{org.voiceBusinessProfile?.businessPhone || "Not set"}</span></div>
+                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Language</span><span className="font-bold">{org.voiceBusinessProfile?.preferredLanguage || "Not set"}</span></div>
                </div>
              </div>
              

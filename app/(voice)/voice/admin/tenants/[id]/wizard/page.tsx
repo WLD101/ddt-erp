@@ -30,7 +30,7 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
           organizationId,
           businessName: org?.name || "Business",
           businessType: "retail",
-          defaultLanguage: "en",
+          preferredLanguage: "en",
         }
       });
     }
