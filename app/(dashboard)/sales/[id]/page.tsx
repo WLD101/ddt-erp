@@ -128,7 +128,7 @@ export default async function SalesInvoiceDetailPage({ params }: { params: Promi
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Issue Date</p>
-                  <p className="text-sm text-on-surface font-medium">{format(new Date(invoice.date), "MMMM dd, yyyy")}</p>
+                  <p className="text-sm text-on-surface font-medium">{format(new Date(invoice.issueDate), "MMMM dd, yyyy")}</p>
                 </div>
               </div>
 

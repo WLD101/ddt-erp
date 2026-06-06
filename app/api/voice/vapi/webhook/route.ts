@@ -76,7 +76,7 @@ export async function POST(request: Request) {
   const phoneNumberId = payload.call?.phoneNumberId;
   const systemPhoneNumber = payload.call?.phoneNumber?.number;
 
-  let resolvedMapping: { organizationId?: string; voiceBusinessProfileId?: string; voiceAgentId?: string | null } | null = null;
+  let resolvedMapping: { organizationId?: string; voiceBusinessProfileId?: string | null; voiceAgentId?: string | null } | null = null;
   let status = "received";
   
   if (assistantId || phoneNumberId) {

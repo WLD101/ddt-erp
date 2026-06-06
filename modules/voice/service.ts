@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { listVoiceAgents } from "@/modules/voice/agents/service";
+import { checkUsageLimits } from "@/modules/voice/billing/usage";
 import { parseLeadCaptureFields } from "@/modules/voice/schema";
 import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
 
@@ -108,6 +109,7 @@ export async function getVoiceDashboardSummary(orgId: string) {
     knowledgeCount,
     reservationRequestCount,
     orderRequestCount,
+    usage,
   ] = await Promise.all([
     prisma.voiceLead.findMany({
       where: { organizationId: orgId },
@@ -136,6 +138,7 @@ export async function getVoiceDashboardSummary(orgId: string) {
     }),
     prisma.voiceReservationRequest.count({ where: { organizationId: orgId } }),
     prisma.voiceOrderRequest.count({ where: { organizationId: orgId } }),
+    checkUsageLimits(orgId),
   ]);
 
   const reservationLeads = leads.filter(isReservationLead);
@@ -168,6 +171,15 @@ export async function getVoiceDashboardSummary(orgId: string) {
       orderRequests: orderRequestCount + orderRequestLeads.length,
       callbackRequests: callbackLeads.length,
       activeKnowledgeItems: knowledgeCount,
+    },
+    usage: {
+      callsThisMonth: usage.meter.callsThisMonth,
+      minutesThisMonth: usage.meter.callMinutesThisMonth,
+      estimatedCostUsdThisMonth: usage.meter.callCostUsdThisMonth,
+      limit: usage.limit,
+      remaining: usage.remaining,
+      warnings: usage.warnings,
+      showEstimatedCost: usage.showEstimatedCost,
     },
     setupChecklist,
   };

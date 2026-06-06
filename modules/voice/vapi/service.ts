@@ -71,6 +71,40 @@ export async function fetchAssistantDetails(assistantId: string) {
   }
 }
 
+type UpsertVapiAssistantInput = {
+  assistantId?: string | null;
+  assistantName: string;
+  firstMessage: string;
+  prompt: string;
+  webhookUrl: string;
+  toolNames: string[];
+};
+
+function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
+  return {
+    name: input.assistantName,
+    firstMessage: input.firstMessage,
+    server: {
+      url: input.webhookUrl,
+    },
+    model: {
+      messages: [{ role: "system", content: input.prompt }],
+    },
+    tools: input.toolNames.map((toolName) => ({
+      type: "function",
+      function: {
+        name: toolName,
+        description: `Tenant-scoped Voice tool: ${toolName}`,
+        parameters: {
+          type: "object",
+          additionalProperties: true,
+          properties: {},
+        },
+      },
+    })),
+  };
+}
+
 export async function syncVapiAssistantPrompt(assistantId: string, prompt: string) {
   const apiKey = getVapiPrivateApiKey();
   if (!apiKey) {
@@ -96,4 +130,53 @@ export async function syncVapiAssistantPrompt(assistantId: string, prompt: strin
   }
 
   return res.json();
+}
+
+export async function upsertVapiAssistant(input: UpsertVapiAssistantInput) {
+  const apiKey = getVapiPrivateApiKey();
+  if (!apiKey) {
+    throw new Error("Vapi private API key is not configured.");
+  }
+
+  const payload = buildVapiAssistantPayload(input);
+  const endpoint = input.assistantId
+    ? `https://api.vapi.ai/assistant/${input.assistantId}`
+    : "https://api.vapi.ai/assistant";
+  const method = input.assistantId ? "PATCH" : "POST";
+
+  const res = await fetch(endpoint, {
+    method,
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Vapi assistant ${input.assistantId ? "update" : "create"} failed (${res.status}): ${body || res.statusText}`);
+  }
+
+  return res.json();
+}
+
+export async function syncVapiCallCostByProviderCallId(providerCallId: string) {
+  const apiKey = getVapiPrivateApiKey();
+  if (!apiKey) {
+    return {
+      synced: false,
+      reason: "Vapi private API key is not configured.",
+      providerCallId,
+    };
+  }
+
+  // Placeholder for a later reconciliation job. Some providers may delay cost
+  // details until after the webhook lifecycle, so we keep a single safe entrypoint
+  // to backfill cost data by providerCallId when that API contract is finalized.
+  return {
+    synced: false,
+    reason: "Provider call cost backfill is not implemented yet.",
+    providerCallId,
+  };
 }

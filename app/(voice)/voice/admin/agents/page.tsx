@@ -25,6 +25,7 @@ export default async function AdminAgentsPage() {
           <thead className="bg-surface-container-lowest text-xs font-black uppercase tracking-widest text-on-surface-variant">
             <tr>
               <th className="px-4 py-3 border-b border-outline-variant/20">Name</th>
+              <th className="px-4 py-3 border-b border-outline-variant/20">Internal Tracking</th>
               <th className="px-4 py-3 border-b border-outline-variant/20">Organization</th>
               <th className="px-4 py-3 border-b border-outline-variant/20">Role</th>
               <th className="px-4 py-3 border-b border-outline-variant/20">Vapi Assistant</th>
@@ -35,8 +36,12 @@ export default async function AdminAgentsPage() {
             {agents.map((a) => (
               <tr key={a.id} className="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50">
                 <td className="px-4 py-3 font-bold text-on-surface">
-                  {a.name}
+                  {a.displayName || a.name}
                   {a.isDefault && <span className="ml-2 text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full">Default</span>}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="font-mono text-xs">{a.internalName || "Not generated"}</div>
+                  <div className="text-[10px] text-slate-400">{a.vapiAssistantName || "No assistant name yet"}</div>
                 </td>
                 <td className="px-4 py-3">{a.organization.name}</td>
                 <td className="px-4 py-3">{a.role}</td>

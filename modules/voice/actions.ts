@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { createServerAction } from "@/lib/actions/builder";
 import { prisma } from "@/lib/prisma";
@@ -37,6 +38,10 @@ const voiceRevalidatePaths = [
   "/voice/dashboard/integrations/vapi",
   "/voice/dashboard/training",
 ];
+
+const syncVoiceAgentPromptSchema = z.object({
+  voiceAgentId: z.string().trim().min(1, "Voice agent is required."),
+});
 
 export const saveVoiceBusinessProfileAction = createServerAction({
   label: "Save Voice Business Profile",
@@ -606,16 +611,17 @@ export const saveVoiceActionPolicyAction = createServerAction({
 
 export const syncVoiceTrainingPromptAction = createServerAction({
   label: "Sync Voice Training Prompt",
+  schema: syncVoiceAgentPromptSchema,
   roles: ["owner", "admin"],
   enforceBilling: false,
   audit: {
     action: "VOICE_PROMPT_SYNCED_TO_VAPI",
     entityType: "VoiceBusinessTrainingProfile",
-    getEntityId: () => "voice-training-prompt",
-    getDetails: () => "Synced business-specific receptionist prompt to Vapi.",
+    getEntityId: (result) => result.voiceAgentId || "voice-training-prompt",
+    getDetails: (input) => `Synced business-specific receptionist prompt to Vapi for agent ${input.voiceAgentId}.`,
   },
-  handler: async ({ context: { orgId } }) => {
-    const result = await syncVoiceTrainingPromptToVapi(orgId);
+  handler: async ({ input, context: { orgId } }) => {
+    const result = await syncVoiceTrainingPromptToVapi(orgId, { voiceAgentId: input.voiceAgentId });
     voiceRevalidatePaths.forEach((path) => revalidatePath(path));
     return result;
   },

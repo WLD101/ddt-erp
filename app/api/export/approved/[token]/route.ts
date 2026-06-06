@@ -165,7 +165,7 @@ async function buildRows(exportRequest: any) {
       country: exportRequest.organization.country,
       status: sale.status,
       package: exportRequest.organization.organizationPackage?.package.name ?? exportRequest.organization.subscription?.planId,
-      dates: sale.date.toISOString(),
+      dates: sale.issueDate.toISOString(),
       total: sale.totalAmount,
     }));
   }

@@ -27,6 +27,13 @@ export default async function VoiceAdminCommandCenterPage() {
     activeCallsData,
     capacityFullEvents,
     topTenantsByCalls,
+    totalCostTodayAgg,
+    totalCostThisMonthAgg,
+    callsWithoutCostData,
+    callsWithoutMappedTenantOrAgent,
+    costByBusinessRows,
+    costByAgentRows,
+    costByPhoneRows,
   ] = await Promise.all([
     prisma.voiceBusinessProfile.count(),
     prisma.voiceAgent.count(),
@@ -52,11 +59,79 @@ export default async function VoiceAdminCommandCenterPage() {
       take: 5,
       include: { organization: { select: { name: true } } },
     }),
+    prisma.voiceCallLog.aggregate({
+      _sum: { costUsd: true },
+      where: { createdAt: { gte: startOfDay } },
+    }),
+    prisma.voiceCallLog.aggregate({
+      _sum: { costUsd: true },
+      where: { createdAt: { gte: startOfMonth } },
+    }),
+    prisma.voiceCallLog.count({
+      where: {
+        createdAt: { gte: startOfMonth },
+        OR: [{ costUsd: null }, { costUsd: 0 }],
+      },
+    }),
+    prisma.voiceCallLog.count({
+      where: {
+        createdAt: { gte: startOfMonth },
+        OR: [{ voiceBusinessProfileId: null }, { voiceAgentId: null }],
+      },
+    }),
+    prisma.voiceCallLog.groupBy({
+      by: ["organizationId"],
+      where: { createdAt: { gte: startOfMonth } },
+      _sum: { costUsd: true, durationSeconds: true },
+      _count: { _all: true },
+      orderBy: { _sum: { costUsd: "desc" } },
+      take: 10,
+    }),
+    prisma.voiceCallLog.groupBy({
+      by: ["voiceAgentId"],
+      where: { createdAt: { gte: startOfMonth }, voiceAgentId: { not: null } },
+      _sum: { costUsd: true, durationSeconds: true },
+      _count: { _all: true },
+      orderBy: { _sum: { costUsd: "desc" } },
+      take: 10,
+    }),
+    prisma.voiceCallLog.groupBy({
+      by: ["providerPhoneNumberId"],
+      where: { createdAt: { gte: startOfMonth }, providerPhoneNumberId: { not: null } },
+      _sum: { costUsd: true, durationSeconds: true },
+      _count: { _all: true },
+      orderBy: { _sum: { costUsd: "desc" } },
+      take: 10,
+    }),
   ]);
 
   const disabledAgents = totalAgents - activeAgents;
   const connectedAgents = totalAgents - missingAssistantAgents;
   const activeCalls = activeCallsData._sum.activeCalls || 0;
+  const totalCostToday = totalCostTodayAgg._sum.costUsd || 0;
+  const totalCostThisMonth = totalCostThisMonthAgg._sum.costUsd || 0;
+
+  const [organizations, agents] = await Promise.all([
+    prisma.organization.findMany({
+      where: { id: { in: [...new Set(costByBusinessRows.map((row) => row.organizationId))] } },
+      select: { id: true, name: true },
+    }),
+    prisma.voiceAgent.findMany({
+      where: { id: { in: [...new Set(costByAgentRows.map((row) => row.voiceAgentId).filter(Boolean) as string[])] } },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        internalName: true,
+        vapiPhoneNumberId: true,
+        vapiPhoneNumberName: true,
+        organization: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  const organizationMap = new Map(organizations.map((org) => [org.id, org.name]));
+  const agentMap = new Map(agents.map((agent) => [agent.id, agent]));
 
   let capacityStatus = "Healthy";
   if (failedWebhooks > 50 || failedJobs > 50 || mappingFailures > 20 || capacityFullEvents > 10) capacityStatus = "Monitor";
@@ -116,6 +191,14 @@ export default async function VoiceAdminCommandCenterPage() {
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Total Leads</p>
           <p className="mt-3 text-4xl font-black tracking-tight text-emerald-400">{totalLeads}</p>
         </div>
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Vapi Cost Today</p>
+          <p className="mt-3 text-4xl font-black tracking-tight text-white">${totalCostToday.toFixed(2)}</p>
+        </div>
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Vapi Cost This Month</p>
+          <p className="mt-3 text-4xl font-black tracking-tight text-white">${totalCostThisMonth.toFixed(2)}</p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -167,6 +250,109 @@ export default async function VoiceAdminCommandCenterPage() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 className="text-lg font-black text-white">Top 10 Highest-Cost Tenants</h2>
+            <span className="text-xs text-slate-400">Monthly cost by business</span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {costByBusinessRows.length === 0 ? (
+              <p className="text-sm text-slate-400">No cost data available yet.</p>
+            ) : (
+              costByBusinessRows.map((row) => (
+                <div key={row.organizationId} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">
+                  <div>
+                    <div className="font-bold text-white">{organizationMap.get(row.organizationId) || row.organizationId}</div>
+                    <div className="text-xs text-slate-400">
+                      {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                    </div>
+                  </div>
+                  <div className="font-black text-cyan-300">${(row._sum.costUsd || 0).toFixed(2)}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 className="text-lg font-black text-white">Cost by VoiceAgent</h2>
+            <span className="text-xs text-slate-400">Monthly</span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {costByAgentRows.length === 0 ? (
+              <p className="text-sm text-slate-400">No agent-linked cost data available yet.</p>
+            ) : (
+              costByAgentRows.map((row) => {
+                const agent = row.voiceAgentId ? agentMap.get(row.voiceAgentId) : null;
+                return (
+                  <div key={row.voiceAgentId || "unmapped"} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-white">{agent?.displayName || agent?.name || row.voiceAgentId || "Unmapped agent"}</div>
+                      <div className="font-black text-cyan-300">${(row._sum.costUsd || 0).toFixed(2)}</div>
+                    </div>
+                    <div className="mt-1 text-xs text-slate-400">
+                      {agent?.internalName || "No internal key"} • {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 className="text-lg font-black text-white">Cost by Phone Number</h2>
+            <span className="text-xs text-slate-400">Monthly</span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {costByPhoneRows.length === 0 ? (
+              <p className="text-sm text-slate-400">No phone-number cost data available yet.</p>
+            ) : (
+              costByPhoneRows.map((row) => {
+                const linkedAgent = agents.find((agent) => agent.vapiPhoneNumberId === row.providerPhoneNumberId);
+                return (
+                  <div key={row.providerPhoneNumberId || "unknown-phone"} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-white">
+                        {linkedAgent?.vapiPhoneNumberName || row.providerPhoneNumberId || "Unlabelled phone"}
+                      </div>
+                      <div className="font-black text-cyan-300">${(row._sum.costUsd || 0).toFixed(2)}</div>
+                    </div>
+                    <div className="mt-1 text-xs text-slate-400">
+                      {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 className="text-lg font-black text-white">Cost Tracking Exceptions</h2>
+            <span className="text-xs text-slate-400">Monthly</span>
+          </div>
+          <div className="mt-4 space-y-3 text-sm text-slate-300">
+            <div className="flex justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+              <span>Calls without cost data</span>
+              <span className="font-black text-amber-300">{callsWithoutCostData}</span>
+            </div>
+            <div className="flex justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+              <span>Calls without mapped tenant or agent</span>
+              <span className="font-black text-rose-300">{callsWithoutMappedTenantOrAgent}</span>
+            </div>
+            <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-xs leading-6 text-slate-400">
+              Internal Vapi tracking names stay separate from the caller-facing business name. Admin cost views can use the
+              tracking names without exposing another tenant&apos;s billing data in tenant dashboards.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

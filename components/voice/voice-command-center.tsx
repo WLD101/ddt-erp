@@ -33,6 +33,9 @@ type VoiceCommandCenterProps = {
     };
     assistant: {
       name: string;
+      callerFacingBusinessName: string;
+      internalTrackingName: string;
+      phoneTrackingName: string | null;
       languageMode: string;
       greetingMessage: string;
       fallbackMessage: string;
@@ -229,6 +232,10 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
                 <div className="font-semibold text-white">{assistant.name}</div>
               </div>
               <div>
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Caller-facing business</div>
+                <div className="font-semibold text-white">{assistant.callerFacingBusinessName}</div>
+              </div>
+              <div>
                 <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Voice Agent</div>
                 <div className="font-semibold text-white">{assistant.voiceAgentName}</div>
               </div>
@@ -241,12 +248,20 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
                 <div className="font-semibold text-white">{assistant.afterHoursBehavior}</div>
               </div>
               <div className="col-span-2">
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Internal Vapi tracking name</div>
+                <div className="font-semibold text-white">{assistant.internalTrackingName}</div>
+              </div>
+              <div className="col-span-2">
                 <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Assistant Mapping</div>
                 <div className="font-semibold text-white">{assistant.providerAssistantId || "Not mapped yet"}</div>
               </div>
               <div className="col-span-2">
                 <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Phone Number Mapping</div>
                 <div className="font-semibold text-white">{assistant.providerPhoneNumberId || "Not mapped yet"}</div>
+              </div>
+              <div className="col-span-2">
+                <div className="mb-1 text-xs uppercase tracking-wider text-slate-500">Phone tracking label</div>
+                <div className="font-semibold text-white">{assistant.phoneTrackingName || "Not generated yet"}</div>
               </div>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">

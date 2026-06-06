@@ -330,7 +330,7 @@ export async function mapShopifyOrderToSalesInvoice(
       customerId: customer.id,
       invoiceNumber: `SHP-${externalOrder.order_number}`,
       status: invoiceStatus,
-      date: externalOrder.created_at ? new Date(externalOrder.created_at) : new Date(),
+      issueDate: externalOrder.created_at ? new Date(externalOrder.created_at) : new Date(),
       subtotal,
       discount,
       taxAmount: 0,

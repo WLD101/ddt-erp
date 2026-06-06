@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -23,6 +24,10 @@ export default async function AdminTenantVoicePage({ params }: { params: { id: s
     return notFound();
   }
 
+  const agentWorkspaces = await Promise.all(
+    agents.map((agent) => getVoiceTrainingWorkspace(organizationId, { voiceAgentId: agent.id })),
+  );
+
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
       <div className="flex justify-between items-center border-b border-white/10 pb-4">
@@ -38,19 +43,49 @@ export default async function AdminTenantVoicePage({ params }: { params: { id: s
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <h2 className="text-xl font-black text-white">Voice Agents</h2>
-          {agents.map((agent) => (
+          {agents.map((agent, index) => {
+            const workspace = agentWorkspaces[index];
+            return (
             <div key={agent.id} className="rounded-[24px] border border-white/10 bg-slate-950/40 p-6">
               <h3 className="text-lg font-bold text-white">{agent.name}</h3>
               <p className="text-xs font-semibold text-cyan-400 mb-4">{agent.role}</p>
 
               <div className="space-y-4 text-sm">
                 <div>
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Caller-facing business</label>
+                  <p className="text-slate-200">{workspace.runtime.businessIdentity.businessName}</p>
+                </div>
+                <div>
                   <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Vapi Assistant ID</label>
                   <p className="text-slate-200">{agent.vapiAssistantId || "None"}</p>
                 </div>
                 <div>
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Generated Assistant Name</label>
+                  <p className="text-slate-200">{workspace.assistantName}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Internal key</label>
+                  <p className="text-slate-200">{agent.internalName || "Not generated"}</p>
+                </div>
+                <div>
                   <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Vapi Phone Number ID</label>
                   <p className="text-slate-200">{agent.vapiPhoneNumberId || "None"}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Phone tracking label</label>
+                  <p className="text-slate-200">{workspace.phoneTrackingName}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Prompt sync freshness</label>
+                  <p className={`${workspace.syncState.isPromptStale ? "text-amber-300" : "text-emerald-300"}`}>
+                    {workspace.syncState.isPromptStale ? "Stale after training changes" : "Up to date"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Last synced at</label>
+                  <p className="text-slate-200">
+                    {workspace.syncState.lastPromptSyncedAt ? new Date(workspace.syncState.lastPromptSyncedAt).toLocaleString() : "Never"}
+                  </p>
                 </div>
                 
                 <div className="border-t border-white/10 pt-4">
@@ -85,9 +120,13 @@ export default async function AdminTenantVoicePage({ params }: { params: { id: s
                     {agent.forwardingStatus}
                   </span>
                 </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold block mb-2">Prompt Preview</label>
+                  <p className="whitespace-pre-wrap text-xs leading-6 text-slate-300">{workspace.promptPreview}</p>
+                </div>
               </div>
             </div>
-          ))}
+          )})}
           {agents.length === 0 && (
             <p className="text-sm text-slate-400">No agents found for this tenant.</p>
           )}

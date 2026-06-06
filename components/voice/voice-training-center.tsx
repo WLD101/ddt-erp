@@ -682,21 +682,37 @@ function ActionPolicyForm({ initialValues }: { initialValues: ActionPolicyValues
 function PromptPreviewCard({
   promptPreview,
   syncAvailable,
+  voiceAgentId,
   assistantId,
+  assistantName,
+  businessName,
+  firstMessage,
+  internalName,
+  phoneTrackingName,
   phoneNumberId,
   webhookUrl,
   webhookSecretConfigured,
   lastPromptSyncedAt,
   callingEnabled,
+  isPromptStale,
+  validationErrors,
 }: {
   promptPreview: string;
   syncAvailable: boolean;
+  voiceAgentId: string | null;
   assistantId: string | null;
+  assistantName: string;
+  businessName: string;
+  firstMessage: string;
+  internalName: string | null;
+  phoneTrackingName: string | null;
   phoneNumberId: string | null;
   webhookUrl: string | null;
   webhookSecretConfigured: boolean;
   lastPromptSyncedAt: string | null;
   callingEnabled: boolean;
+  isPromptStale: boolean;
+  validationErrors: string[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -708,7 +724,11 @@ function PromptPreviewCard({
 
   const syncPrompt = () => {
     startTransition(async () => {
-      const result = await syncVoiceTrainingPromptAction({});
+      if (!voiceAgentId) {
+        toast.error("No tenant-scoped voice agent is available for this prompt.");
+        return;
+      }
+      const result = await syncVoiceTrainingPromptAction({ voiceAgentId });
       if (!result.success) {
         toast.error(result.error);
         return;
@@ -726,6 +746,21 @@ function PromptPreviewCard({
       >
         <div className="space-y-4">
           <Textarea value={promptPreview} readOnly className="min-h-[420px] font-mono text-xs leading-6" />
+          {validationErrors.length > 0 ? (
+            <div className="rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+              <div className="font-semibold">Prompt sync is blocked until these issues are fixed:</div>
+              <ul className="mt-2 list-disc pl-5">
+                {validationErrors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {isPromptStale ? (
+            <div className="rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              Prompt is stale. Training data changed after the last sync, so this assistant should be synced to Vapi again.
+            </div>
+          ) : null}
           <div className="flex flex-wrap justify-end gap-3">
             <Button type="button" variant="outline" onClick={copyPrompt}>
               Copy prompt
@@ -733,7 +768,7 @@ function PromptPreviewCard({
             <Button
               type="button"
               onClick={syncPrompt}
-              disabled={!syncAvailable || isPending}
+              disabled={!syncAvailable || isPending || validationErrors.length > 0}
               className="bg-cyan-400 text-slate-950 hover:bg-cyan-300"
             >
               {isPending ? "Syncing..." : "Sync to Vapi assistant"}
@@ -752,6 +787,26 @@ function PromptPreviewCard({
         description="Read-only mapping status for this tenant's assistant. Public webhook routes must resolve through these tenant-safe identifiers."
       >
         <div className="space-y-4 text-sm text-slate-200">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Caller-facing business name</div>
+            <div className="mt-2 break-all text-white">{businessName}</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Generated assistant name</div>
+            <div className="mt-2 break-all text-white">{assistantName}</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Internal key</div>
+            <div className="mt-2 break-all text-white">{internalName || "Not generated"}</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Phone tracking label</div>
+            <div className="mt-2 break-all text-white">{phoneTrackingName || "Not generated yet"}</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Generated first message</div>
+            <div className="mt-2 text-white">{firstMessage}</div>
+          </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Vapi assistant ID</div>
             <div className="mt-2 break-all text-white">{assistantId || "Not connected"}</div>
@@ -787,7 +842,7 @@ function PromptPreviewCard({
 export function VoiceTrainingCenter({ workspace }: VoiceTrainingCenterProps) {
   const runtime = workspace.runtime;
   const mapping = runtime.vapiMapping;
-  const syncAvailable = Boolean(mapping.assistantId);
+  const syncAvailable = Boolean(runtime.agent.id && mapping.webhookUrl);
 
   return (
     <div className="space-y-6">
@@ -919,12 +974,20 @@ export function VoiceTrainingCenter({ workspace }: VoiceTrainingCenterProps) {
       <PromptPreviewCard
         promptPreview={workspace.promptPreview}
         syncAvailable={syncAvailable}
+        voiceAgentId={runtime.agent.id}
         assistantId={mapping.assistantId}
+        assistantName={workspace.assistantName}
+        businessName={runtime.businessIdentity.businessName}
+        firstMessage={workspace.firstMessage}
+        internalName={runtime.agent.internalName}
+        phoneTrackingName={workspace.phoneTrackingName}
         phoneNumberId={mapping.phoneNumberId}
         webhookUrl={mapping.webhookUrl}
         webhookSecretConfigured={mapping.webhookSecretConfigured}
         lastPromptSyncedAt={mapping.lastPromptSyncedAt ? new Date(mapping.lastPromptSyncedAt).toISOString() : null}
         callingEnabled={mapping.callingEnabled}
+        isPromptStale={workspace.syncState.isPromptStale}
+        validationErrors={workspace.promptValidation.errors}
       />
     </div>
   );

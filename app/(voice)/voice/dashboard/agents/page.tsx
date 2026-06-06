@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { VoiceAgentCard } from "@/components/voice/ui/voice-agent-card";
+import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
 
 export default async function VoiceDashboardAgentsPage() {
   const ctx = await getCurrentTenantContext();
@@ -10,6 +11,9 @@ export default async function VoiceDashboardAgentsPage() {
     where: { organizationId },
     orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
   });
+  const workspaces = await Promise.all(
+    agents.map((agent) => getVoiceTrainingWorkspace(organizationId, { voiceAgentId: agent.id })),
+  );
 
   return (
     <div className="space-y-8">
@@ -21,12 +25,20 @@ export default async function VoiceDashboardAgentsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {agents.map((agent) => (
+        {agents.map((agent, index) => {
+          const workspace = workspaces[index];
+          return (
           <VoiceAgentCard
             key={agent.id}
             agent={{
               id: agent.id,
               name: agent.name,
+              displayName: agent.displayName || agent.name,
+              internalName: agent.internalName || "Not generated",
+              businessName: workspace.runtime.businessIdentity.businessName,
+              businessSlug: agent.businessSlug || workspace.runtime.agent.businessSlug || "missing-slug",
+              agentSlug: agent.agentSlug || workspace.runtime.agent.agentSlug || "missing-slug",
+              environment: agent.environment || workspace.runtime.agent.environment || "PROD",
               persona: agent.role,
               languageMode: agent.languageMode,
               tone: agent.tone,
@@ -38,11 +50,15 @@ export default async function VoiceDashboardAgentsPage() {
               toolsEnabled: agent.allowedTools ? agent.allowedTools.split(",").length : 0,
               lastSyncedAt: agent.lastPromptSyncedAt,
               isActive: agent.isActive,
+              promptPreview: workspace.promptPreview,
+              assistantName: workspace.assistantName,
+              isPromptStale: workspace.syncState.isPromptStale,
+              hasPromptValidationErrors: workspace.promptValidation.errors.length > 0,
             }}
             hasProfile={true}
             hasSettings={true}
           />
-        ))}
+        )})}
 
         <div className="group rounded-[24px] border-2 border-dashed border-white/10 bg-slate-950/20 flex flex-col items-center justify-center text-center space-y-4 hover:bg-white/5 hover:border-cyan-500/30 transition-all cursor-pointer min-h-[280px]">
           <div className="w-14 h-14 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center transition-transform group-hover:scale-110">

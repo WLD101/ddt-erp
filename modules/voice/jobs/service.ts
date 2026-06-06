@@ -126,6 +126,7 @@ async function processWebhookEventJob(payload: any, jobOrganizationId?: string |
     if (type === "status-update") {
       await upsertCallLog({
         organizationId,
+        voiceBusinessProfileId: event.voiceBusinessProfileId,
         voiceAgentId,
         message,
         callStatus: normalizeCallStatus(message.status),
@@ -135,6 +136,7 @@ async function processWebhookEventJob(payload: any, jobOrganizationId?: string |
     if (type === "end-of-call-report") {
       await upsertCallLog({
         organizationId,
+        voiceBusinessProfileId: event.voiceBusinessProfileId,
         voiceAgentId,
         message,
         callStatus: normalizeCallStatus(message.status || "completed"),

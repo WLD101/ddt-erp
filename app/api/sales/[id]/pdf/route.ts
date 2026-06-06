@@ -71,7 +71,7 @@ export async function GET(
 
     const pdfBuffer = generateInvoicePDF({
       ...invoice,
-      issueDate: invoice.date.toISOString(),
+      issueDate: invoice.issueDate.toISOString(),
       dueDate: invoice.dueDate?.toISOString() ?? null,
       currency: invoice.organization.currency,
       items: invoice.items.map(item => ({

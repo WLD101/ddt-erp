@@ -37,13 +37,13 @@ test("stripe invoice subscription lookup supports both current and legacy payloa
         subscription: "sub_current_shape",
       },
     },
-  } as Parameters<typeof getSubscriptionIdFromStripeInvoice>[0];
+  } as unknown as Parameters<typeof getSubscriptionIdFromStripeInvoice>[0];
 
   const legacyShape = {
     subscription: "sub_legacy_shape",
-  } as Parameters<typeof getSubscriptionIdFromStripeInvoice>[0];
+  } as unknown as Parameters<typeof getSubscriptionIdFromStripeInvoice>[0];
 
-  const missingShape = {} as Parameters<typeof getSubscriptionIdFromStripeInvoice>[0];
+  const missingShape = {} as unknown as Parameters<typeof getSubscriptionIdFromStripeInvoice>[0];
 
   assert.equal(getSubscriptionIdFromStripeInvoice(currentShape), "sub_current_shape");
   assert.equal(getSubscriptionIdFromStripeInvoice(legacyShape), "sub_legacy_shape");

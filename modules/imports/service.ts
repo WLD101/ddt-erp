@@ -528,7 +528,7 @@ async function importOrders(db: ScopedPrisma, payload: ImportPayload) {
           customerId: customer.id,
           invoiceNumber: orderNumber,
           status: invoiceStatusFromOrderStatus(orderStatus),
-          date: orderDate ? toDate(orderDate) : new Date(),
+          issueDate: orderDate ? toDate(orderDate) : new Date(),
           subtotal,
           discount,
           taxAmount: 0,

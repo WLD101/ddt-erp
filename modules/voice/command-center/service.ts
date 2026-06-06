@@ -52,6 +52,9 @@ export async function getVoiceCommandCenterOverview(organizationId: string) {
     },
     assistant: {
       name: settings?.receptionistName || "WhatsQuery Receptionist",
+      callerFacingBusinessName: profile?.businessName || "Not configured",
+      internalTrackingName: trainingWorkspace.assistantName,
+      phoneTrackingName: trainingWorkspace.phoneTrackingName,
       languageMode: settings?.languageMode || "AUTO_DETECT",
       greetingMessage: settings?.greetingMessage || "Not configured",
       fallbackMessage: settings?.fallbackMessage || "Not configured",

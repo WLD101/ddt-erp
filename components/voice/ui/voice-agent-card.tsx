@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { VoiceStatusPill } from "./voice-status-pill";
 import { VoiceWaveform } from "./voice-waveform";
+import { VoiceAgentSyncButton } from "./voice-agent-sync-button";
 
 type VoiceAgentCardProps = {
   agent: {
     id: string;
     name: string;
+    displayName: string;
+    internalName: string;
+    businessName: string;
+    businessSlug: string;
+    agentSlug: string;
+    environment: string;
     persona: string;
     languageMode: string;
     tone: string;
@@ -17,6 +24,10 @@ type VoiceAgentCardProps = {
     toolsEnabled: number;
     lastSyncedAt: Date | null;
     isActive: boolean;
+    promptPreview: string;
+    assistantName: string;
+    isPromptStale: boolean;
+    hasPromptValidationErrors: boolean;
   };
   hasProfile: boolean;
   hasSettings: boolean;
@@ -36,8 +47,9 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
             <span className="material-symbols-outlined text-[24px] text-cyan-300">smart_toy</span>
           </div>
           <div>
-            <h3 className="text-lg font-black text-white tracking-tight">{agent.name}</h3>
+            <h3 className="text-lg font-black text-white tracking-tight">{agent.displayName}</h3>
             <p className="text-xs font-semibold text-cyan-400">{agent.persona}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.24em] text-slate-500">{agent.businessName}</p>
           </div>
         </div>
         <VoiceStatusPill 
@@ -57,6 +69,26 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
           <div className="font-medium text-white">{agent.isActive ? "Enabled" : "Disabled"}</div>
         </div>
         <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Internal key</div>
+          <div className="font-medium text-white truncate">{agent.internalName}</div>
+        </div>
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Generated Vapi Assistant</div>
+          <div className="font-medium text-white truncate">{agent.assistantName}</div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Business slug</div>
+          <div className="font-medium text-white">{agent.businessSlug}</div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Agent slug</div>
+          <div className="font-medium text-white">{agent.agentSlug}</div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Environment</div>
+          <div className="font-medium text-white">{agent.environment}</div>
+        </div>
+        <div className="col-span-2">
           <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Forwarding Number</div>
           <div className="font-medium text-white truncate">
             {agent.clientPublicPhoneNumber || "Not configured"}
@@ -74,6 +106,22 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
             {agent.forwardingStatus.replace("_", " ")}
           </div>
         </div>
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Prompt Preview</div>
+          <div className="line-clamp-4 rounded-2xl border border-white/10 bg-black/20 px-3 py-3 text-xs leading-6 text-slate-300">
+            {agent.promptPreview}
+          </div>
+        </div>
+        <div className="col-span-2 flex items-center justify-between">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Prompt freshness</div>
+          <div className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${agent.isPromptStale ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+            {agent.isPromptStale ? "Stale" : "Fresh"}
+          </div>
+        </div>
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Last synced at</div>
+          <div className="font-medium text-white">{agent.lastSyncedAt ? agent.lastSyncedAt.toLocaleString() : "Never synced"}</div>
+        </div>
       </div>
 
       <div className="relative mt-6 flex items-center justify-between border-t border-white/5 pt-4">
@@ -90,13 +138,9 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
         
         <div className="flex items-center gap-2">
           {isSyncReady && !isConnected && (
-            <Link 
-              href="/voice/dashboard/integrations/vapi"
-              className="rounded-lg bg-cyan-500/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-300 transition hover:bg-cyan-500/30"
-            >
-              Sync Now
-            </Link>
+            <VoiceAgentSyncButton voiceAgentId={agent.id} disabled={agent.hasPromptValidationErrors} />
           )}
+          {isSyncReady && isConnected ? <VoiceAgentSyncButton voiceAgentId={agent.id} disabled={agent.hasPromptValidationErrors} /> : null}
           <Link 
             href="/voice/dashboard/training"
             className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-300 transition hover:bg-white/10 hover:text-white"

@@ -318,7 +318,7 @@ export async function mapWooOrderToSalesInvoice(
       customerId: customer.id,
       invoiceNumber: `WOO-${externalOrder.number}`,
       status: invoiceStatus,
-      date: externalOrder.date_created ? new Date(externalOrder.date_created) : new Date(),
+      issueDate: externalOrder.date_created ? new Date(externalOrder.date_created) : new Date(),
       subtotal: subtotal || Math.max(0, totalAmount - shipping + discount),
       discount,
       taxAmount: 0,

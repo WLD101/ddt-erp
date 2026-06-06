@@ -268,7 +268,7 @@ export async function mapDarazOrderToSalesInvoice(
       customerId: customer.id,
       invoiceNumber: `DRZ-${externalOrder.orderNumber}`,
       status: invoiceStatus,
-      date: externalOrder.createdAt ? new Date(externalOrder.createdAt) : new Date(),
+      issueDate: externalOrder.createdAt ? new Date(externalOrder.createdAt) : new Date(),
       subtotal,
       discount: 0,
       taxAmount: 0,

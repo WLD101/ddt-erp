@@ -4,6 +4,7 @@ import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
 import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
 import { VoiceStatusPill } from "@/components/voice/ui/voice-status-pill";
 import { VoiceWaveform } from "@/components/voice/ui/voice-waveform";
+import { SyncToVapiButton } from "@/components/voice/ui/sync-to-vapi-button";
 
 export default async function VapiSetupPage() {
   const ctx = await getCurrentTenantContext();
@@ -26,7 +27,12 @@ export default async function VapiSetupPage() {
           <h1 className="text-2xl font-black text-white">Vapi Assistant Setup</h1>
           <p className="mt-1 text-sm text-slate-400">Configure your AI receptionist integration for the demo call flow.</p>
         </div>
-        <VoiceWaveform active={vapiStatus.callingEnabled} className="w-16" />
+        <div className="flex items-center gap-4">
+          {defaultAgent?.id && (
+            <SyncToVapiButton voiceAgentId={defaultAgent.id} isStale={trainingWorkspace.syncState.isPromptStale} />
+          )}
+          <VoiceWaveform active={vapiStatus.callingEnabled} className="w-16" />
+        </div>
       </div>
 
       <div className="rounded-[28px] border border-amber-400/30 bg-amber-500/10 p-6">
@@ -82,6 +88,27 @@ export default async function VapiSetupPage() {
                 Calling is currently disabled. Only enable VOICE_CALLING_ENABLED after the assistant and phone number are fully ready.
               </p>
             ) : null}
+          </div>
+
+          <div className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">
+            <h2 className="mb-4 text-lg font-black text-white">Naming and Tracking</h2>
+            <div className="space-y-3 text-sm text-slate-300">
+              <div className="flex items-center justify-between gap-4">
+                <span>Caller-facing business name</span>
+                <span className="font-semibold text-white">{trainingWorkspace.runtime.businessIdentity.businessName}</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Internal Vapi assistant name</span>
+                <span className="font-semibold text-white">{trainingWorkspace.assistantName}</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Internal phone label</span>
+                <span className="font-semibold text-white">{trainingWorkspace.phoneTrackingName}</span>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-slate-400">
+              WhatsQuery Voice owns these names and syncs them to Vapi per tenant and per VoiceAgent. Clients should not configure Vapi manually.
+            </p>
           </div>
 
           <div className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">

@@ -71,13 +71,47 @@ export async function touchIntegrationWebhook(
   }
 }
 
+function toNumberOrNull(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function extractCostPayload(message: any) {
+  const possibleCost =
+    toNumberOrNull(message?.costUsd) ??
+    toNumberOrNull(message?.cost) ??
+    toNumberOrNull(message?.call?.cost) ??
+    toNumberOrNull(message?.analysis?.cost) ??
+    toNumberOrNull(message?.costBreakdown?.total) ??
+    toNumberOrNull(message?.costBreakdown?.totalUsd) ??
+    toNumberOrNull(message?.costs?.total) ??
+    null;
+
+  const costBreakdown =
+    message?.costBreakdown ??
+    message?.costs ??
+    message?.analysis?.costBreakdown ??
+    null;
+
+  return {
+    costUsd: possibleCost,
+    costBreakdownJson: costBreakdown ? JSON.stringify(costBreakdown) : null,
+  };
+}
+
 export async function upsertCallLog({
   organizationId,
+  voiceBusinessProfileId,
   voiceAgentId,
   message,
   callStatus,
 }: {
   organizationId: string;
+  voiceBusinessProfileId?: string | null;
   voiceAgentId?: string | null;
   message: any;
   callStatus: string;
@@ -89,12 +123,14 @@ export async function upsertCallLog({
         where: { organizationId, providerCallId },
       })
     : null;
+  const { costUsd, costBreakdownJson } = extractCostPayload(message);
 
   const payload = {
     provider: "vapi",
     providerCallId: providerCallId || existing?.providerCallId || null,
     providerPhoneNumberId: message.call?.phoneNumberId || existing?.providerPhoneNumberId || null,
     providerAssistantId: message.call?.assistantId || message.assistantId || existing?.providerAssistantId || null,
+    voiceBusinessProfileId: voiceBusinessProfileId || existing?.voiceBusinessProfileId || null,
     callerNumber,
     callStatus,
     voiceAgentId: voiceAgentId || existing?.voiceAgentId || null,
@@ -104,6 +140,8 @@ export async function upsertCallLog({
     transcript: message.transcript || existing?.transcript || null,
     transcriptPlaceholder: existing?.transcriptPlaceholder || null,
     durationSeconds: message.durationSeconds ?? existing?.durationSeconds ?? null,
+    costUsd: costUsd ?? existing?.costUsd ?? null,
+    costBreakdownJson: costBreakdownJson ?? existing?.costBreakdownJson ?? null,
     endedReason: message.endedReason || existing?.endedReason || null,
     rawEventJson: JSON.stringify(message),
     recordingUrl: message.recordingUrl || existing?.recordingUrl || null,
@@ -132,7 +170,10 @@ export async function upsertCallLog({
   if (callStatus === "COMPLETED" || callStatus === "MISSED" || callStatus === "VOICEMAIL") {
     if (!existing || (existing.callStatus !== "COMPLETED" && existing.callStatus !== "MISSED" && existing.callStatus !== "VOICEMAIL")) {
       const { incrementUsageStat } = await import("@/modules/voice/billing/usage");
-      await incrementUsageStat(organizationId, "calls", payload.durationSeconds || 1);
+      await incrementUsageStat(organizationId, "calls", {
+        minutes: payload.durationSeconds || 1,
+        costUsd: payload.costUsd ?? 0,
+      });
     }
   }
 

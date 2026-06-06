@@ -78,7 +78,7 @@ export default async function PrintInvoicePage({ params }: { params: Promise<{ i
           <div className="text-right">
             <div className="mb-4">
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Issue Date:</p>
-              <p className="font-medium">{format(new Date(invoice.date), "MMMM dd, yyyy")}</p>
+              <p className="text-sm font-medium text-slate-800">{format(new Date(invoice.issueDate), "MMMM dd, yyyy")}</p>
             </div>
             <div>
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Status:</p>

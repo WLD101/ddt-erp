@@ -581,10 +581,10 @@ async function executeAssistantQuery(
           ...(command.operation === "query_unpaid_invoices"
             ? { status: { not: "PAID" } }
             : {}),
-          date: { gte: start, lte: end },
+          issueDate: { gte: start, lte: end },
         },
         include: { customer: { select: { name: true } } },
-        orderBy: { date: "desc" },
+        orderBy: { issueDate: "desc" },
         take: 25,
       });
       return {
@@ -599,7 +599,7 @@ async function executeAssistantQuery(
             customerName: invoice.customer.name,
             status: invoice.status,
             totalAmount: invoice.totalAmount,
-            date: invoice.date.toISOString(),
+            date: invoice.issueDate.toISOString(),
           })),
         },
       };
@@ -612,7 +612,7 @@ async function executeAssistantQuery(
           customerId: command.data.customerId,
         },
         include: { customer: { select: { name: true } } },
-        orderBy: { date: "desc" },
+        orderBy: { issueDate: "desc" },
         take: 25,
       });
       return {
@@ -627,7 +627,7 @@ async function executeAssistantQuery(
             customerName: invoice.customer.name,
             status: invoice.status,
             totalAmount: invoice.totalAmount,
-            date: invoice.date.toISOString(),
+            date: invoice.issueDate.toISOString(),
           })),
         },
       };
@@ -686,7 +686,7 @@ async function executeAssistantQuery(
           status: { not: "PAID" },
         },
         include: { customer: { select: { name: true } } },
-        orderBy: { date: "desc" },
+        orderBy: { issueDate: "desc" },
         take: 50,
       });
       return {
@@ -699,7 +699,7 @@ async function executeAssistantQuery(
             customerName: invoice.customer.name,
             status: invoice.status,
             totalAmount: invoice.totalAmount,
-            date: invoice.date.toISOString(),
+            date: invoice.issueDate.toISOString(),
           })),
         },
       };

@@ -52,7 +52,7 @@ export default async function SalesPage() {
                     {inv.invoiceNumber}
                   </Link>
                 </TableCell>
-                <TableCell className="text-on-surface-variant font-medium">{format(new Date(inv.date), "MMM dd, yyyy")}</TableCell>
+                <TableCell className="text-on-surface-variant font-medium">{format(new Date(inv.issueDate), "MMM dd, yyyy")}</TableCell>
                 <TableCell className="font-bold text-on-surface">{inv.customer.name}</TableCell>
                 <TableCell>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-secondary/10 text-secondary border border-secondary/20">

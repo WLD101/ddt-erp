@@ -137,6 +137,31 @@ model OtpVerification {
 }
 
 // -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  SENT
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+  RETURNED
+  PARTIAL_RETURNED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
+}
+
+// -----------------------------------------------------------------------------
 // WhatsQuery Multi-Tenancy Models
 // -----------------------------------------------------------------------------
 
@@ -489,6 +514,7 @@ model VoiceBusinessProfile {
   fallbackContactMethod String?
   greetingMessage       String?
   voiceAgents           VoiceAgent[]
+  callLogs              VoiceCallLog[]
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
   VoiceActionAuditLog   VoiceActionAuditLog[]
@@ -581,16 +607,18 @@ model VoiceOrderRequest {
 }
 
 model VoiceCallLog {
-  id                    String       @id @default(cuid())
-  organizationId        String
-  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  voiceAgentId          String?
-  voiceAgent            VoiceAgent?  @relation(fields: [voiceAgentId], references: [id], onDelete: SetNull)
-  callerNumber          String
-  callStatus            String
-  callDirection         String
-  summary               String?
-  transcriptPlaceholder String?
+  id                     String                @id @default(cuid())
+  organizationId         String
+  organization           Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  voiceBusinessProfileId String?
+  voiceBusinessProfile   VoiceBusinessProfile? @relation(fields: [voiceBusinessProfileId], references: [id], onDelete: SetNull)
+  voiceAgentId           String?
+  voiceAgent             VoiceAgent?           @relation(fields: [voiceAgentId], references: [id], onDelete: SetNull)
+  callerNumber           String
+  callStatus             String
+  callDirection          String
+  summary                String?
+  transcriptPlaceholder  String?
 
   // Vapi integration fields
   provider              String? // "vapi", "twilio", etc.
@@ -606,6 +634,8 @@ model VoiceCallLog {
   endedAt               DateTime?
 
   durationSeconds      Int?
+  costUsd              Float?
+  costBreakdownJson    String?
   appointmentRequested Boolean  @default(false)
   isMissed             Boolean  @default(false)
   createdAt            DateTime @default(now())
@@ -613,6 +643,7 @@ model VoiceCallLog {
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])
+  @@index([voiceBusinessProfileId])
   @@index([voiceAgentId])
   @@index([providerCallId])
   @@index([callStatus])
@@ -666,11 +697,16 @@ model VoiceAgent {
   id                      String                        @id @default(cuid())
   organizationId          String
   organization            Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  businessProfileId       String?
-  businessProfile         VoiceBusinessProfile?         @relation(fields: [businessProfileId], references: [id], onDelete: SetNull)
+  voiceBusinessProfileId  String?                       @map("businessProfileId")
+  voiceBusinessProfile    VoiceBusinessProfile?         @relation(fields: [voiceBusinessProfileId], references: [id], onDelete: SetNull)
   trainingProfileId       String?
   trainingProfile         VoiceBusinessTrainingProfile? @relation(fields: [trainingProfileId], references: [id], onDelete: SetNull)
   name                    String
+  internalName            String?
+  displayName             String?
+  businessSlug            String?
+  agentSlug               String?
+  environment             String                        @default("PROD")
   role                    String                        @default("AI_RECEPTIONIST")
   languageMode            String                        @default("AUTO_DETECT")
   supportedLanguages      String?
@@ -679,7 +715,9 @@ model VoiceAgent {
   allowedTools            String?
   vapiAssistantId         String?
   vapiAssistantName       String?
+  vapiPhoneNumberName     String?
   vapiPhoneNumberId       String?
+  vapiVoiceId             String?
   clientPublicPhoneNumber String?
   assignedVapiPhoneNumber String?
   forwardingStatus        String                        @default("DISABLED")
@@ -701,7 +739,10 @@ model VoiceAgent {
   @@index([organizationId, isActive])
   @@index([vapiAssistantId])
   @@index([vapiPhoneNumberId])
-  @@index([businessProfileId])
+  @@index([voiceBusinessProfileId])
+  @@index([internalName])
+  @@index([businessSlug])
+  @@index([agentSlug])
 }
 
 model VoiceBusinessTrainingProfile {
@@ -897,6 +938,8 @@ model VoiceUsageMeter {
   callsThisMonth                 Int          @default(0)
   callMinutesToday               Int          @default(0)
   callMinutesThisMonth           Int          @default(0)
+  callCostUsdToday               Float        @default(0)
+  callCostUsdThisMonth           Float        @default(0)
   leadsThisMonth                 Int          @default(0)
   bookingRequestsThisMonth       Int          @default(0)
   orderRequestsThisMonth         Int          @default(0)
@@ -1088,8 +1131,8 @@ model SalesInvoice {
   branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
   invoiceNumber String
-  status        String    @default("DRAFT")
-  date          DateTime  @default(now())
+  status        InvoiceStatus @default(DRAFT)
+  issueDate     DateTime      @default(now())
   dueDate       DateTime?
 
   customerId String
@@ -1137,8 +1180,8 @@ model PurchaseInvoice {
   supplier   Supplier @relation(fields: [supplierId], references: [id])
 
   invoiceNumber String
-  status        String    @default("DRAFT")
-  issueDate     DateTime  @default(now())
+  status        InvoiceStatus @default(DRAFT)
+  issueDate     DateTime      @default(now())
   dueDate       DateTime?
 
   subtotal    Float
@@ -1677,7 +1720,8 @@ model Quotation {
   branch          Branch          @relation(fields: [branchId], references: [id])
   customerId      String
   customer        Customer        @relation(fields: [customerId], references: [id])
-  status          String
+  status          QuotationStatus @default(DRAFT)
+  issueDate       DateTime        @default(now())
   totalAmount     Float
   items           QuotationItem[]
   salesInvoices   SalesInvoice[]

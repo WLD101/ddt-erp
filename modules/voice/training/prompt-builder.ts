@@ -39,6 +39,11 @@ type PromptRuntime = {
   agent: {
     id?: string | null;
     name: string;
+    displayName?: string | null;
+    internalName?: string | null;
+    businessSlug?: string | null;
+    agentSlug?: string | null;
+    environment?: string | null;
     role: string;
     languageMode: string;
     supportedLanguages: string[];
@@ -47,6 +52,7 @@ type PromptRuntime = {
     allowedTools: string[];
     assistantId?: string | null;
     assistantName?: string | null;
+    phoneTrackingName?: string | null;
     phoneNumberId?: string | null;
     isDefault: boolean;
     isActive: boolean;
@@ -87,6 +93,15 @@ type PromptRuntime = {
   };
 };
 
+const DISALLOWED_PROMPT_PLACEHOLDERS = [
+  "alex from techsolutions customer support",
+  "alex from techsolutions",
+  "techsolutions",
+  "whatsquery demo cafe",
+  "demo café",
+  "demo cafe",
+] as const;
+
 function labelize(value: string) {
   return value
     .replaceAll("_", " ")
@@ -96,6 +111,69 @@ function labelize(value: string) {
 
 function formatList(items: string[]) {
   return items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : "- None configured";
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function buildVoiceAssistantDisplayName(businessName: string, agentName: string) {
+  const sanitizedBusiness = businessName.trim();
+  const businessPrefix = new RegExp(`^${escapeRegExp(sanitizedBusiness)}\\s*[-:]?\\s*`, "i");
+  const trimmedAgentName = agentName.trim().replace(businessPrefix, "").trim() || "Main Receptionist";
+  return `${sanitizedBusiness} - ${trimmedAgentName}`;
+}
+
+export function buildVoiceAssistantFirstMessage(runtime: PromptRuntime) {
+  const businessName = runtime.businessIdentity.businessName.trim();
+  const configuredGreeting = runtime.businessIdentity.greetingMessage?.trim();
+
+  if (configuredGreeting && configuredGreeting.toLowerCase().includes(businessName.toLowerCase())) {
+    return configuredGreeting;
+  }
+
+  return `Assalam-o-Alaikum, thanks for calling ${businessName}. I'm the AI receptionist. How can I help you today?`;
+}
+
+export function validateBusinessSpecificReceptionistPrompt(runtime: PromptRuntime, prompt: string) {
+  const errors: string[] = [];
+  const businessName = runtime.businessIdentity.businessName.trim();
+  const normalizedPrompt = prompt.toLowerCase();
+
+  if (!businessName || businessName === "WhatsQuery Voice Business") {
+    errors.push("Business name is missing. Save a real business identity before syncing to Vapi.");
+  }
+
+  if (!runtime.agent.id) {
+    errors.push("Voice agent is missing tenant scope. Select a valid tenant-scoped VoiceAgent before syncing.");
+  }
+
+  if (!runtime.agent.businessSlug) {
+    errors.push("Business slug is missing. The assistant naming standard cannot be generated safely.");
+  }
+
+  if (!runtime.agent.agentSlug) {
+    errors.push("Agent slug is missing. The assistant naming standard cannot be generated safely.");
+  }
+
+  if (!runtime.agent.internalName) {
+    errors.push("Internal tracking name is missing. Each VoiceAgent must have a unique internal key.");
+  }
+
+  for (const blockedPhrase of DISALLOWED_PROMPT_PLACEHOLDERS) {
+    if (normalizedPrompt.includes(blockedPhrase) && !businessName.toLowerCase().includes(blockedPhrase)) {
+      errors.push(`Prompt still contains blocked placeholder text: "${blockedPhrase}".`);
+    }
+  }
+
+  if (businessName && !normalizedPrompt.includes(businessName.toLowerCase())) {
+    errors.push("Generated prompt does not include the selected business name.");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
 }
 
 export function buildBusinessSpecificReceptionistPrompt(runtime: PromptRuntime) {

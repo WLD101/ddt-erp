@@ -1,5 +1,14 @@
 import { prisma } from "@/lib/prisma";
 
+function parsePackageFeatures(featureJson: string | null | undefined) {
+  if (!featureJson) return null;
+  try {
+    return JSON.parse(featureJson);
+  } catch {
+    return null;
+  }
+}
+
 export async function getVoiceUsageMeter(organizationId: string) {
   const meter = await prisma.voiceUsageMeter.findUnique({
     where: { organizationId },
@@ -21,6 +30,7 @@ export async function getVoiceUsageMeter(organizationId: string) {
       data: {
         callsThisMonth: 0,
         callMinutesThisMonth: 0,
+        callCostUsdThisMonth: 0,
         leadsThisMonth: 0,
         bookingRequestsThisMonth: 0,
         orderRequestsThisMonth: 0,
@@ -37,6 +47,7 @@ export async function getVoiceUsageMeter(organizationId: string) {
       data: {
         callsToday: 0,
         callMinutesToday: 0,
+        callCostUsdToday: 0,
         webhookEventsToday: 0,
         failedWebhookEventsToday: 0,
       },
@@ -46,18 +57,26 @@ export async function getVoiceUsageMeter(organizationId: string) {
   return meter;
 }
 
-export async function incrementUsageStat(organizationId: string, stat: "calls" | "leads" | "bookings" | "orders" | "whatsapp" | "webhook_success" | "webhook_failed", countOrMinutes: number = 1) {
+export async function incrementUsageStat(
+  organizationId: string,
+  stat: "calls" | "leads" | "bookings" | "orders" | "whatsapp" | "webhook_success" | "webhook_failed",
+  value: number | { minutes?: number; costUsd?: number } = 1,
+) {
   await getVoiceUsageMeter(organizationId); // Ensure it exists and is reset if needed
 
   let dataUpdate: any = {};
 
   switch(stat) {
     case "calls":
+      const minutes = typeof value === "number" ? value : value.minutes ?? 1;
+      const costUsd = typeof value === "number" ? 0 : value.costUsd ?? 0;
       dataUpdate = {
         callsToday: { increment: 1 },
         callsThisMonth: { increment: 1 },
-        callMinutesToday: { increment: countOrMinutes },
-        callMinutesThisMonth: { increment: countOrMinutes },
+        callMinutesToday: { increment: minutes },
+        callMinutesThisMonth: { increment: minutes },
+        callCostUsdToday: { increment: costUsd },
+        callCostUsdThisMonth: { increment: costUsd },
       };
       break;
     case "leads":
@@ -94,13 +113,13 @@ export async function checkUsageLimits(organizationId: string) {
   });
 
   let voiceLimit = 50; // Hardcoded fallback limit for beta
+  let showEstimatedCost = false;
   if (org?.subscription?.Package?.featureJson) {
-    try {
-      const feats = JSON.parse(org.subscription.Package.featureJson);
-      if (feats?.maxVoiceCallsPerMonth) {
-        voiceLimit = Number(feats.maxVoiceCallsPerMonth);
-      }
-    } catch(e) {}
+    const feats = parsePackageFeatures(org.subscription.Package.featureJson);
+    if (feats?.maxVoiceCallsPerMonth) {
+      voiceLimit = Number(feats.maxVoiceCallsPerMonth);
+    }
+    showEstimatedCost = feats?.showVoiceEstimatedCost === true;
   }
 
   const warnings = [];
@@ -120,6 +139,8 @@ export async function checkUsageLimits(organizationId: string) {
     warnings,
     isBlocked,
     limit: voiceLimit,
+    remaining: Math.max(voiceLimit - meter.callsThisMonth, 0),
+    showEstimatedCost,
   };
 }
 
