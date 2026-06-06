@@ -20,7 +20,10 @@ export async function assignVoicePackage(organizationId: string, formData: FormD
         organizationId, 
         status, 
         billingSource: "manual",
-        manualPaymentMethod: "Voice Admin Override" 
+        manualPaymentMethod: "Voice Admin Override",
+        planId: "voice-manual",
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       }
     });
   } else {

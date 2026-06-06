@@ -13,15 +13,18 @@ export default async function VoiceOnboardingPage() {
   const loginHref = toVoiceExternalPath("/login", host);
   const dashboardHref = toVoiceExternalPath("/dashboard", host);
   const session = await auth();
+  const isAuthenticated = !!session?.user?.id;
+  
+  let businessProfile = null;
+  let receptionistSettings = null;
 
-  if (!session?.user?.id) {
-    redirect(`${loginHref}?callbackUrl=${encodeURIComponent(toVoiceExternalPath("/onboarding", host))}`);
+  if (isAuthenticated) {
+    const ctx = await getCurrentTenantContext();
+    requireRole(ctx, "owner", "admin");
+    const data = await getVoiceOnboardingData(ctx.organizationId);
+    businessProfile = data.businessProfile;
+    receptionistSettings = data.receptionistSettings;
   }
-
-  const ctx = await getCurrentTenantContext();
-  requireRole(ctx, "owner", "admin");
-
-  const { businessProfile, receptionistSettings } = await getVoiceOnboardingData(ctx.organizationId);
 
   return (
     <VoiceMarketingShell homeHref={homeHref} loginHref={loginHref} onboardingHref={toVoiceExternalPath("/onboarding", host)}>
@@ -36,6 +39,7 @@ export default async function VoiceOnboardingPage() {
 
         <VoiceOnboardingForm
           dashboardHref={dashboardHref}
+          isAuthenticated={isAuthenticated}
           initialValues={{
             businessName: businessProfile?.businessName ?? "",
             industry: businessProfile?.industry ?? "",

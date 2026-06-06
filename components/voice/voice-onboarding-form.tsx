@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,21 +23,43 @@ const selectClassName =
 type VoiceOnboardingFormProps = {
   initialValues: VoiceBusinessProfileValues;
   dashboardHref: string;
+  isAuthenticated: boolean;
 };
 
-export function VoiceOnboardingForm({ initialValues, dashboardHref }: VoiceOnboardingFormProps) {
+export function VoiceOnboardingForm({ initialValues, dashboardHref, isAuthenticated }: VoiceOnboardingFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<VoiceBusinessProfileValues>({
     resolver: zodResolver(voiceBusinessProfileSchema),
     defaultValues: initialValues,
   });
 
+  useEffect(() => {
+    const saved = sessionStorage.getItem("voice_pending_onboarding");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        reset(parsed);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [reset]);
+
   const onSubmit = (values: VoiceBusinessProfileValues) => {
+    if (!isAuthenticated) {
+      sessionStorage.setItem("voice_pending_onboarding", JSON.stringify(values));
+      toast.success("Progress saved! Please sign up to finalize your AI receptionist setup.");
+      // Redirect to sign up, with a callback back to onboarding to trigger the real save
+      router.push(`/auth/signup?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
     startTransition(async () => {
       const result = await saveVoiceBusinessProfileAction(values);
       if (!result.success) {
@@ -45,6 +67,7 @@ export function VoiceOnboardingForm({ initialValues, dashboardHref }: VoiceOnboa
         return;
       }
 
+      sessionStorage.removeItem("voice_pending_onboarding");
       toast.success("Voice business setup saved.");
       router.push(dashboardHref);
       router.refresh();

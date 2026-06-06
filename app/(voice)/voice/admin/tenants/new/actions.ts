@@ -40,11 +40,16 @@ export async function createVoiceTenantAction(formData: FormData) {
       });
     }
     
-    await prisma.organizationMember.create({
+    let ownerRole = await prisma.role.findFirst({ where: { name: "owner", organizationId: null } });
+    if (!ownerRole) {
+      ownerRole = await prisma.role.create({ data: { name: "owner", description: "Owner" } });
+    }
+
+    await prisma.organizationUser.create({
       data: {
         organizationId: org.id,
         userId: user.id,
-        role: "owner"
+        roleId: ownerRole.id,
       }
     });
   }
