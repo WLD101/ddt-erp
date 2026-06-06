@@ -6,6 +6,14 @@ import { prisma } from "@/lib/prisma";
 import { checkAndAcquireActiveCallSlot, releaseActiveCallSlot } from "@/modules/voice/billing/usage";
 import crypto from "crypto";
 
+function safeSecretEquals(provided: string | null, expected: string | undefined) {
+  if (!provided || !expected) return false;
+  const providedBuffer = Buffer.from(provided);
+  const expectedBuffer = Buffer.from(expected);
+  if (providedBuffer.length !== expectedBuffer.length) return false;
+  return crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+}
+
 export async function POST(request: Request) {
   let rawBody: string;
   try {
@@ -16,6 +24,7 @@ export async function POST(request: Request) {
 
   const reqUrl = new URL(request.url);
   const sigHeader = request.headers.get("x-vapi-signature");
+  const headerSecret = request.headers.get("x-vapi-secret");
   let validSecret = false;
   let validationError = "";
 
@@ -24,9 +33,10 @@ export async function POST(request: Request) {
   const expectedSecret = process.env.VAPI_WEBHOOK_SECRET;
 
   if (expectedSecret) {
-    if (secret && secret === expectedSecret) validSecret = true;
-    if (authHeader && authHeader === `Bearer ${expectedSecret}`) validSecret = true;
-    if (authHeader && authHeader === expectedSecret) validSecret = true;
+    if (safeSecretEquals(headerSecret, expectedSecret)) validSecret = true;
+    if (safeSecretEquals(secret, expectedSecret)) validSecret = true;
+    if (safeSecretEquals(authHeader, `Bearer ${expectedSecret}`)) validSecret = true;
+    if (safeSecretEquals(authHeader, expectedSecret)) validSecret = true;
     
     if (!validSecret && sigHeader && process.env.VAPI_WEBHOOK_SECRET) {
       const hmac = crypto.createHmac("sha256", process.env.VAPI_WEBHOOK_SECRET);

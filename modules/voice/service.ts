@@ -20,6 +20,18 @@ type VoiceLeadListItem = {
   createdAt: Date;
 };
 
+type VoiceQueueRow = {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  reasonForCall: string | null;
+  status: string;
+  notes: string | null;
+  source: string;
+  createdAt: Date;
+};
+
 function textHasKeyword(value: string | null | undefined, keywords: string[]) {
   if (!value) return false;
   const normalized = value.toLowerCase();
@@ -84,23 +96,8 @@ export async function getVoiceWorkspace(orgId: string) {
 }
 
 export async function getVoiceDashboardSummary(orgId: string) {
-  const leads = await prisma.voiceLead.findMany({
-    where: { organizationId: orgId },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      email: true,
-      reasonForCall: true,
-      status: true,
-      notes: true,
-      source: true,
-      appointmentRequested: true,
-      createdAt: true,
-    },
-  });
-
   const [
+    leads,
     businessProfile,
     receptionistSettings,
     integrationSettings,
@@ -109,7 +106,24 @@ export async function getVoiceDashboardSummary(orgId: string) {
     missedCalls,
     appointmentRequestedCalls,
     knowledgeCount,
+    reservationRequestCount,
+    orderRequestCount,
   ] = await Promise.all([
+    prisma.voiceLead.findMany({
+      where: { organizationId: orgId },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        reasonForCall: true,
+        status: true,
+        notes: true,
+        source: true,
+        appointmentRequested: true,
+        createdAt: true,
+      },
+    }),
     prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceIntegrationSettings.findUnique({ where: { organizationId: orgId } }),
@@ -120,6 +134,8 @@ export async function getVoiceDashboardSummary(orgId: string) {
     prisma.voiceKnowledgeBaseItem.count({
       where: { organizationId: orgId, isActive: true },
     }),
+    prisma.voiceReservationRequest.count({ where: { organizationId: orgId } }),
+    prisma.voiceOrderRequest.count({ where: { organizationId: orgId } }),
   ]);
 
   const reservationLeads = leads.filter(isReservationLead);
@@ -148,8 +164,8 @@ export async function getVoiceDashboardSummary(orgId: string) {
       totalLeads: leads.length,
       totalCalls,
       missedCalls,
-      appointmentsRequested: appointmentRequestedCalls + reservationLeads.length,
-      orderRequests: orderRequestLeads.length,
+      appointmentsRequested: appointmentRequestedCalls + reservationRequestCount + reservationLeads.length,
+      orderRequests: orderRequestCount + orderRequestLeads.length,
       callbackRequests: callbackLeads.length,
       activeKnowledgeItems: knowledgeCount,
     },
@@ -201,14 +217,54 @@ export async function getVoiceIntegrationsOverview(orgId: string) {
 }
 
 export async function getVoiceRequestQueues(orgId: string) {
-  const leads = await prisma.voiceLead.findMany({
-    where: { organizationId: orgId },
-    orderBy: { createdAt: "desc" },
-  });
+  const [leads, reservationRequests, orderRequests] = await Promise.all([
+    prisma.voiceLead.findMany({
+      where: { organizationId: orgId },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.voiceReservationRequest.findMany({
+      where: { organizationId: orgId },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.voiceOrderRequest.findMany({
+      where: { organizationId: orgId },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const reservationRows: VoiceQueueRow[] = reservationRequests.map((request) => ({
+    id: request.id,
+    name: request.customerName || null,
+    phone: request.customerPhone || null,
+    email: null,
+    reasonForCall: request.partySize
+      ? `Table booking request for party of ${request.partySize}`
+      : "Table booking request",
+    status: request.status,
+    notes: request.specialRequests || null,
+    source: "VOICE_RESERVATION_REQUEST",
+    createdAt: request.createdAt,
+  }));
+
+  const orderRows: VoiceQueueRow[] = orderRequests.map((request) => ({
+    id: request.id,
+    name: request.customerName || null,
+    phone: request.customerPhone || null,
+    email: null,
+    reasonForCall: "Takeaway order request",
+    status: request.status,
+    notes: request.orderDetailsText,
+    source: "VOICE_ORDER_REQUEST",
+    createdAt: request.createdAt,
+  }));
 
   return {
-    reservations: leads.filter(isReservationLead),
-    orders: leads.filter(isOrderLead),
+    reservations: [...reservationRows, ...leads.filter(isReservationLead)].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    ),
+    orders: [...orderRows, ...leads.filter(isOrderLead)].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    ),
     callbacks: leads.filter(isCallbackLead),
   };
 }

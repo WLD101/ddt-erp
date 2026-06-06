@@ -30,6 +30,127 @@ function normalizeScalarText(value: unknown) {
   return undefined;
 }
 
+function normalizeInteger(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.trunc(value);
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number.parseInt(value.trim(), 10);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+}
+
+function stringifyValue(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value.trim().length > 0 ? value.trim() : undefined;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const parts = value
+      .map((item) => {
+        if (typeof item === "string") return item.trim();
+        if (typeof item === "number" && Number.isFinite(item)) return String(item);
+        if (item && typeof item === "object") {
+          const record = item as Record<string, unknown>;
+          const itemName =
+            normalizeText(record.name) ||
+            normalizeText(record.item) ||
+            normalizeText(record.title) ||
+            normalizeText(record.product);
+          const quantity =
+            normalizeScalarText(record.quantity) ||
+            normalizeScalarText(record.qty) ||
+            normalizeScalarText(record.count);
+          const notes = normalizeText(record.notes);
+          if (itemName && quantity) return `${itemName} x${quantity}${notes ? ` (${notes})` : ""}`;
+          if (itemName) return notes ? `${itemName} (${notes})` : itemName;
+        }
+        return undefined;
+      })
+      .filter(Boolean);
+
+    return parts.length > 0 ? parts.join(", ") : undefined;
+  }
+
+  if (value && typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
+
+function buildRequestedDateTime(args: Record<string, unknown>) {
+  const explicitDateTime =
+    normalizeScalarText(args.datetime) ||
+    normalizeScalarText(args.dateTime) ||
+    normalizeScalarText(args.requestedDateTime);
+  if (explicitDateTime) {
+    const parsed = new Date(explicitDateTime);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  const datePart =
+    normalizeScalarText(args.date) ||
+    normalizeScalarText(args.requestedDate);
+  const timePart =
+    normalizeScalarText(args.time) ||
+    normalizeScalarText(args.preferredTime) ||
+    normalizeScalarText(args.requestedTime);
+
+  if (!datePart) {
+    return null;
+  }
+
+  const composed = timePart ? `${datePart}T${timePart}` : datePart;
+  const parsed = new Date(composed);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function buildOrderDetailsSummary(args: Record<string, unknown>) {
+  const items =
+    stringifyValue(args.items) ||
+    stringifyValue(args.orderItems) ||
+    stringifyValue(args.orderRequest);
+  const quantity =
+    normalizeScalarText(args.quantity) ||
+    normalizeScalarText(args.quantities);
+  const pickupOrDelivery =
+    normalizeText(args.pickupOrDelivery) ||
+    normalizeText(args.deliveryPreference) ||
+    normalizeText(args.fulfillmentType) ||
+    normalizeText(args.deliveryType);
+  const preferredTime =
+    normalizeScalarText(args.preferredTime) ||
+    normalizeScalarText(args.time) ||
+    normalizeScalarText(args.requestedTime);
+  const allergies = normalizeText(args.allergies);
+  const notes = normalizeText(args.notes);
+
+  const detailLines = [
+    items ? `Items: ${items}` : undefined,
+    quantity ? `Quantity: ${quantity}` : undefined,
+    pickupOrDelivery ? `Fulfillment: ${pickupOrDelivery}` : undefined,
+    preferredTime ? `Preferred time: ${preferredTime}` : undefined,
+    allergies ? `Allergies: ${allergies}` : undefined,
+    notes ? `Notes: ${notes}` : undefined,
+  ].filter(Boolean);
+
+  return detailLines.join("\n");
+}
+
 function buildLeadNotes(args: Record<string, unknown>, existingNotes?: string) {
   const details = [
     normalizeText(args.notes),
@@ -211,21 +332,25 @@ async function captureLead(args: Record<string, unknown>, organizationId: string
 
 async function requestAppointment(args: Record<string, unknown>, organizationId: string, context: VapiToolContext) {
   const runtime = await getVoiceTrainingRuntime(organizationId);
-  const bookingAllowed = runtime.bookingRules.acceptsBookings;
-
-  if (!bookingAllowed) {
-    return {
-      success: false,
-      error: runtime.bookingRules.fallbackMessage || "This business is not currently accepting booking requests through the receptionist.",
-    };
-  }
-
-  const name = normalizeText(args.name);
-  const phone = normalizeText(args.phone) || normalizeText(args.phoneNumber) || context.callerNumber || undefined;
+  const name = normalizeText(args.name) || normalizeText(args.customerName);
+  const phone =
+    normalizeText(args.phone) ||
+    normalizeText(args.phoneNumber) ||
+    normalizeText(args.customerPhone) ||
+    context.callerNumber ||
+    undefined;
   const email = normalizeText(args.email);
-  const partySize = normalizeScalarText(args.partySize);
-  const date = normalizeScalarText(args.date);
-  const time = normalizeScalarText(args.time) || normalizeScalarText(args.preferredTime);
+  const partySize = normalizeInteger(args.partySize);
+  const requestedTime = buildRequestedDateTime(args);
+  const date =
+    normalizeScalarText(args.date) ||
+    normalizeScalarText(args.requestedDate) ||
+    normalizeScalarText(args.datetime) ||
+    normalizeScalarText(args.requestedDateTime);
+  const time =
+    normalizeScalarText(args.time) ||
+    normalizeScalarText(args.preferredTime) ||
+    normalizeScalarText(args.requestedTime);
   const reasonForCall =
     normalizeText(args.reasonForCall) ||
     normalizeText(args.reason) ||
@@ -237,7 +362,8 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
     phone,
     date,
     time,
-    party_size_or_service_type: partySize || normalizeText(args.serviceType),
+    party_size_or_service_type:
+      (partySize !== undefined ? String(partySize) : undefined) || normalizeText(args.serviceType),
     notes: normalizeText(args.notes),
   };
 
@@ -249,18 +375,17 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
     };
   }
 
-  const lead = await prisma.voiceLead.create({
+  const request = await prisma.voiceReservationRequest.create({
     data: {
       organizationId,
       voiceAgentId: context.voiceAgentId || null,
-      name: name || null,
-      phone: phone || null,
-      email: email || null,
-      reasonForCall,
-      notes: notes || null,
-      appointmentRequested: true,
-      source: "VAPI_TABLE_REQUEST",
-      status: "NEW",
+      customerName: name || null,
+      customerPhone: phone || null,
+      partySize: partySize ?? null,
+      requestedTime,
+      specialRequests: notes || null,
+      status: "needs_staff_review",
+      providerCallId: context.providerCallId || null,
     },
   });
 
@@ -272,7 +397,7 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
 
   return {
     success: true,
-    leadId: lead.id,
+    reservationRequestId: request.id,
     message:
       runtime.bookingRules.confirmationMessage ||
       "The booking request has been saved. Tell the caller the team will confirm availability.",
@@ -281,27 +406,27 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
 
 async function createOrderRequest(args: Record<string, unknown>, organizationId: string, context: VapiToolContext) {
   const runtime = await getVoiceTrainingRuntime(organizationId);
-  const orderAllowed = runtime.orderRules.acceptsOrderRequests;
-
-  if (!orderAllowed) {
-    return {
-      success: false,
-      error: "This business is not currently accepting order requests through the receptionist.",
-    };
-  }
-
-  const name = normalizeText(args.name);
-  const phone = normalizeText(args.phone) || normalizeText(args.phoneNumber) || context.callerNumber || undefined;
+  const name = normalizeText(args.name) || normalizeText(args.customerName);
+  const phone =
+    normalizeText(args.phone) ||
+    normalizeText(args.phoneNumber) ||
+    normalizeText(args.customerPhone) ||
+    context.callerNumber ||
+    undefined;
   const email = normalizeText(args.email);
   const items =
-    normalizeScalarText(args.items) ||
-    normalizeScalarText(args.orderItems) ||
-    normalizeScalarText(args.orderRequest);
+    stringifyValue(args.items) ||
+    stringifyValue(args.orderItems) ||
+    stringifyValue(args.orderRequest);
   const preferredTime = normalizeScalarText(args.preferredTime) || normalizeScalarText(args.time);
   const pickupOrDelivery =
     normalizeText(args.pickupOrDelivery) ||
     normalizeText(args.deliveryPreference) ||
-    normalizeText(args.fulfillmentType);
+    normalizeText(args.fulfillmentType) ||
+    normalizeText(args.deliveryType);
+  const deliveryAddress =
+    normalizeText(args.deliveryAddress) ||
+    normalizeText(args.customerAddress);
   const reasonForCall =
     normalizeText(args.reasonForCall) ||
     normalizeText(args.reason) ||
@@ -311,10 +436,10 @@ async function createOrderRequest(args: Record<string, unknown>, organizationId:
     "Team confirmation required. Do not treat this as a confirmed order and do not create ERP transactions.",
   );
 
-  if (!name && !phone) {
+  if (!name && !phone && !email) {
     return {
       success: false,
-      error: "A caller name or phone number is required before saving an order request.",
+      error: "A caller name, phone number, or email is required before saving an order request.",
     };
   }
 
@@ -344,17 +469,16 @@ async function createOrderRequest(args: Record<string, unknown>, organizationId:
     };
   }
 
-  const lead = await prisma.voiceLead.create({
+  const request = await prisma.voiceOrderRequest.create({
     data: {
       organizationId,
       voiceAgentId: context.voiceAgentId || null,
-      name: name || null,
-      phone: phone || null,
-      email: email || null,
-      reasonForCall,
-      notes: notes || null,
-      source: "VAPI_ORDER_REQUEST",
-      status: "NEW",
+      customerName: name || null,
+      customerPhone: phone || null,
+      customerAddress: deliveryAddress || null,
+      orderDetailsText: buildOrderDetailsSummary(args) || items,
+      status: "needs_staff_review",
+      providerCallId: context.providerCallId || null,
     },
   });
 
@@ -365,7 +489,7 @@ async function createOrderRequest(args: Record<string, unknown>, organizationId:
 
   return {
     success: true,
-    leadId: lead.id,
+    orderRequestId: request.id,
     message:
       runtime.orderRules.confirmationWording ||
       "The order request has been saved. Tell the caller the team will confirm the details before preparing it.",
