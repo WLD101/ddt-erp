@@ -86,6 +86,7 @@ function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
     firstMessage: input.firstMessage,
     server: {
       url: input.webhookUrl,
+      secret: process.env.VAPI_WEBHOOK_SECRET || undefined,
     },
     model: {
       messages: [{ role: "system", content: input.prompt }],
