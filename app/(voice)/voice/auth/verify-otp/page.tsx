@@ -25,7 +25,7 @@ function VoiceVerifyOtpContent() {
         return;
       }
       toast.success(result.success || "Email verified.");
-      router.push(result.next || "/auth/signin");
+      router.push(result.next || "/voice/auth/signin");
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +77,7 @@ function VoiceVerifyOtpContent() {
 
       <div className="mt-8 text-center text-sm text-slate-400">
         Didn&apos;t receive it?{" "}
-        <Link href="/auth/signup" className="font-bold text-cyan-400 hover:underline">
+        <Link href="/voice/auth/signup" className="font-bold text-cyan-400 hover:underline">
           Go back to signup
         </Link>
       </div>

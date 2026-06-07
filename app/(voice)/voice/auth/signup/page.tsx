@@ -161,7 +161,7 @@ export default function VoiceSignUpPage() {
 
       <div className="mt-8 text-center text-sm text-slate-400">
         Already have a workspace?{" "}
-        <Link href="/auth/signin" className="font-bold text-cyan-400 hover:underline">
+        <Link href="/voice/auth/signin" className="font-bold text-cyan-400 hover:underline">
           Sign In
         </Link>
       </div>

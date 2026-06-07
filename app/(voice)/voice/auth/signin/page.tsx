@@ -11,7 +11,7 @@ import { signInAction } from "@/modules/auth/actions";
 function VoiceSignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/onboarding";
+  const callbackUrl = searchParams.get("callbackUrl") || "/voice/dashboard";
   const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -90,7 +90,7 @@ function VoiceSignInForm() {
 
       <div className="mt-6 text-center text-sm text-slate-400">
         Don&apos;t have a workspace?{" "}
-        <Link href="/auth/signup" className="font-bold text-cyan-400 hover:underline">
+        <Link href="/voice/auth/signup" className="font-bold text-cyan-400 hover:underline">
           Create one now
         </Link>
       </div>

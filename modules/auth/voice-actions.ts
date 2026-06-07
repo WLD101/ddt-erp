@@ -38,7 +38,7 @@ export async function requestVoiceSignupOtpAction(data: unknown) {
     // For Voice, we will redirect them to a Voice-specific OTP verify page if we create one, 
     // or we can reuse the generic one for now by passing flow=voice. 
     // Wait, the generic verify-otp isn't rewritten to Voice! We will create a Voice OTP page.
-    return { success: "Verification code sent. Please verify your email.", next: `/auth/verify-otp?flow=voice&email=${encodeURIComponent(result.data.email)}` };
+    return { success: "Verification code sent. Please verify your email.", next: `/voice/auth/verify-otp?email=${encodeURIComponent(result.data.email)}` };
   } catch (error: any) {
     console.error("Voice Signup error:", error);
     return { error: error.message || "Something went wrong during registration." };
@@ -69,7 +69,7 @@ export async function verifyVoiceSignupOtpAction(data: unknown) {
       details: "Voice signup OTP verified and organization provisioned.",
     });
     // Send them to signin which redirects to voice onboarding
-    return { success: "Email verified. Please sign in to continue.", next: "/auth/signin?callbackUrl=/onboarding" };
+    return { success: "Email verified. Please sign in to continue.", next: "/voice/auth/signin?callbackUrl=/voice/onboarding" };
   } catch (error: any) {
     return { error: error.message || "Failed to complete signup." };
   }

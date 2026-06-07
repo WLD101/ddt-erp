@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { assignPackageAction, approveManualPaymentAction, rejectManualPaymentAction } from "./actions";
 
 const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
 
@@ -45,6 +47,8 @@ export default async function VoiceAdminCommandCenterPage() {
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+  const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_replace_me";
+
   const [
     totalTenants,
     totalAgents,
@@ -73,6 +77,10 @@ export default async function VoiceAdminCommandCenterPage() {
     costByBusinessRows,
     costByAgentRows,
     costByPhoneRows,
+    allOrganizations,
+    voicePackages,
+    pendingPayments,
+    recentWebhookEvents,
   ] = await Promise.all([
     prisma.voiceBusinessProfile.count(),
     prisma.voiceAgent.count(),
@@ -142,6 +150,29 @@ export default async function VoiceAdminCommandCenterPage() {
       orderBy: { _sum: { costUsd: "desc" } },
       take: 10,
     }),
+    prisma.organization.findMany({ orderBy: { name: "asc" } }),
+    prisma.package.findMany({ where: { productType: "VOICE", isActive: true } }),
+    prisma.subscription.findMany({
+      where: {
+        OR: [
+          { status: "payment_pending" },
+          { paymentStatus: "payment_pending" }
+        ]
+      },
+      select: {
+        id: true,
+        organizationId: true,
+        packageId: true,
+        status: true,
+        paymentStatus: true,
+        manualPaymentMethod: true,
+        manualPaymentReference: true,
+      },
+    }),
+    prisma.voiceWebhookEvent.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
   ]);
 
   const disabledAgents = totalAgents - activeAgents;
@@ -180,6 +211,7 @@ export default async function VoiceAdminCommandCenterPage() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),linear-gradient(180deg,#f8f9ff_0%,#eef4ff_100%)] text-on-surface pb-12">
       <div className="mx-auto max-w-7xl space-y-8 px-6 pt-8">
         
+        {/* Banner Section */}
         <section className="overflow-hidden rounded-[32px] border border-outline-variant/30 bg-linear-to-br from-surface via-surface to-surface-container-low shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
           <div className="flex flex-col gap-8 px-8 py-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-4">
@@ -214,7 +246,7 @@ export default async function VoiceAdminCommandCenterPage() {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 border-t border-outline-variant/20 px-8 py-4">
+          <div className="flex flex-wrap items-center gap-3 border-t border-outline-variant/20 px-8 py-4 bg-slate-900/5">
             <Link href="/voice/admin/tenants" className="text-[11px] font-black uppercase tracking-[0.2em] text-primary hover:underline bg-primary/10 px-4 py-2 rounded-xl">
               Manage Tenants
             </Link>
@@ -227,6 +259,170 @@ export default async function VoiceAdminCommandCenterPage() {
           </div>
         </section>
 
+        {/* Priority Actions & Stripe config */}
+        <section className="grid gap-6 md:grid-cols-2">
+          {/* Admin Control Cards */}
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">admin_panel_settings</span>
+                Administrative Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/voice/admin/tenants/new" className="w-full">
+                  <Button className="w-full h-11 rounded-xl bg-primary text-on-primary text-[10px] font-black uppercase tracking-wider shadow-md shadow-primary/15">
+                    <span className="material-symbols-outlined mr-2 text-[16px]">add_box</span>
+                    Create Tenant
+                  </Button>
+                </Link>
+                <Link href="/voice/admin/packages/new" className="w-full">
+                  <Button variant="outline" className="w-full h-11 rounded-xl border-outline-variant text-[10px] font-black uppercase tracking-wider">
+                    <span className="material-symbols-outlined mr-2 text-[16px]">inventory_2</span>
+                    Create Package
+                  </Button>
+                </Link>
+              </div>
+              <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-4 space-y-2 text-xs">
+                <div className="font-bold text-on-surface flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-cyan-500">info</span>
+                  AI Receptionist Deployment Note:
+                </div>
+                <p className="text-on-surface-variant leading-relaxed">
+                  AI Receptionists must be created within tenant contexts. Go to 
+                  <Link href="/voice/admin/tenants" className="text-primary font-bold hover:underline mx-1">Tenants</Link> 
+                  and click <strong>Manage Tenant</strong> &rarr; <strong>AI Receptionist</strong> to launch the setup wizard.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stripe Config health card */}
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">credit_card</span>
+                Stripe Gateway Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 flex flex-col justify-between h-[155px]">
+              <div>
+                {isStripeConfigured ? (
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="text-sm font-black text-emerald-500 uppercase tracking-widest">Stripe Connected</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+                    <span className="text-sm font-black text-rose-500 uppercase tracking-widest">Stripe Not Configured</span>
+                  </div>
+                )}
+                <p className="mt-2.5 text-xs text-on-surface-variant leading-relaxed">
+                  {isStripeConfigured
+                    ? "Automatic online subscription plans and Stripe webhooks are active."
+                    : "The system is running on manual package overrides. Safe billing fallbacks are enabled: assign packages manually and approve payment receipts offline."}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Package Assignment & Manual Payments override panel */}
+        <section className="grid gap-6 md:grid-cols-2">
+          {/* Package Assignment form override */}
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">assignment_ind</span>
+                Assign Package Override
+              </CardTitle>
+              <CardDescription className="text-xs text-on-surface-variant">Manually attach or modify a tenant's billing tier.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <form action={assignPackageAction} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Select Tenant</label>
+                  <select name="organizationId" required className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none">
+                    <option value="" disabled selected>Select tenant organization...</option>
+                    {allOrganizations.map(org => (
+                      <option key={org.id} value={org.id}>{org.name} ({org.slug})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Select Voice Package</label>
+                  <select name="packageId" className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none">
+                    <option value="">No Active Package (Remove Access)</option>
+                    {voicePackages.map(pkg => (
+                      <option key={pkg.id} value={pkg.id}>{pkg.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <Button type="submit" className="w-full h-10 mt-2 rounded-xl bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest shadow-md">
+                  Update Assignment
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Pending Manual Payments actions */}
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">pending_actions</span>
+                Pending Manual Payments ({pendingPayments.length})
+              </CardTitle>
+              <CardDescription className="text-xs text-on-surface-variant">Approve or reject bank transfers/cash billing overrides.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4 max-h-[268px] overflow-y-auto custom-scrollbar">
+              {pendingPayments.length === 0 ? (
+                <div className="flex h-[130px] flex-col items-center justify-center text-center">
+                  <span className="material-symbols-outlined text-[36px] text-outline-variant">check_circle</span>
+                  <p className="mt-2 text-xs font-semibold text-on-surface-variant">No pending payments to review.</p>
+                </div>
+              ) : (
+                pendingPayments.map(sub => (
+                  <div key={sub.id} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4 flex flex-col justify-between gap-3 text-xs">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-bold text-sm text-on-surface">{organizationMap.get(sub.organizationId) ?? sub.organizationId}</div>
+                        <div className="text-[10px] uppercase font-semibold text-on-surface-variant mt-0.5">
+                          Package: {voicePackages.find(p => p.id === sub.packageId)?.name || "Unknown"}
+                        </div>
+                      </div>
+                      <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] font-black uppercase">
+                        Pending
+                      </Badge>
+                    </div>
+                    {sub.manualPaymentMethod && (
+                      <div className="bg-black/5 rounded-lg p-2 text-[11px] text-on-surface-variant">
+                        <strong>Method:</strong> {sub.manualPaymentMethod} {sub.manualPaymentReference ? `• Ref: ${sub.manualPaymentReference}` : ""}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <form action={approveManualPaymentAction} className="flex-1">
+                        <input type="hidden" name="organizationId" value={sub.organizationId} />
+                        <Button type="submit" className="w-full h-8 bg-emerald-600 hover:bg-emerald-500 text-on-primary text-[9px] font-black uppercase tracking-wider rounded-lg">
+                          Approve
+                        </Button>
+                      </form>
+                      <form action={rejectManualPaymentAction} className="flex-1">
+                        <input type="hidden" name="organizationId" value={sub.organizationId} />
+                        <Button type="submit" variant="outline" className="w-full h-8 border-rose-500/30 text-rose-500 hover:bg-rose-500/5 text-[9px] font-black uppercase tracking-wider rounded-lg">
+                          Reject
+                        </Button>
+                      </form>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Usage metrics / numbers */}
         <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard icon="call" label="Active Calls Now" value={activeCalls} tone="primary" subtitle={`${capacityFullEvents} capacity drops`} />
           <MetricCard icon="today" label="Calls Today" value={callsToday} tone="default" subtitle={`${callsThisMonth} this month`} />
@@ -234,6 +430,7 @@ export default async function VoiceAdminCommandCenterPage() {
           <MetricCard icon="payments" label="Vapi Cost Today" value={`$${totalCostToday.toFixed(2)}`} tone="default" subtitle={`$${totalCostThisMonth.toFixed(2)} this month`} />
         </section>
 
+        {/* Health status metrics card */}
         <section className="grid gap-6 md:grid-cols-3">
           <Card className={shellCardClassName}>
             <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
@@ -278,7 +475,9 @@ export default async function VoiceAdminCommandCenterPage() {
           </Card>
         </section>
 
+        {/* Tenant costing & Webhook health log */}
         <section className="grid gap-6 xl:grid-cols-2">
+          {/* Top 10 Costing Tenants */}
           <Card className={shellCardClassName}>
             <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
               <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
@@ -305,31 +504,48 @@ export default async function VoiceAdminCommandCenterPage() {
             </CardContent>
           </Card>
 
+          {/* Webhook Health Log list */}
           <Card className={shellCardClassName}>
-            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
-              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-[20px]">smart_toy</span>
-                Cost by VoiceAgent
-              </CardTitle>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-secondary text-[20px]">api</span>
+                  Recent Webhook Events
+                </CardTitle>
+              </div>
+              <Link href="/voice/admin/webhooks" className="text-xs font-semibold text-primary hover:underline">
+                View all &rarr;
+              </Link>
             </CardHeader>
             <CardContent className="px-6 pb-6 pt-4 space-y-3">
-              {costByAgentRows.length === 0 ? (
-                <p className="text-sm text-on-surface-variant">No agent-linked cost data available yet.</p>
+              {recentWebhookEvents.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No webhook events logged yet.</p>
               ) : (
-                costByAgentRows.map((row) => {
-                  const agent = row.voiceAgentId ? agentMap.get(row.voiceAgentId) : null;
-                  return (
-                    <div key={row.voiceAgentId || "unmapped"} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
-                      <div className="flex items-center justify-between">
-                        <div className="font-bold text-on-surface">{agent?.displayName || agent?.name || row.voiceAgentId || "Unmapped agent"}</div>
-                        <div className="font-black text-primary">${(row._sum.costUsd || 0).toFixed(2)}</div>
-                      </div>
-                      <div className="mt-1 text-xs text-on-surface-variant">
-                        {agent?.internalName || "No internal key"} • {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
-                      </div>
+                recentWebhookEvents.map((evt) => (
+                  <div key={evt.id} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center">
+                      <div className="font-bold text-on-surface">{evt.eventType}</div>
+                      <Badge variant="outline" className={
+                        evt.status === "processed"
+                          ? "border-emerald-500/30 text-emerald-500"
+                          : evt.status === "failed"
+                          ? "border-rose-500/30 text-rose-500"
+                          : "border-amber-500/30 text-amber-500"
+                      }>
+                        {evt.status}
+                      </Badge>
                     </div>
-                  );
-                })
+                    <div className="flex justify-between text-xs text-on-surface-variant">
+                      <span>Call ID: {evt.providerCallId || "N/A"}</span>
+                      <span>{new Date(evt.receivedAt).toLocaleTimeString()}</span>
+                    </div>
+                    {evt.errorMessage && (
+                      <div className="text-[11px] text-rose-500 bg-rose-50/5 rounded border border-rose-500/10 p-1.5 font-mono break-all">
+                        {evt.errorMessage}
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
             </CardContent>
           </Card>
