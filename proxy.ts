@@ -128,8 +128,12 @@ export default async function proxy(req: NextRequest) {
   }
 
   if (!isLoggedIn && !isPublicRoute) {
+    const signinPath = voiceHost ? "/voice/auth/signin" : "/auth/signin";
+    const sanitized = nextUrl.search
+      ? `${pathname}${nextUrl.search}`
+      : pathname;
     return NextResponse.redirect(
-      new URL(getUnauthenticatedRedirect(pathname, nextUrl.search), nextUrl)
+      new URL(`${signinPath}?callbackUrl=${encodeURIComponent(sanitized)}`, nextUrl)
     );
   }
 
