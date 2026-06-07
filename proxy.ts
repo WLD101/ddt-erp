@@ -73,7 +73,7 @@ export default async function proxy(req: NextRequest) {
     voiceHost &&
     !pathname.startsWith("/voice") &&
     !pathname.startsWith("/api") &&
-    !pathname.startsWith("/auth") &&
+    !(pathname.startsWith("/auth") && (pathname === "/auth/signin" || pathname === "/auth/signup" || pathname === "/auth/verify-otp")) &&
     !pathname.startsWith("/_next") &&
     pathname !== "/favicon.ico" &&
     !pathname.includes(".")

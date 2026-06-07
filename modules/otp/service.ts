@@ -8,7 +8,7 @@ const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_COOLDOWN_MS = 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
 
-export type OtpPurpose = "DEMO_SIGNUP" | "PAID_SIGNUP" | "PASSWORD_RESET";
+export type OtpPurpose = "DEMO_SIGNUP" | "PAID_SIGNUP" | "VOICE_SIGNUP" | "PASSWORD_RESET";
 
 function hashOtp(code: string) {
   return crypto.createHash("sha256").update(code).digest("hex");
