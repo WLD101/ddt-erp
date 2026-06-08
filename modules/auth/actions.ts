@@ -223,7 +223,7 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
         email,
         password,
       redirectTo:
-        twoFactorRequirement?.required && !twoFactorRequirement.enrolled
+        !isVoice && twoFactorRequirement?.required && !twoFactorRequirement.enrolled
           ? "/settings/security?required=1"
           : redirectTo,
     });
