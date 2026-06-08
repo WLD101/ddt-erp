@@ -48,23 +48,23 @@ export default async function VoiceIntegrationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-amber-400/30 bg-amber-500/10 p-6">
+      <div className="rounded-[28px] border border-amber-500/20 bg-amber-500/10 p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-black uppercase tracking-[0.28em] text-amber-200">Production warning</div>
-            <h2 className="mt-2 text-2xl font-black text-white">Calling is not live yet</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-800">Production warning</div>
+            <h2 className="mt-2 text-2xl font-black text-on-surface">Calling is not live yet</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-on-surface-variant">
               Vapi, Twilio, Google Calendar, and WhatsApp follow-up remain controlled demo configurations in this phase.
               The dashboard can store readiness status, but real phone calls, booking sync, and follow-up automation are not fully live until the provider setup is completed and verified.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3 text-sm font-semibold text-slate-200">
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface-variant">
             Status: foundation only
           </div>
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 text-sm leading-7 text-slate-300">
+      <div className="rounded-[28px] border border-outline-variant/30 bg-surface p-6 text-sm leading-7 text-on-surface-variant shadow-xs">
         These are provider configuration placeholders only. This phase checks environment readiness and stores integration status separately from the ERP.
       </div>
 
@@ -74,27 +74,27 @@ export default async function VoiceIntegrationsPage() {
           const status = currentStatuses[card.key];
 
           return (
-            <div key={card.key} className="rounded-[28px] border border-white/10 bg-slate-950/35 p-6">
+            <div key={card.key} className="rounded-[28px] border border-outline-variant/30 bg-surface p-6 shadow-xs">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-black uppercase tracking-[0.28em] text-cyan-300">{card.title}</div>
-                  <h2 className="mt-2 text-2xl font-black text-white">{status.replaceAll("_", " ")}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{card.description}</p>
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{card.title}</div>
+                  <h2 className="mt-2 text-2xl font-black text-on-surface">{status.replaceAll("_", " ")}</h2>
+                  <p className="mt-2 text-xs leading-6 text-on-surface-variant">{card.description}</p>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] ${
-                    enabled ? "bg-emerald-400/15 text-emerald-200" : "bg-slate-800 text-slate-300"
+                  className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] ${
+                    enabled ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20" : "bg-outline-variant/40 text-on-surface-variant"
                   }`}
                 >
                   {enabled ? "Env ready" : "Config required"}
                 </span>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-                <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Expected environment variables</div>
+              <div className="mt-5 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Expected environment variables</div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {card.envs.map((envName) => (
-                    <span key={envName} className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-200">
+                    <span key={envName} className="rounded-full border border-outline-variant/30 bg-surface px-3 py-1 text-xs font-semibold text-on-surface-variant shadow-xs">
                       {envName}
                     </span>
                   ))}
@@ -102,30 +102,31 @@ export default async function VoiceIntegrationsPage() {
               </div>
 
               {card.key === "vapi" ? (
-                <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                <div className="mt-5 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="mb-3 flex items-center justify-between">
-                    <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Vapi status</div>
-                    <Link href="/voice/dashboard/integrations/vapi" className="text-xs font-semibold text-cyan-400 hover:text-cyan-300">
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Vapi status</div>
+                    <Link href="/voice/dashboard/integrations/vapi" className="text-xs font-bold text-primary hover:underline">
                       Manage setup →
                     </Link>
                   </div>
-                  <ul className="space-y-2 text-sm text-slate-300">
-                    <li className="flex justify-between"><span>API Keys</span><span>{vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey ? "Connected" : "Missing"}</span></li>
-                    <li className="flex justify-between"><span>Default Agent</span><span>{defaultAgent?.name || "Missing"}</span></li>
-                    <li className="flex justify-between"><span>Agent Assistant ID</span><span>{defaultAgent?.vapiAssistantId ? "Configured" : "Missing"}</span></li>
-                    <li className="flex justify-between"><span>Agent Phone Number ID</span><span>{defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
-                    <li className="flex justify-between"><span>Webhook Secret</span><span>{vapiStatus.hasWebhookSecret ? "Secured" : "Recommended"}</span></li>
-                    <li className="flex justify-between"><span>Agent Mapping</span><span>{defaultAgent?.vapiAssistantId || defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
-                    <li className="flex justify-between"><span>Live Calling</span><span>{vapiStatus.callingEnabled ? "Enabled" : "Disabled"}</span></li>
+                  <ul className="space-y-2 text-sm text-on-surface-variant">
+                    <li className="flex justify-between"><span>API Keys</span><span className="font-semibold text-on-surface">{vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey ? "Connected" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Default Agent</span><span className="font-semibold text-on-surface">{defaultAgent?.name || "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Agent Assistant ID</span><span className="font-semibold text-on-surface">{defaultAgent?.vapiAssistantId ? "Configured" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Agent Phone Number ID</span><span className="font-semibold text-on-surface">{defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>telephony phone number</span><span className="font-semibold text-primary">{defaultAgent?.vapiPhoneNumberName || "Not assigned"}</span></li>
+                    <li className="flex justify-between"><span>Webhook Secret</span><span className="font-semibold text-on-surface">{vapiStatus.hasWebhookSecret ? "Secured" : "Recommended"}</span></li>
+                    <li className="flex justify-between"><span>Agent Mapping</span><span className="font-semibold text-on-surface">{defaultAgent?.vapiAssistantId || defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"}</span></li>
+                    <li className="flex justify-between"><span>Live Calling</span><span className="font-semibold text-on-surface">{vapiStatus.callingEnabled ? "Enabled" : "Disabled"}</span></li>
                   </ul>
-                  <div className="mt-4 border-t border-white/10 pt-4">
-                    <div className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Webhook URL</div>
-                    <code className="block break-all rounded bg-black/50 p-2 text-xs text-amber-200 select-all">
+                  <div className="mt-4 border-t border-outline-variant/20 pt-4">
+                    <div className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">Webhook URL</div>
+                    <code className="block break-all rounded-xl border border-outline-variant/30 bg-surface p-3 text-xs font-bold text-amber-700 select-all">
                       {vapiStatus.webhookUrl || "Configure VOICE_PUBLIC_APP_URL"}
                     </code>
                   </div>
                   {!vapiStatus.callingEnabled ? (
-                    <div className="mt-3 text-xs text-amber-400">
+                    <div className="mt-3 text-xs font-semibold text-amber-700">
                       Calling is currently disabled. Keep it disabled until the assistant and phone number are fully ready for the demo.
                     </div>
                   ) : null}
