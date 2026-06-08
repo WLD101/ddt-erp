@@ -656,7 +656,7 @@ function parseMenuTextFallback(text: string) {
     }
 
     // Match patterns: "Name - Price - Desc"
-    const match = line.match(/^([^:-]+)[:-(]\s*(\d+|Rs\.?\s*\d+|PKR\s*\d+|[\d,]+)\s*\)?\s*(.*)$/i) ||
+    const match = line.match(/^([^:-]+)[:(-]\s*(\d+|Rs\.?\s*\d+|PKR\s*\d+|[\d,]+)\s*\)?\s*(.*)$/i) ||
                   line.match(/^([^:-]+)\s+([Rs|PKR|USD]?\s*\d+[\d,]*)\s*(.*)$/i);
     if (match) {
       const name = match[1].trim();
