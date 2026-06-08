@@ -6,6 +6,14 @@
 // This means `getCurrentTenantContext()` can read the org from the JWT
 // (fast path) without a DB round-trip on every request.
 
+// Dynamic subdomain authentication for Multi-Tenant NextAuth v5
+if (process.env.NEXTAUTH_URL) {
+  delete process.env.NEXTAUTH_URL;
+}
+if (process.env.AUTH_URL) {
+  delete process.env.AUTH_URL;
+}
+
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
