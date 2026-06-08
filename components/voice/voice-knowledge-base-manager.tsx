@@ -71,28 +71,28 @@ function KnowledgeBaseItemForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-[24px] border border-outline-variant/30 bg-surface-container-lowest p-5">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Question</Label>
-          <Input {...register("question")} disabled={isPending} />
-          {errors.question && <p className="text-xs text-rose-300">{errors.question.message}</p>}
+          <Label className="text-on-surface font-semibold">Question</Label>
+          <Input {...register("question")} disabled={isPending} className="border-outline-variant bg-surface-container-low text-on-surface" />
+          {errors.question && <p className="text-xs text-destructive">{errors.question.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Category</Label>
-          <Input {...register("category")} disabled={isPending} placeholder="Appointments, services, pricing..." />
+          <Label className="text-on-surface font-semibold">Category</Label>
+          <Input {...register("category")} disabled={isPending} placeholder="Appointments, services, pricing..." className="border-outline-variant bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/50" />
         </div>
-        <div className="flex items-end justify-between rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3">
+        <div className="flex items-end justify-between rounded-2xl border border-outline-variant/30 bg-surface-container-low px-4 py-3">
           <div>
-            <div className="text-sm font-semibold text-white">Active</div>
-            <div className="text-xs text-slate-400">Inactive entries stay in the database but won’t be used later for answers.</div>
+            <div className="text-sm font-semibold text-on-surface">Active</div>
+            <div className="text-xs text-on-surface-variant">Inactive entries stay in the database but won’t be used later for answers.</div>
           </div>
           <Switch checked={isActive} onCheckedChange={(checked) => setValue("isActive", Boolean(checked))} />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Answer</Label>
-          <Textarea {...register("answer")} disabled={isPending} className="min-h-[140px]" />
-          {errors.answer && <p className="text-xs text-rose-300">{errors.answer.message}</p>}
+          <Label className="text-on-surface font-semibold">Answer</Label>
+          <Textarea {...register("answer")} disabled={isPending} className="min-h-[140px] border-outline-variant bg-surface-container-low text-on-surface" />
+          {errors.answer && <p className="text-xs text-destructive">{errors.answer.message}</p>}
         </div>
       </div>
       <div className="mt-4 flex flex-wrap justify-end gap-3">
@@ -101,7 +101,7 @@ function KnowledgeBaseItemForm({
             Delete
           </Button>
         ) : null}
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : initialValues.id ? "Save changes" : "Add FAQ item"}
         </Button>
       </div>
@@ -112,10 +112,10 @@ function KnowledgeBaseItemForm({
 export function VoiceKnowledgeBaseManager({ items }: VoiceKnowledgeBaseManagerProps) {
   return (
     <div className="space-y-6">
-      <Card className="border-white/10 bg-slate-950/35 text-slate-50">
+      <Card className="border-outline-variant/30 bg-surface text-on-surface shadow-soft">
         <CardHeader>
-          <CardTitle className="text-white">Knowledge base</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-on-surface">Knowledge base</CardTitle>
+          <CardDescription className="text-on-surface-variant">
             Build the approved FAQ library your receptionist will answer from once telephony and retrieval are connected.
           </CardDescription>
         </CardHeader>
@@ -131,16 +131,16 @@ export function VoiceKnowledgeBaseManager({ items }: VoiceKnowledgeBaseManagerPr
         </CardContent>
       </Card>
 
-      <Card className="border-white/10 bg-slate-950/35 text-slate-50">
+      <Card className="border-outline-variant/30 bg-surface text-on-surface shadow-soft">
         <CardHeader>
-          <CardTitle className="text-white">Existing FAQ items</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-on-surface">Existing FAQ items</CardTitle>
+          <CardDescription className="text-on-surface-variant">
             Zero-state is expected until your business team starts writing receptionist-safe answers.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {items.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-white/5 px-5 py-10 text-center text-sm text-slate-300">
+            <div className="rounded-[24px] border border-dashed border-outline-variant/30 bg-surface-container-lowest px-5 py-10 text-center text-sm text-on-surface-variant">
               No FAQ items yet. Add your first question and answer above.
             </div>
           ) : (
@@ -158,7 +158,7 @@ export function VoiceKnowledgeBaseManager({ items }: VoiceKnowledgeBaseManagerPr
             ))
           )}
         </CardContent>
-        <CardFooter className="border-white/10 bg-slate-950/45 text-xs leading-6 text-slate-400">
+        <CardFooter className="border-outline-variant/10 bg-surface-container-low text-xs leading-6 text-on-surface-variant">
           These entries are stored separately from the ERP Smart Assistant and only belong to the voice receptionist surface.
         </CardFooter>
       </Card>

@@ -626,3 +626,208 @@ export const syncVoiceTrainingPromptAction = createServerAction({
     return result;
   },
 });
+
+function cleanJsonString(str: string): string {
+  let cleaned = str.trim();
+  if (cleaned.startsWith("```json")) {
+    cleaned = cleaned.substring(7);
+  } else if (cleaned.startsWith("```")) {
+    cleaned = cleaned.substring(3);
+  }
+  if (cleaned.endsWith("```")) {
+    cleaned = cleaned.substring(0, cleaned.length - 3);
+  }
+  return cleaned.trim();
+}
+
+function parseMenuTextFallback(text: string) {
+  const lines = text.split("\n");
+  const items: any[] = [];
+  let currentCategory = "General";
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+
+    // Category check
+    if (line.length < 30 && !/\d/.test(line) && (line.endsWith(":") || line === line.toUpperCase())) {
+      currentCategory = line.replace(/:$/, "").trim();
+      continue;
+    }
+
+    // Match patterns: "Name - Price - Desc"
+    const match = line.match(/^([^:-]+)[:-(]\s*(\d+|Rs\.?\s*\d+|PKR\s*\d+|[\d,]+)\s*\)?\s*(.*)$/i) ||
+                  line.match(/^([^:-]+)\s+([Rs|PKR|USD]?\s*\d+[\d,]*)\s*(.*)$/i);
+    if (match) {
+      const name = match[1].trim();
+      const price = match[2].trim();
+      const description = match[3]?.trim() || "";
+      items.push({
+        name,
+        category: currentCategory,
+        description: description || undefined,
+        pricePlaceholder: price,
+        availability: "Available",
+        notes: "",
+        takeawayAvailable: true,
+        deliveryAvailable: true,
+        dineInAvailable: true,
+        isActive: true,
+      });
+    } else if (line.length > 3) {
+      items.push({
+        name: line,
+        category: currentCategory,
+        description: "",
+        pricePlaceholder: "Contact for price",
+        availability: "Available",
+        notes: "",
+        takeawayAvailable: true,
+        deliveryAvailable: true,
+        dineInAvailable: true,
+        isActive: true,
+      });
+    }
+  }
+  return items;
+}
+
+async function parseVoiceMenuText(menuText: string): Promise<any[]> {
+  const prompt = `You are an expert AI data extractor. Extract menu, service offerings, rate lists, or charges charts from the text below.
+Format your output as a valid JSON array of service/menu items. Do not wrap it in markdown block tags like \`\`\`json. Return only the raw JSON array.
+
+Each item MUST follow this structure:
+{
+  "name": "string (name of the service or menu item, required)",
+  "category": "string (optional category, e.g. 'Starters', 'Consultations')",
+  "description": "string (optional description)",
+  "pricePlaceholder": "string (optional price guidance, e.g. 'PKR 1,500' or 'Price on request')",
+  "availability": "string (optional availability, e.g. 'Weekdays only')",
+  "notes": "string (optional additional notes)",
+  "takeawayAvailable": boolean (default true),
+  "deliveryAvailable": boolean (default true),
+  "dineInAvailable": boolean (default true),
+  "isActive": boolean (default true)
+}
+
+Input text to extract from:
+${menuText}`;
+
+  // Try OpenAI
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (openaiKey) {
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openaiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.1,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content?.trim();
+        if (content) {
+          const parsed = JSON.parse(cleanJsonString(content));
+          if (Array.isArray(parsed)) return parsed;
+        }
+      }
+    } catch (err) {
+      console.error("[Voice Import] OpenAI call failed, falling back:", err);
+    }
+  }
+
+  // Try Gemini
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (content) {
+          const parsed = JSON.parse(cleanJsonString(content));
+          if (Array.isArray(parsed)) return parsed;
+        }
+      }
+    } catch (err) {
+      console.error("[Voice Import] Gemini call failed, falling back:", err);
+    }
+  }
+
+  return parseMenuTextFallback(menuText);
+}
+
+export const importVoiceMenuAction = createServerAction({
+  label: "Import Voice Menu",
+  schema: z.object({
+    menuText: z.string().min(5, "Menu text must be at least 5 characters."),
+    clearExisting: z.boolean().default(false),
+  }),
+  roles: ["owner", "admin"],
+  enforceBilling: false,
+  audit: {
+    action: "VOICE_MENU_IMPORTED",
+    entityType: "VoiceServiceItem",
+    getEntityId: () => "imported",
+    getDetails: (input) => `Imported and summarized voice menu / rate list (clearExisting: ${input.clearExisting}).`,
+  },
+  handler: async ({ input, context: { db, orgId } }) => {
+    const parsedItems = await parseVoiceMenuText(input.menuText);
+
+    if (parsedItems.length === 0) {
+      throw new Error("No menu items could be parsed. Please verify the format.");
+    }
+
+    if (input.clearExisting) {
+      await db.voiceServiceItem.deleteMany({
+        where: { organizationId: orgId },
+      });
+    }
+
+    const createdItems = [];
+    for (const item of parsedItems) {
+      if (!item.name) continue;
+      const created = await db.voiceServiceItem.create({
+        data: {
+          organizationId: orgId,
+          name: String(item.name).trim(),
+          category: item.category ? String(item.category).trim() : null,
+          description: item.description ? String(item.description).trim() : null,
+          pricePlaceholder: item.pricePlaceholder ? String(item.pricePlaceholder).trim() : null,
+          availability: item.availability ? String(item.availability).trim() : null,
+          notes: item.notes ? String(item.notes).trim() : null,
+          takeawayAvailable: item.takeawayAvailable !== false,
+          deliveryAvailable: item.deliveryAvailable !== false,
+          dineInAvailable: item.dineInAvailable !== false,
+          isActive: item.isActive !== false,
+        },
+      });
+      createdItems.push(created);
+    }
+
+    voiceRevalidatePaths.forEach((path) => revalidatePath(path));
+
+    const wasAi = !!(process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY);
+
+    return {
+      success: true,
+      count: createdItems.length,
+      method: wasAi ? "AI Summary" : "Fallback Regex Scanner",
+    };
+  },
+});
+

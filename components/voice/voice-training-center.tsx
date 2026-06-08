@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   deleteVoiceServiceItemAction,
+  importVoiceMenuAction,
   saveVoiceActionPolicyAction,
   saveVoiceBookingRulesAction,
   saveVoiceHandoffRulesAction,
@@ -75,11 +76,11 @@ function SectionCard({
   badge?: React.ReactNode;
 }) {
   return (
-    <Card className="border-white/10 bg-slate-950/40 text-slate-50 shadow-xl backdrop-blur">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-4 mb-4">
+    <Card className="border-outline-variant/30 bg-surface text-on-surface shadow-soft">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-outline-variant/10 pb-4 mb-4">
         <div>
-          <CardTitle className="text-lg font-black text-white tracking-tight">{title}</CardTitle>
-          <CardDescription className="text-xs text-slate-400 mt-1">{description}</CardDescription>
+          <CardTitle className="text-lg font-black text-on-surface tracking-tight">{title}</CardTitle>
+          <CardDescription className="text-xs text-on-surface-variant mt-1">{description}</CardDescription>
         </div>
         {badge}
       </CardHeader>
@@ -106,7 +107,7 @@ function CheckboxGrid({
         return (
           <label
             key={option}
-            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200"
+            className="flex items-center gap-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface cursor-pointer hover:bg-surface-container-low transition-all"
           >
             <Checkbox
               checked={checked}
@@ -119,6 +120,104 @@ function CheckboxGrid({
         );
       })}
     </div>
+  );
+}
+
+function MenuUploadCard() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [clearExisting, setClearExisting] = useState(false);
+  const [menuText, setMenuText] = useState("");
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result;
+      if (typeof text === "string") {
+        setMenuText(text);
+        toast.success(`Loaded ${file.name} successfully.`);
+      }
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read file.");
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImport = () => {
+    if (!menuText.trim()) {
+      toast.error("Please enter menu text or upload a file.");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await importVoiceMenuAction({ menuText, clearExisting });
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(`Successfully imported ${result.count} service items using ${result.method}!`);
+      setMenuText("");
+      router.refresh();
+    });
+  };
+
+  return (
+    <Card className="border-outline-variant/30 bg-surface text-on-surface shadow-soft">
+      <CardHeader>
+        <CardTitle className="text-lg font-black text-on-surface">Auto-generate Service Catalog</CardTitle>
+        <CardDescription className="text-xs text-on-surface-variant">
+          Upload your menu, rate list, or charges chart (text or CSV file), or paste the details directly. The AI will automatically summarize it and generate structured service items for your voice agent.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-on-surface font-semibold">Upload menu / rate list file</Label>
+          <Input 
+            type="file" 
+            accept=".txt,.csv,.md,.json" 
+            onChange={handleFileUpload} 
+            disabled={isPending}
+            className="cursor-pointer border-outline-variant bg-surface-container-low text-on-surface"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label className="text-on-surface font-semibold">Or paste menu text here</Label>
+          <Textarea
+            value={menuText}
+            onChange={(e) => setMenuText(e.target.value)}
+            placeholder={`Example:
+Consultation Fee: PKR 1,500 (available weekdays)
+Deluxe Facial - PKR 3,500 - 45 min deep cleansing session
+Special Tea: Rs. 150`}
+            disabled={isPending}
+            className="min-h-[150px] border-outline-variant bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/50"
+          />
+        </div>
+
+        <label className="flex items-center gap-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface cursor-pointer">
+          <Checkbox
+            checked={clearExisting}
+            onCheckedChange={(checked) => setClearExisting(Boolean(checked))}
+            disabled={isPending}
+          />
+          <span>Replace existing service catalog items</span>
+        </label>
+      </CardContent>
+      <CardFooter className="flex justify-end border-t border-outline-variant/10 pt-4">
+        <Button 
+          onClick={handleImport} 
+          disabled={isPending}
+          className="bg-primary text-on-primary hover:bg-primary/95"
+        >
+          {isPending ? "Generating..." : "Summarize & Generate Services"}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -146,27 +245,27 @@ function TrainingIdentityForm({ initialValues }: { initialValues: TrainingProfil
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-slate-200">Business name</Label>
+          <Label className="text-on-surface font-semibold">Business name</Label>
           <Input {...register("businessName")} disabled={isPending} />
           {errors.businessName && <p className="text-xs text-rose-300">{errors.businessName.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Industry</Label>
+          <Label className="text-on-surface font-semibold">Industry</Label>
           <Input {...register("industry")} disabled={isPending} />
           {errors.industry && <p className="text-xs text-rose-300">{errors.industry.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Location / city</Label>
+          <Label className="text-on-surface font-semibold">Location / city</Label>
           <Input {...register("locationCity")} disabled={isPending} />
           {errors.locationCity && <p className="text-xs text-rose-300">{errors.locationCity.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Website</Label>
+          <Label className="text-on-surface font-semibold">Website</Label>
           <Input {...register("website")} disabled={isPending} placeholder="https://example.com" />
           {errors.website && <p className="text-xs text-rose-300">{errors.website.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Primary language</Label>
+          <Label className="text-on-surface font-semibold">Primary language</Label>
           <select {...register("primaryLanguage")} disabled={isPending} className={selectClassName}>
             {voiceTrainingLanguageOptions.map((option) => (
               <option key={option} value={option}>{option.replaceAll("_", " ")}</option>
@@ -174,7 +273,7 @@ function TrainingIdentityForm({ initialValues }: { initialValues: TrainingProfil
           </select>
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Tone</Label>
+          <Label className="text-on-surface font-semibold">Tone</Label>
           <select {...register("tone")} disabled={isPending} className={selectClassName}>
             {voiceTrainingToneOptions.map((option) => (
               <option key={option} value={option}>{option.replaceAll("_", " ")}</option>
@@ -182,7 +281,7 @@ function TrainingIdentityForm({ initialValues }: { initialValues: TrainingProfil
           </select>
         </div>
         <div className="space-y-3 md:col-span-2">
-          <Label className="text-slate-200">Supported languages</Label>
+          <Label className="text-on-surface font-semibold">Supported languages</Label>
           <Controller
             control={control}
             name="supportedLanguages"
@@ -193,17 +292,17 @@ function TrainingIdentityForm({ initialValues }: { initialValues: TrainingProfil
           {errors.supportedLanguages && <p className="text-xs text-rose-300">{errors.supportedLanguages.message}</p>}
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Short business description</Label>
+          <Label className="text-on-surface font-semibold">Short business description</Label>
           <Textarea {...register("shortDescription")} disabled={isPending} className="min-h-[100px]" />
           {errors.shortDescription && <p className="text-xs text-rose-300">{errors.shortDescription.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Business phone</Label>
+          <Label className="text-on-surface font-semibold">Business phone</Label>
           <Input {...register("businessPhone")} disabled={isPending} />
           {errors.businessPhone && <p className="text-xs text-rose-300">{errors.businessPhone.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Fallback contact method</Label>
+          <Label className="text-on-surface font-semibold">Fallback contact method</Label>
           <select {...register("fallbackContactMethod")} disabled={isPending} className={selectClassName}>
             {voiceFallbackContactOptions.map((option) => (
               <option key={option} value={option}>
@@ -214,32 +313,32 @@ function TrainingIdentityForm({ initialValues }: { initialValues: TrainingProfil
           {errors.fallbackContactMethod && <p className="text-xs text-rose-300">{errors.fallbackContactMethod.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Main goal</Label>
+          <Label className="text-on-surface font-semibold">Main goal</Label>
           <Input {...register("mainGoal")} disabled={isPending} placeholder="Answer FAQs, capture leads, route calls..." />
           {errors.mainGoal && <p className="text-xs text-rose-300">{errors.mainGoal.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Opening hours</Label>
+          <Label className="text-on-surface font-semibold">Opening hours</Label>
           <Textarea {...register("openingHours")} disabled={isPending} className="min-h-[100px]" />
           {errors.openingHours && <p className="text-xs text-rose-300">{errors.openingHours.message}</p>}
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Greeting message</Label>
+          <Label className="text-on-surface font-semibold">Greeting message</Label>
           <Textarea {...register("greetingMessage")} disabled={isPending} className="min-h-[100px]" />
           {errors.greetingMessage && <p className="text-xs text-rose-300">{errors.greetingMessage.message}</p>}
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Closing message</Label>
+          <Label className="text-on-surface font-semibold">Closing message</Label>
           <Textarea {...register("closingMessage")} disabled={isPending} className="min-h-[100px]" />
           {errors.closingMessage && <p className="text-xs text-rose-300">{errors.closingMessage.message}</p>}
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Holiday or closed days placeholder</Label>
+          <Label className="text-on-surface font-semibold">Holiday or closed days placeholder</Label>
           <Textarea {...register("holidayClosures")} disabled={isPending} className="min-h-[80px]" />
         </div>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : "Save business identity"}
         </Button>
       </div>
@@ -286,35 +385,35 @@ function ServiceItemForm({ initialValues }: { initialValues: ServiceItemValues }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-[24px] border border-outline-variant/30 bg-surface-container-lowest p-5">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-slate-200">Service or menu item</Label>
+          <Label className="text-on-surface font-semibold">Service or menu item</Label>
           <Input {...register("name")} disabled={isPending} />
           {errors.name && <p className="text-xs text-rose-300">{errors.name.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Category</Label>
+          <Label className="text-on-surface font-semibold">Category</Label>
           <Input {...register("category")} disabled={isPending} />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Description</Label>
+          <Label className="text-on-surface font-semibold">Description</Label>
           <Textarea {...register("description")} disabled={isPending} className="min-h-[90px]" />
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Price placeholder</Label>
+          <Label className="text-on-surface font-semibold">Price placeholder</Label>
           <Input {...register("pricePlaceholder")} disabled={isPending} placeholder="PKR 2,500 / Consultation fee on request" />
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Availability</Label>
+          <Label className="text-on-surface font-semibold">Availability</Label>
           <Input {...register("availability")} disabled={isPending} placeholder="Weekdays only / Seasonal / In stock" />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Notes</Label>
+          <Label className="text-on-surface font-semibold">Notes</Label>
           <Textarea {...register("notes")} disabled={isPending} className="min-h-[80px]" />
         </div>
         <div className="space-y-3 md:col-span-2">
-          <Label className="text-slate-200">Modes and visibility</Label>
+          <Label className="text-on-surface font-semibold">Modes and visibility</Label>
           <div className="grid gap-3 md:grid-cols-2">
             {[
               { field: "takeawayAvailable", checked: takeawayAvailable, label: "Takeaway available" },
@@ -324,7 +423,7 @@ function ServiceItemForm({ initialValues }: { initialValues: ServiceItemValues }
             ].map(({ field, checked, label }) => (
               <label
                 key={field}
-                className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3 text-sm text-slate-200"
+                className="flex items-center justify-between rounded-2xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface"
               >
                 <span>{label}</span>
                 <Switch checked={Boolean(checked)} onCheckedChange={(next) => setValue(field as keyof ServiceItemValues, Boolean(next))} />
@@ -339,7 +438,7 @@ function ServiceItemForm({ initialValues }: { initialValues: ServiceItemValues }
             Delete
           </Button>
         ) : null}
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : initialValues.id ? "Save service item" : "Add service item"}
         </Button>
       </div>
@@ -350,6 +449,7 @@ function ServiceItemForm({ initialValues }: { initialValues: ServiceItemValues }
 function ServiceCatalogSection({ items }: { items: VoiceTrainingWorkspace["serviceItems"] }) {
   return (
     <div className="space-y-6">
+      <MenuUploadCard />
       <SectionCard
         title="Services, menu, and offerings"
         description="Define what this business offers so the receptionist can describe real services and collect the right request details."
@@ -376,7 +476,7 @@ function ServiceCatalogSection({ items }: { items: VoiceTrainingWorkspace["servi
       >
         <div className="space-y-4">
           {items.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-white/5 px-5 py-10 text-center text-sm text-slate-300">
+            <div className="rounded-[24px] border border-dashed border-outline-variant/30 bg-surface-container-lowest px-5 py-10 text-center text-sm text-on-surface-variant">
               No service or menu items yet. Add your first item above.
             </div>
           ) : (
@@ -429,12 +529,12 @@ function BookingRulesForm({ initialValues }: { initialValues: BookingRulesValues
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid gap-5 md:grid-cols-2">
-        <label className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3 text-sm text-slate-200 md:col-span-2">
+        <label className="flex items-center justify-between rounded-2xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface md:col-span-2">
           <span>Accept booking or appointment requests</span>
           <Switch checked={acceptsBookings} onCheckedChange={(next) => setValue("acceptsBookings", Boolean(next))} />
         </label>
         <div className="space-y-2">
-          <Label className="text-slate-200">Booking type</Label>
+          <Label className="text-on-surface font-semibold">Booking type</Label>
           <select {...register("bookingType")} disabled={isPending} className={selectClassName}>
             {voiceBookingTypeOptions.map((option) => (
               <option key={option} value={option}>{option.replaceAll("_", " ")}</option>
@@ -442,7 +542,7 @@ function BookingRulesForm({ initialValues }: { initialValues: BookingRulesValues
           </select>
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Booking mode</Label>
+          <Label className="text-on-surface font-semibold">Booking mode</Label>
           <select {...register("bookingMode")} disabled={isPending} className={selectClassName}>
             {voiceBookingModeOptions.map((option) => (
               <option key={option} value={option}>{option.replaceAll("_", " ")}</option>
@@ -451,7 +551,7 @@ function BookingRulesForm({ initialValues }: { initialValues: BookingRulesValues
           {errors.bookingMode && <p className="text-xs text-rose-300">{errors.bookingMode.message}</p>}
         </div>
         <div className="space-y-3 md:col-span-2">
-          <Label className="text-slate-200">Required fields</Label>
+          <Label className="text-on-surface font-semibold">Required fields</Label>
           <Controller
             control={control}
             name="requiredFields"
@@ -461,28 +561,28 @@ function BookingRulesForm({ initialValues }: { initialValues: BookingRulesValues
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Max party size</Label>
+          <Label className="text-on-surface font-semibold">Max party size</Label>
           <Input type="number" {...register("maxPartySize")} disabled={isPending} />
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Booking duration (minutes)</Label>
+          <Label className="text-on-surface font-semibold">Booking duration (minutes)</Label>
           <Input type="number" {...register("bookingDurationMinutes")} disabled={isPending} />
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Advance booking limit (hours)</Label>
+          <Label className="text-on-surface font-semibold">Advance booking limit (hours)</Label>
           <Input type="number" {...register("advanceBookingLimitHours")} disabled={isPending} />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Confirmation message</Label>
+          <Label className="text-on-surface font-semibold">Confirmation message</Label>
           <Textarea {...register("confirmationMessage")} disabled={isPending} className="min-h-[90px]" />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Fallback message</Label>
+          <Label className="text-on-surface font-semibold">Fallback message</Label>
           <Textarea {...register("fallbackMessage")} disabled={isPending} className="min-h-[90px]" />
         </div>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : "Save booking rules"}
         </Button>
       </div>
@@ -514,12 +614,12 @@ function OrderRulesForm({ initialValues }: { initialValues: OrderRulesValues }) 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid gap-5 md:grid-cols-2">
-        <label className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3 text-sm text-slate-200 md:col-span-2">
+        <label className="flex items-center justify-between rounded-2xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface md:col-span-2">
           <span>Accept order requests</span>
           <Switch checked={acceptsOrderRequests} onCheckedChange={(next) => setValue("acceptsOrderRequests", Boolean(next))} />
         </label>
         <div className="space-y-2">
-          <Label className="text-slate-200">Order mode</Label>
+          <Label className="text-on-surface font-semibold">Order mode</Label>
           <select {...register("orderMode")} disabled={isPending} className={selectClassName}>
             {voiceOrderModeOptions.map((option) => (
               <option key={option} value={option}>{option.replaceAll("_", " ")}</option>
@@ -528,7 +628,7 @@ function OrderRulesForm({ initialValues }: { initialValues: OrderRulesValues }) 
           {errors.orderMode && <p className="text-xs text-rose-300">{errors.orderMode.message}</p>}
         </div>
         <div className="space-y-3 md:col-span-2">
-          <Label className="text-slate-200">Order types</Label>
+          <Label className="text-on-surface font-semibold">Order types</Label>
           <Controller
             control={control}
             name="orderTypes"
@@ -538,7 +638,7 @@ function OrderRulesForm({ initialValues }: { initialValues: OrderRulesValues }) 
           />
         </div>
         <div className="space-y-3 md:col-span-2">
-          <Label className="text-slate-200">Required fields</Label>
+          <Label className="text-on-surface font-semibold">Required fields</Label>
           <Controller
             control={control}
             name="requiredFields"
@@ -548,16 +648,16 @@ function OrderRulesForm({ initialValues }: { initialValues: OrderRulesValues }) 
           />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Allergy disclaimer</Label>
+          <Label className="text-on-surface font-semibold">Allergy disclaimer</Label>
           <Textarea {...register("allergyDisclaimer")} disabled={isPending} className="min-h-[90px]" />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Order confirmation wording</Label>
+          <Label className="text-on-surface font-semibold">Order confirmation wording</Label>
           <Textarea {...register("confirmationWording")} disabled={isPending} className="min-h-[90px]" />
         </div>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : "Save order rules"}
         </Button>
       </div>
@@ -589,19 +689,19 @@ function HandoffRulesForm({ initialValues }: { initialValues: HandoffRulesValues
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-slate-200">Fallback phone</Label>
+          <Label className="text-on-surface font-semibold">Fallback phone</Label>
           <Input {...register("fallbackPhone")} disabled={isPending} />
         </div>
         <div className="space-y-2">
-          <Label className="text-slate-200">Fallback email</Label>
+          <Label className="text-on-surface font-semibold">Fallback email</Label>
           <Input {...register("fallbackEmail")} disabled={isPending} />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-slate-200">Staff notification placeholder</Label>
+          <Label className="text-on-surface font-semibold">Staff notification placeholder</Label>
           <Textarea {...register("staffNotificationPlaceholder")} disabled={isPending} className="min-h-[90px]" />
         </div>
         <div className="space-y-3 md:col-span-2">
-          <Label className="text-slate-200">When to hand off</Label>
+          <Label className="text-on-surface font-semibold">When to hand off</Label>
           <Controller
             control={control}
             name="handoffTriggers"
@@ -613,7 +713,7 @@ function HandoffRulesForm({ initialValues }: { initialValues: HandoffRulesValues
         </div>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : "Save handoff rules"}
         </Button>
       </div>
@@ -645,7 +745,7 @@ function ActionPolicyForm({ initialValues }: { initialValues: ActionPolicyValues
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-3">
-          <Label className="text-slate-200">Allowed AI actions</Label>
+          <Label className="text-on-surface font-semibold">Allowed AI actions</Label>
           <Controller
             control={control}
             name="allowedActions"
@@ -656,7 +756,7 @@ function ActionPolicyForm({ initialValues }: { initialValues: ActionPolicyValues
           {errors.allowedActions && <p className="text-xs text-rose-300">{errors.allowedActions.message}</p>}
         </div>
         <div className="space-y-3">
-          <Label className="text-slate-200">Blocked AI actions</Label>
+          <Label className="text-on-surface font-semibold">Blocked AI actions</Label>
           <Controller
             control={control}
             name="blockedActions"
@@ -671,7 +771,7 @@ function ActionPolicyForm({ initialValues }: { initialValues: ActionPolicyValues
         ERP writes and backend auto-confirmation remain disabled by default. This training center can only save safe request data until dedicated backend flows are implemented.
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90">
           {isPending ? "Saving..." : "Save action policy"}
         </Button>
       </div>
@@ -769,13 +869,13 @@ function PromptPreviewCard({
               type="button"
               onClick={syncPrompt}
               disabled={!syncAvailable || isPending || validationErrors.length > 0}
-              className="bg-cyan-400 text-slate-950 hover:bg-cyan-300"
+              className="bg-primary text-on-primary hover:bg-primary/90"
             >
               {isPending ? "Syncing..." : "Sync to Vapi assistant"}
             </Button>
           </div>
           {!syncAvailable ? (
-            <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mt-2">
+            <p className="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant mt-2">
               Sync becomes available only when Vapi keys and a business-specific Vapi assistant ID are configured.
             </p>
           ) : null}
@@ -786,52 +886,52 @@ function PromptPreviewCard({
         title="Vapi mapping"
         description="Read-only mapping status for this tenant's assistant. Public webhook routes must resolve through these tenant-safe identifiers."
       >
-        <div className="space-y-4 text-sm text-slate-200">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Caller-facing business name</div>
-            <div className="mt-2 break-all text-white">{businessName}</div>
+        <div className="space-y-4 text-sm text-on-surface">
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Caller-facing business name</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{businessName}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Generated assistant name</div>
-            <div className="mt-2 break-all text-white">{assistantName}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Generated assistant name</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{assistantName}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Internal key</div>
-            <div className="mt-2 break-all text-white">{internalName || "Not generated"}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Internal key</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{internalName || "Not generated"}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Phone tracking label</div>
-            <div className="mt-2 break-all text-white">{phoneTrackingName || "Not generated yet"}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Phone tracking label</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{phoneTrackingName || "Not generated yet"}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Generated first message</div>
-            <div className="mt-2 text-white">{firstMessage}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Generated first message</div>
+            <div className="mt-2 text-on-surface font-semibold">{firstMessage}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Vapi assistant ID</div>
-            <div className="mt-2 break-all text-white">{assistantId || "Not connected"}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Vapi assistant ID</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{assistantId || "Not connected"}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Vapi phone number ID</div>
-            <div className="mt-2 break-all text-white">{phoneNumberId || "Not connected"}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Vapi phone number ID</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{phoneNumberId || "Not connected"}</div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Server URL</div>
-            <div className="mt-2 break-all text-white">{webhookUrl || "Not configured"}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Server URL</div>
+            <div className="mt-2 break-all text-on-surface font-semibold">{webhookUrl || "Not configured"}</div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Webhook secret</div>
-              <div className="mt-2 text-white">{webhookSecretConfigured ? "Configured" : "Missing"}</div>
+            <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+              <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Webhook secret</div>
+              <div className="mt-2 text-on-surface font-semibold">{webhookSecretConfigured ? "Configured" : "Missing"}</div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Calling enabled</div>
-              <div className="mt-2 text-white">{callingEnabled ? "Enabled" : "Disabled"}</div>
+            <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+              <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Calling enabled</div>
+              <div className="mt-2 text-on-surface font-semibold">{callingEnabled ? "Enabled" : "Disabled"}</div>
             </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Last synced at</div>
-            <div className="mt-2 text-white">{lastPromptSyncedAt ? new Date(lastPromptSyncedAt).toLocaleString() : "Never synced"}</div>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Last synced at</div>
+            <div className="mt-2 text-on-surface font-semibold">{lastPromptSyncedAt ? new Date(lastPromptSyncedAt).toLocaleString() : "Never synced"}</div>
           </div>
         </div>
       </SectionCard>
@@ -878,18 +978,18 @@ export function VoiceTrainingCenter({ workspace }: VoiceTrainingCenterProps) {
         description="Use the same tenant-safe hours that webhook tools and prompt generation will read back to callers."
       >
         <div className="grid gap-4 md:grid-cols-2 text-sm">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Weekly opening hours</div>
-            <p className="mt-3 whitespace-pre-wrap text-slate-100">{runtime.businessIdentity.openingHours || "Not configured yet."}</p>
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Weekly opening hours</div>
+            <p className="mt-3 whitespace-pre-wrap text-on-surface font-semibold">{runtime.businessIdentity.openingHours || "Not configured yet."}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">After-hours behavior</div>
-            <p className="mt-3 text-slate-100">
+          <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">After-hours behavior</div>
+            <p className="mt-3 text-on-surface font-semibold">
               {workspace.receptionistSettings?.afterHoursBehavior
                 ? workspace.receptionistSettings.afterHoursBehavior.replaceAll("_", " ")
                 : voiceAfterHoursBehaviorOptions[0].replaceAll("_", " ")}
             </p>
-            <p className="mt-3 text-slate-300">
+            <p className="mt-3 text-on-surface-variant">
               Holiday placeholder: {runtime.businessIdentity.holidayClosures || "No holiday rule configured yet."}
             </p>
           </div>
