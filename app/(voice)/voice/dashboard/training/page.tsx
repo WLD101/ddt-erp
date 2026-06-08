@@ -10,10 +10,10 @@ export default async function VoiceTrainingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-white/10 bg-slate-950/35 px-6 py-6 text-slate-50">
-        <div className="text-xs font-semibold uppercase tracking-[0.34em] text-cyan-300">Business Training Profile</div>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">Train your AI receptionist per business</h1>
-        <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
+      <div className="rounded-[28px] border border-outline-variant/30 bg-surface px-6 py-6 text-on-surface shadow-xs">
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Business Training Profile</div>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-on-surface">Train your AI receptionist per business</h1>
+        <p className="mt-3 max-w-4xl text-sm leading-7 text-on-surface-variant">
           Configure identity, FAQs, hours, booking rules, order rules, handoff boundaries, and allowed actions for this
           tenant's receptionist. This data is tenant-scoped and separate from the ERP Smart Assistant.
         </p>
@@ -23,10 +23,10 @@ export default async function VoiceTrainingPage() {
         {workspace.setupChecklist.map((item) => (
           <div
             key={item.label}
-            className="rounded-[24px] border border-white/10 bg-slate-950/35 px-5 py-4 text-sm text-slate-200"
+            className="rounded-[24px] border border-outline-variant/20 bg-surface px-5 py-4 text-sm text-on-surface shadow-xs"
           >
-            <div className="text-xs uppercase tracking-[0.28em] text-slate-400">{item.label}</div>
-            <div className={`mt-3 font-semibold ${item.complete ? "text-emerald-300" : "text-amber-200"}`}>
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">{item.label}</div>
+            <div className={`mt-3 font-semibold ${item.complete ? "text-emerald-600" : "text-amber-600"}`}>
               {item.complete ? "Configured" : "Needs setup"}
             </div>
           </div>

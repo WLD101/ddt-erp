@@ -5,7 +5,7 @@ import { CommandPalette } from "../dashboard/CommandPalette";
 
 export function VoiceSidebar() {
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-full w-[260px] flex-col justify-between border-r border-white/10 bg-slate-950 shadow-[0_4px_40px_rgba(8,47,73,0.5)] md:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-full w-[260px] flex-col justify-between border-r border-outline-variant/30 bg-white shadow-soft md:flex">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-7 py-8">
           <div className="flex items-center gap-4">
@@ -33,29 +33,29 @@ export function VoiceSidebar() {
           <SidebarActiveLink href="/dashboard" icon="dashboard" label="Dashboard" />
           <SidebarActiveLink href="/dashboard/command-center" icon="admin_panel_settings" label="Command Center" />
           
-          <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300/40">Receptionist</div>
+          <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">Receptionist</div>
           <SidebarActiveLink href="/dashboard/agents" icon="smart_toy" label="AI Agents" />
           <SidebarActiveLink href="/dashboard/knowledge-base" icon="library_books" label="Knowledge Base" />
           <SidebarActiveLink href="/dashboard/training" icon="model_training" label="Training" />
           
-          <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300/40">Activity</div>
+          <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">Activity</div>
           <SidebarActiveLink href="/dashboard/call-logs" icon="call" label="Call Logs" />
           <SidebarActiveLink href="/dashboard/leads" icon="person_add" label="Leads" />
           <SidebarActiveLink href="/dashboard/reservations" icon="event_seat" label="Reservations" />
           <SidebarActiveLink href="/dashboard/orders" icon="shopping_bag" label="Orders" />
           
-          <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300/40">System</div>
+          <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">System</div>
           <SidebarActiveLink href="/dashboard/integrations" icon="hub" label="Integrations" />
           <SidebarActiveLink href="/dashboard/settings" icon="settings" label="Settings" />
         </nav>
       </div>
 
-      <div className="p-4 bg-slate-950/30 border-t border-white/5">
+      <div className="p-4 bg-surface-container-low/30 border-t border-outline-variant/10">
         <div className="space-y-1">
           <form action={signOutAction}>
             <button 
               type="submit"
-              className="w-full flex items-center gap-3 px-5 py-3 text-rose-400 hover:bg-rose-400/5 transition-all duration-300 rounded-xl group"
+              className="w-full flex items-center gap-3 px-5 py-3 text-error hover:bg-error/5 transition-all duration-300 rounded-xl group"
             >
               <span className="material-symbols-outlined text-[20px] group-hover:rotate-12 transition-transform">logout</span>
               <span className="text-[11px] font-black uppercase tracking-widest">Sign Out</span>

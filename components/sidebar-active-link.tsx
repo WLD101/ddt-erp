@@ -6,12 +6,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 function isActiveRoute(pathname: string, href: string) {
+  const cleanPath = pathname.startsWith("/voice") ? pathname.slice(6) || "/" : pathname;
   if (href === "/dashboard") {
-    return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+    return cleanPath === "/dashboard" || cleanPath.startsWith("/dashboard/");
   }
-
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return cleanPath === href || cleanPath.startsWith(`${href}/`);
 }
+
 
 export function SidebarActiveLink({
   href,
