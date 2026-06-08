@@ -159,7 +159,7 @@ function MenuUploadCard() {
         toast.error(result.error);
         return;
       }
-      toast.success(`Successfully imported ${result.count} service items using ${result.method}!`);
+      toast.success(`Successfully imported ${result.data.count} service items using ${result.data.method}!`);
       setMenuText("");
       router.refresh();
     });
