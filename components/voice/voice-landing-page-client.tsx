@@ -78,8 +78,8 @@ export function VoiceLandingPageClient({
       >
         <div className="mx-auto max-w-7xl flex items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#21D4FD] to-indigo-500 p-2 shadow-lg shadow-[#21D4FD]/20 group-hover:scale-105 transition-all">
-              <Phone className="h-5 w-5 text-[#050816] stroke-[2.5]" />
+            <div className="bg-white p-1.5 rounded-xl border border-white/20 flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-white/10">
+              <img src="/logo-emblem.png" alt="WhatsQuery Logo" className="w-6 h-6 object-contain" />
             </div>
             <span className="text-lg font-black tracking-tight bg-gradient-to-r from-white to-[#A7B0C0] bg-clip-text text-transparent group-hover:text-white transition-all">
               WhatsQuery Voice
@@ -636,8 +636,8 @@ export function VoiceLandingPageClient({
       <footer className="py-12 border-t border-white/5 bg-[#050816] text-[#A7B0C0] text-sm px-6">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-gradient-to-tr from-[#21D4FD] to-indigo-500 flex items-center justify-center p-1">
-              <Phone className="h-3.5 w-3.5 text-[#050816]" />
+            <div className="bg-white p-1 rounded-md border border-white/20 flex items-center justify-center">
+              <img src="/logo-emblem.png" alt="WhatsQuery Logo" className="w-4 h-4 object-contain" />
             </div>
             <span className="font-bold text-white">WhatsQuery Voice</span>
           </div>

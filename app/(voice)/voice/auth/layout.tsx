@@ -21,19 +21,10 @@ export default async function VoiceAuthLayout({
       <header className="fixed top-0 z-30 w-full border-b border-white/5 bg-[#0A0A0B]/80 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href={homeHref} className="hover:opacity-80 transition-opacity flex items-center gap-3">
-            <div className="bg-cyan-500/10 p-2 rounded-xl border border-cyan-500/20">
-              <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
+            <div className="bg-white p-1.5 rounded-xl border border-white/20 flex items-center justify-center">
+              <img src="/logo-emblem.png" alt="WhatsQuery Logo" className="w-6 h-6 object-contain" />
             </div>
             <span className="text-xl font-black tracking-tight text-white">WhatsQuery <span className="text-cyan-400">Voice</span></span>
-          </Link>
-
-          <Link
-            href={signupHref}
-            className="hidden rounded-full bg-cyan-400/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-cyan-400 border border-cyan-400/20 shadow-lg shadow-cyan-900/20 transition hover:bg-cyan-400/20 md:block"
-          >
-            Create Workspace
           </Link>
         </nav>
       </header>
