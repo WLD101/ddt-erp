@@ -13,8 +13,8 @@ const integrationCards = [
   },
   {
     key: "twilio",
-    title: "Twilio",
-    description: "Future PSTN calling, phone numbers, and webhook ingestion.",
+    title: "Twilio Telephony Provider",
+    description: "Connect your Twilio account to easily configure custom Pakistani or international numbers to route calls.",
     envs: ["VOICE_TWILIO_ACCOUNT_SID", "VOICE_TWILIO_AUTH_TOKEN", "VOICE_TWILIO_PHONE_NUMBER"],
   },
   {
@@ -130,6 +130,35 @@ export default async function VoiceIntegrationsPage() {
                       Calling is currently disabled. Keep it disabled until the assistant and phone number are fully ready for the demo.
                     </div>
                   ) : null}
+                </div>
+              ) : null}
+
+              {card.key === "twilio" ? (
+                <div className="mt-5 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Twilio status</div>
+                    <Link href="/voice/dashboard/integrations/twilio" className="text-xs font-bold text-primary hover:underline">
+                      Manage setup →
+                    </Link>
+                  </div>
+                  {settings?.twilioStatus === "CONNECTED" && settings?.providerConfigNotes ? (
+                    (() => {
+                      try {
+                        const parsed = JSON.parse(settings.providerConfigNotes);
+                        return (
+                          <ul className="space-y-2 text-sm text-on-surface-variant">
+                            <li className="flex justify-between"><span>Account SID</span><span className="font-semibold text-on-surface">...{parsed.accountSid?.slice(-8)}</span></li>
+                            <li className="flex justify-between"><span>Twilio Phone Number</span><span className="font-semibold text-primary">{parsed.phoneNumber}</span></li>
+                            <li className="flex justify-between"><span>Status</span><span className="font-bold text-emerald-500">CONNECTED</span></li>
+                          </ul>
+                        );
+                      } catch {
+                        return <p className="text-xs text-on-surface-variant">Twilio credentials configured.</p>;
+                      }
+                    })()
+                  ) : (
+                    <p className="text-xs text-on-surface-variant">No Twilio credentials configured. Connect a Twilio account to get an active Pakistani call-forwarding route.</p>
+                  )}
                 </div>
               ) : null}
             </div>

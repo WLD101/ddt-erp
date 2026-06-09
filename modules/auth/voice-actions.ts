@@ -4,6 +4,7 @@ import { voiceSignUpSchema, bootstrapVoiceOrganization } from "./voice-service";
 import { checkRateLimit, rateLimitKey } from "@/lib/security/rate-limit";
 import { requestOtp, verifyOtp } from "@/modules/otp/service";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
+import { prisma } from "@/lib/prisma";
 
 export async function requestVoiceSignupOtpAction(data: unknown) {
   const result = voiceSignUpSchema.safeParse(data);
@@ -74,3 +75,39 @@ export async function verifyVoiceSignupOtpAction(data: unknown) {
     return { error: error.message || "Failed to complete signup." };
   }
 }
+
+export async function resendVoiceSignupOtpAction(email: string) {
+  if (!email) return { error: "Email is required to resend verification code." };
+
+  const lastVerification = await prisma.otpVerification.findFirst({
+    where: { email: email.toLowerCase(), purpose: "VOICE_SIGNUP", verifiedAt: null },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!lastVerification) {
+    return { error: "No pending signup verification found for this email address. Please sign up again." };
+  }
+
+  const payload = lastVerification.payload ? JSON.parse(lastVerification.payload) : undefined;
+
+  try {
+    const otpRequest = await requestOtp({
+      email,
+      purpose: "VOICE_SIGNUP",
+      payload,
+    });
+    if (!otpRequest.ok) {
+      return { error: otpRequest.error || "Unable to resend verification code right now." };
+    }
+    await writePlatformAuditLog({
+      action: "OTP_RESENT",
+      entityType: "VoiceSignup",
+      entityId: email.toLowerCase(),
+      details: "Voice signup OTP resent.",
+    });
+    return { success: "A new verification code has been sent to your email." };
+  } catch (error: any) {
+    return { error: error.message || "Failed to resend verification code." };
+  }
+}
+

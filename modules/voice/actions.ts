@@ -831,3 +831,46 @@ export const importVoiceMenuAction = createServerAction({
   },
 });
 
+export const saveTwilioSettingsAction = createServerAction({
+  label: "Save Twilio Settings",
+  schema: z.object({
+    accountSid: z.string().trim().min(1, "Account SID is required."),
+    authToken: z.string().trim().min(1, "Auth Token is required."),
+    phoneNumber: z.string().trim().min(1, "Twilio Phone Number is required."),
+    twilioStatus: z.string().default("CONNECTED"),
+  }),
+  roles: ["owner", "admin"],
+  enforceBilling: false,
+  audit: {
+    action: "VOICE_TWILIO_SETTINGS_UPDATED",
+    entityType: "VoiceIntegrationSettings",
+    getEntityId: (result) => result.id,
+    getDetails: (input) => `Updated Twilio integration settings for phone number ${input.phoneNumber}.`,
+  },
+  handler: async ({ input, context: { db, orgId } }) => {
+    const configNotes = JSON.stringify({
+      accountSid: input.accountSid,
+      authToken: input.authToken,
+      phoneNumber: input.phoneNumber,
+    });
+
+    const settings = await db.voiceIntegrationSettings.upsert({
+      where: { organizationId: orgId },
+      update: {
+        twilioStatus: input.twilioStatus,
+        providerConfigNotes: configNotes,
+      },
+      create: {
+        organizationId: orgId,
+        twilioStatus: input.twilioStatus,
+        providerConfigNotes: configNotes,
+      },
+    });
+
+    voiceRevalidatePaths.forEach((path) => revalidatePath(path));
+
+    return settings;
+  },
+});
+
+

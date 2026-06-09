@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { assignPackageAction, approveManualPaymentAction, rejectManualPaymentAction } from "./actions";
+import { signOutAction } from "@/modules/auth/actions";
 
 const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
 
@@ -211,13 +212,23 @@ export default async function VoiceAdminCommandCenterPage() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),linear-gradient(180deg,#f8f9ff_0%,#eef4ff_100%)] text-on-surface pb-12">
       <div className="mx-auto max-w-7xl space-y-8 px-6 pt-8">
         
-        {/* Banner Section */}
         <section className="overflow-hidden rounded-[32px] border border-outline-variant/30 bg-linear-to-br from-surface via-surface to-surface-container-low shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
           <div className="flex flex-col gap-8 px-8 py-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-4">
-              <Badge className="border-none bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20">
-                Command Center
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Badge className="border-none bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20">
+                  Command Center
+                </Badge>
+                <form action={signOutAction}>
+                  <button 
+                    type="submit" 
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest text-error hover:bg-error/10 border border-error/20 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[12px] font-normal">logout</span>
+                    Sign Out
+                  </button>
+                </form>
+              </div>
               <div className="space-y-3">
                 <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-on-surface sm:text-5xl">
                   <span className="material-symbols-outlined text-[34px] text-primary sm:text-[40px]">graphic_eq</span>

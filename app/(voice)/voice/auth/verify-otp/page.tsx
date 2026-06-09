@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState, Suspense } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { verifyVoiceSignupOtpAction } from "@/modules/auth/voice-actions";
+import { verifyVoiceSignupOtpAction, resendVoiceSignupOtpAction } from "@/modules/auth/voice-actions";
 
 function VoiceVerifyOtpContent() {
   const router = useRouter();
@@ -14,6 +14,13 @@ function VoiceVerifyOtpContent() {
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    if (initialEmail) {
+      setEmail(initialEmail);
+    }
+  }, [initialEmail]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,11 +38,31 @@ function VoiceVerifyOtpContent() {
     }
   }
 
+  async function onResend() {
+    if (!email) {
+      toast.error("Please enter your email address to resend the code.");
+      return;
+    }
+    setIsResending(true);
+    try {
+      const result = await resendVoiceSignupOtpAction(email);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(result.success || "Verification code resent successfully.");
+      }
+    } catch {
+      toast.error("Failed to resend verification code.");
+    } finally {
+      setIsResending(false);
+    }
+  }
+
   return (
     <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/50 p-8 backdrop-blur-xl shadow-2xl">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-black text-white">Check your email</h1>
-        <p className="mt-2 text-sm text-slate-400">We sent a 6-digit verification code to <strong>{email}</strong></p>
+        <p className="mt-2 text-sm text-slate-400">We sent a 6-digit verification code to <strong className="text-cyan-400">{email || "your address"}</strong></p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
@@ -45,10 +72,10 @@ function VoiceVerifyOtpContent() {
             id="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-slate-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-colors opacity-70"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-slate-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-colors"
             type="email"
-            readOnly
             required
+            placeholder="name@company.com"
           />
         </div>
         <div className="space-y-2">
@@ -75,9 +102,17 @@ function VoiceVerifyOtpContent() {
         </button>
       </form>
 
-      <div className="mt-8 text-center text-sm text-slate-400">
-        Didn&apos;t receive it?{" "}
-        <Link href="/voice/auth/signup" className="font-bold text-cyan-400 hover:underline">
+      <div className="mt-8 flex flex-col items-center gap-4 text-sm text-slate-400">
+        <button
+          onClick={onResend}
+          disabled={isResending}
+          className="inline-flex items-center gap-2 font-bold text-cyan-400 hover:underline disabled:opacity-50"
+        >
+          {isResending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          <span>Resend Code</span>
+        </button>
+
+        <Link href="/voice/auth/signup" className="font-bold text-slate-300 hover:underline">
           Go back to signup
         </Link>
       </div>
