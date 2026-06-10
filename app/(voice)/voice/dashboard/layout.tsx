@@ -32,7 +32,7 @@ export default async function VoiceDashboardLayout({
     if (!adminMembership) {
       return (
         <div className="flex min-h-screen w-full bg-surface-container-lowest overflow-hidden">
-          <VoiceSidebar />
+          <VoiceSidebar isAdmin={isPlatformAdminEmail(session.user.email)} />
           <div className="flex flex-col flex-1 min-w-0 md:pl-[260px]">
             <Navbar />
             <main className="flex-1 overflow-auto bg-surface-container-low/20">
@@ -63,9 +63,19 @@ export default async function VoiceDashboardLayout({
   const ctx = await getCurrentTenantContext();
   requireRole(ctx, "owner", "admin");
 
+  const org = await prisma.organization.findUnique({
+    where: { id: ctx.organizationId },
+    select: { accessStatus: true },
+  });
+
+  if (org?.accessStatus === "payment_pending") {
+    const pricingHref = toVoiceExternalPath("/pricing", host);
+    redirect(pricingHref);
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-surface-container-lowest overflow-hidden">
-      <VoiceSidebar />
+      <VoiceSidebar isAdmin={isPlatformAdminEmail(session.user.email)} />
       <div className="flex flex-col flex-1 min-w-0 md:pl-[260px]">
         <Navbar />
         <main className="flex-1 overflow-auto bg-surface-container-low/20">

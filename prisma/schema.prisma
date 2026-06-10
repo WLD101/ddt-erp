@@ -196,6 +196,9 @@ model Organization {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  walletBalance Decimal @default(0.00) @db.Decimal(10, 2)
+  perMinuteRate Decimal @default(80.00) @db.Decimal(10, 2)
+
   onboarding          OnboardingState?
   members             OrganizationUser[]
   subscription        Subscription?
@@ -713,16 +716,19 @@ model VoiceAgent {
   tone                    String                        @default("PROFESSIONAL")
   voicePersona            String?
   allowedTools            String?
-  vapiAssistantId         String?
+  vapiAssistantId         String?                       @unique
   vapiAssistantName       String?
   vapiPhoneNumberName     String?
-  vapiPhoneNumberId       String?
+  vapiPhoneNumberId       String?                       @unique
+  sipUri                  String?                       @unique
   vapiVoiceId             String?
   clientPublicPhoneNumber String?
   assignedVapiPhoneNumber String?
   forwardingStatus        String                        @default("DISABLED")
   forwardingInstructions  String?
   forwardingVerifiedAt    DateTime?
+  outboundDialingEnabled  Boolean                       @default(false)
+  allowedSipIps           String?
   isDefault               Boolean                       @default(false)
   isActive                Boolean                       @default(true)
   lastPromptSyncedAt      DateTime?
@@ -940,6 +946,7 @@ model VoiceUsageMeter {
   callMinutesThisMonth           Int          @default(0)
   callCostUsdToday               Float        @default(0)
   callCostUsdThisMonth           Float        @default(0)
+  sipRoutingCostUsd              Float        @default(0)
   leadsThisMonth                 Int          @default(0)
   bookingRequestsThisMonth       Int          @default(0)
   orderRequestsThisMonth         Int          @default(0)

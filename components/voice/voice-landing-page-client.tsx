@@ -155,7 +155,7 @@ export function VoiceLandingPageClient({
                 href={onboardingHref}
                 className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#21D4FD] to-blue-500 px-8 py-4 text-sm font-black text-[#050816] shadow-lg shadow-[#21D4FD]/20 hover:shadow-[#21D4FD]/45 hover:scale-[1.03] transition-all"
               >
-                <span>Book a Demo</span>
+                <span>Start 14-Day Free Trial</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link 
@@ -583,6 +583,89 @@ export function VoiceLandingPageClient({
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* 9.5 PRICING SECTION */}
+      <section id="pricing" className="py-32 px-6 border-t border-white/5">
+        <div className="mx-auto max-w-7xl space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-xs uppercase tracking-[0.25em] text-[#21D4FD] font-black">Simple Pricing</h2>
+            <h3 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+              Plans for Every Stage
+            </h3>
+            <p className="max-w-xl mx-auto text-[#A7B0C0]">
+              Transparent pricing with no hidden fees. Upgrade as your call volume grows.
+            </p>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto">
+            {/* Starter */}
+            <div className="rounded-[32px] border border-white/10 bg-slate-900/50 p-8 flex flex-col hover:border-[#21D4FD]/30 transition-all">
+              <h4 className="text-2xl font-black text-white">Starter</h4>
+              <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Perfect for small businesses getting started</p>
+              <div className="mt-6 mb-8">
+                <div className="text-4xl font-black text-white">PKR 15,000</div>
+                <div className="text-sm text-slate-400 mt-1">/month</div>
+              </div>
+              <ul className="space-y-4 flex-1 text-sm text-slate-300">
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 1,500 minutes per month</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 1 phone number</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Custom greeting</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Appointment scheduling</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Call analytics</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
+              </ul>
+              <Link href={onboardingHref} className="mt-8 block w-full py-3 rounded-xl border border-white/20 text-center font-bold text-white hover:bg-white/5 transition-all">Get Started</Link>
+            </div>
+
+            {/* Pro */}
+            <div className="rounded-[32px] border border-[#21D4FD]/50 bg-gradient-to-b from-[#21D4FD]/10 to-transparent p-8 flex flex-col relative shadow-2xl shadow-[#21D4FD]/10 transform md:scale-105 z-10">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#21D4FD] text-slate-950 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">Most Popular</div>
+              <h4 className="text-2xl font-black text-white">Pro</h4>
+              <p className="text-sm text-slate-400 mt-2 min-h-[40px]">For businesses with advanced needs</p>
+              <div className="mt-6 mb-8">
+                <div className="text-4xl font-black text-white">PKR 55,000</div>
+                <div className="text-sm text-slate-400 mt-1">/month</div>
+              </div>
+              <ul className="space-y-4 flex-1 text-sm text-slate-300">
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 7,000 minutes per month</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 2 phone numbers</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Custom greeting</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Appointment scheduling</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Advanced analytics</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Multi-language support (20+)</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Voice options (premium)</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Priority support</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
+              </ul>
+              <Link href={onboardingHref} className="mt-8 block w-full py-3 rounded-xl bg-[#21D4FD] text-center font-bold text-slate-950 hover:opacity-90 transition-all">Get Started</Link>
+            </div>
+
+            {/* Growth */}
+            <div className="rounded-[32px] border border-white/10 bg-slate-900/50 p-8 flex flex-col hover:border-[#21D4FD]/30 transition-all">
+              <h4 className="text-2xl font-black text-white">Growth</h4>
+              <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Ideal for growing businesses</p>
+              <div className="mt-6 mb-8">
+                <div className="text-4xl font-black text-white">PKR 35,000</div>
+                <div className="text-sm text-slate-400 mt-1">/month</div>
+              </div>
+              <ul className="space-y-4 flex-1 text-sm text-slate-300">
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 3,500 minutes per month</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 1 phone number</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Custom greeting</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Appointment scheduling</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Advanced analytics</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Multi-language support (5+)</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Chat + email support</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
+              </ul>
+              <Link href={onboardingHref} className="mt-8 block w-full py-3 rounded-xl border border-white/20 text-center font-bold text-white hover:bg-white/5 transition-all">Get Started</Link>
+            </div>
+
+          </div>
+          
+          <p className="text-center text-xs text-slate-500">*Prices are exclusive of tax</p>
         </div>
       </section>
 

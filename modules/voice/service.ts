@@ -186,12 +186,13 @@ export async function getVoiceDashboardSummary(orgId: string) {
 }
 
 export async function getVoiceOnboardingData(orgId: string) {
-  const [businessProfile, receptionistSettings] = await Promise.all([
+  const [businessProfile, receptionistSettings, organization] = await Promise.all([
     prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { name: true, industryType: true, phone: true } }),
   ]);
 
-  return { businessProfile, receptionistSettings };
+  return { businessProfile, receptionistSettings, organization };
 }
 
 export async function getVoiceSettingsData(orgId: string) {

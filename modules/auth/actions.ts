@@ -268,7 +268,7 @@ export async function joinOrganizationAction(data: unknown) {
 /**
  * FORGOT PASSWORD
  */
-export async function forgotPasswordAction(email: string): Promise<{ success?: boolean; error?: string }> {
+export async function forgotPasswordAction(email: string, isVoice = false): Promise<{ success?: boolean; error?: string }> {
   const limit = await checkRateLimit(rateLimitKey("password-reset", email), {
     limit: 5,
     windowMs: 60 * 60 * 1000,
@@ -278,7 +278,7 @@ export async function forgotPasswordAction(email: string): Promise<{ success?: b
   }
 
   try {
-    await service.requestPasswordReset(email);
+    await service.requestPasswordReset(email, isVoice);
     return { success: true };
   } catch {
     return { success: true };

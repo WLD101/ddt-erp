@@ -81,17 +81,17 @@ export async function bootstrapVoiceOrganization(data: VoiceSignUpInput) {
         industry: "VOICE",
         industryType: businessType,
         lifecycleStatus: "onboarding",
-        accessStatus: "active",
+        accessStatus: "payment_pending",
         isDemoTenant: false,
-        demoExpiresAt,
+        demoExpiresAt: null,
         subscription: {
           create: {
             planId: "unassigned",
-            status: "trialing",
-            paymentStatus: "demo",
-            accessStatus: "active",
+            status: "payment_pending",
+            paymentStatus: "payment_pending",
+            accessStatus: "payment_pending",
             currentPeriodStart: now,
-            currentPeriodEnd: demoExpiresAt,
+            currentPeriodEnd: now,
           }
         }
       },

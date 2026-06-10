@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
-import { VoiceOnboardingForm } from "@/components/voice/voice-onboarding-form";
+import { SmartVoiceOnboardingForm } from "@/components/voice/smart-voice-onboarding-form";
 import { VoiceMarketingShell } from "@/components/voice/voice-marketing-shell";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 import { getVoiceOnboardingData } from "@/modules/voice/service";
@@ -17,6 +17,7 @@ export default async function VoiceOnboardingPage() {
   
   let businessProfile = null;
   let receptionistSettings = null;
+  let organization = null;
 
   if (isAuthenticated) {
     const ctx = await getCurrentTenantContext();
@@ -24,27 +25,20 @@ export default async function VoiceOnboardingPage() {
     const data = await getVoiceOnboardingData(ctx.organizationId);
     businessProfile = data.businessProfile;
     receptionistSettings = data.receptionistSettings;
+    organization = data.organization;
   }
 
   return (
     <VoiceMarketingShell homeHref={homeHref} loginHref={loginHref} onboardingHref={toVoiceExternalPath("/onboarding", host)}>
-      <main className="mx-auto max-w-6xl px-6 py-16">
-        <div className="mb-8 max-w-4xl">
-          <div className="text-[11px] font-black uppercase tracking-[0.32em] text-cyan-300">Business onboarding</div>
-          <h1 className="mt-4 text-4xl font-black tracking-tight text-white">Set up the receptionist before live calls exist</h1>
-          <p className="mt-4 text-sm leading-7 text-slate-300">
-            This onboarding is now real and database-backed. It stores the core business profile that the future AI receptionist will use for tone, goals, and caller handling rules.
-          </p>
-        </div>
-
-        <VoiceOnboardingForm
+      <main className="mx-auto max-w-5xl px-4 py-8 md:py-16">
+        <SmartVoiceOnboardingForm
           dashboardHref={dashboardHref}
           isAuthenticated={isAuthenticated}
           initialValues={{
-            businessName: businessProfile?.businessName ?? "",
-            industry: businessProfile?.industry ?? "",
+            businessName: businessProfile?.businessName ?? organization?.name ?? "",
+            industry: businessProfile?.industry ?? organization?.industryType ?? "",
             website: businessProfile?.website ?? "",
-            businessPhone: businessProfile?.businessPhone ?? "",
+            businessPhone: businessProfile?.businessPhone ?? organization?.phone ?? "",
             preferredLanguage:
               (businessProfile?.preferredLanguage as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??
               (receptionistSettings?.languageMode as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??

@@ -263,7 +263,7 @@ export async function joinByInvitation(data: JoinInput) {
 /**
  * SERVICE: PASSWORD RESET REQUEST
  */
-export async function requestPasswordReset(email: string) {
+export async function requestPasswordReset(email: string, isVoice = false) {
   const normalizedEmail = email.toLowerCase();
   const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (!user) return true;
@@ -280,7 +280,7 @@ export async function requestPasswordReset(email: string) {
     }),
   ]);
 
-  await triggerLifecycleEmail(user.id, null, "PASSWORD_RESET", { token }).catch((error) => {
+  await triggerLifecycleEmail(user.id, null, "PASSWORD_RESET", { token, isVoice }).catch((error) => {
     console.error("[PasswordReset] Email dispatch failed:", error);
   });
 

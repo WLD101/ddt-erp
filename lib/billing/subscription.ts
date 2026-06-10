@@ -205,6 +205,7 @@ export async function createStripeCheckoutSession(input: {
   userName?: string | null;
   planId: PlanId;
   billingCycle: CheckoutBillingCycle;
+  trialPeriodDays?: number;
 }) {
   if (input.planId === "enterprise") {
     throw new Error("Enterprise plans must be activated manually by a platform administrator.");
@@ -281,6 +282,7 @@ export async function createStripeCheckoutSession(input: {
       priceId,
     },
     subscription_data: {
+      trial_period_days: input.trialPeriodDays || undefined,
       metadata: {
         organizationId: input.organizationId,
         userId: input.userId,

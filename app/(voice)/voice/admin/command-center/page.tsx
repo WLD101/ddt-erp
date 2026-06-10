@@ -82,6 +82,7 @@ export default async function VoiceAdminCommandCenterPage() {
     voicePackages,
     pendingPayments,
     recentWebhookEvents,
+    trialOrganizations,
   ] = await Promise.all([
     prisma.voiceBusinessProfile.count(),
     prisma.voiceAgent.count(),
@@ -173,6 +174,16 @@ export default async function VoiceAdminCommandCenterPage() {
     prisma.voiceWebhookEvent.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
+    }),
+    prisma.organization.findMany({
+      where: { subscription: { status: "trialing" } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        subscription: { select: { currentPeriodEnd: true } },
+        VoiceUsageMeter: { select: { callMinutesThisMonth: true, callsThisMonth: true } }
+      }
     }),
   ]);
 
@@ -336,6 +347,64 @@ export default async function VoiceAdminCommandCenterPage() {
                     : "The system is running on manual package overrides. Safe billing fallbacks are enabled: assign packages manually and approve payment receipts offline."}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Trial Quota Usage */}
+          <Card className={`${shellCardClassName} md:col-span-2`}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">hourglass_top</span>
+                Trial Quota Usage
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {trialOrganizations.length === 0 ? (
+                <div className="p-6 text-sm text-on-surface-variant italic">No organizations currently in trial.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-outline-variant/10 bg-surface-container-lowest text-[10px] uppercase tracking-widest text-on-surface-variant">
+                        <th className="px-6 py-3 font-black">Organization</th>
+                        <th className="px-6 py-3 font-black">Trial Ends</th>
+                        <th className="px-6 py-3 font-black">Calls</th>
+                        <th className="px-6 py-3 font-black">Minutes Used</th>
+                        <th className="px-6 py-3 font-black text-right">Quota Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/5">
+                      {trialOrganizations.map((org) => {
+                        const minutesUsed = org.VoiceUsageMeter?.callMinutesThisMonth || 0;
+                        const callsUsed = org.VoiceUsageMeter?.callsThisMonth || 0;
+                        const trialLimit = 50;
+                        const isExceeded = minutesUsed >= trialLimit;
+                        
+                        return (
+                          <tr key={org.id} className="transition-colors hover:bg-surface-container/30">
+                            <td className="px-6 py-4">
+                              <div className="font-bold text-on-surface">{org.name}</div>
+                              <div className="text-xs text-on-surface-variant">{org.email}</div>
+                            </td>
+                            <td className="px-6 py-4 font-medium text-on-surface">
+                              {org.subscription?.currentPeriodEnd ? new Date(org.subscription.currentPeriodEnd).toLocaleDateString() : "N/A"}
+                            </td>
+                            <td className="px-6 py-4 font-black text-on-surface">{callsUsed}</td>
+                            <td className="px-6 py-4 font-black text-on-surface">{minutesUsed} / {trialLimit}</td>
+                            <td className="px-6 py-4 text-right">
+                              {isExceeded ? (
+                                <Badge className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20">Exceeded</Badge>
+                              ) : (
+                                <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">Active</Badge>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </section>

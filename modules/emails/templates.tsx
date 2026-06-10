@@ -172,4 +172,18 @@ export const LifecycleTemplates = {
     ctaLabel: "Finish Onboarding",
     ctaUrl: `${appUrl}/onboarding`,
   }),
+  PASSWORD_RESET: (name: string, customParams?: any) => {
+    const token = customParams?.token || "";
+    const isVoice = customParams?.isVoice;
+    const path = isVoice ? "/voice/auth/reset-password" : "/auth/reset-password";
+    return {
+      subject: "Reset your WhatsQuery password",
+      previewText: "Action required: Reset your password",
+      title: "Reset password",
+      body: `Hi ${name},\n\nWe received a request to reset your password for your WhatsQuery account. Click the button below to choose a new password. This link is valid for 1 hour.`,
+      ctaLabel: "Reset Password",
+      ctaUrl: `${appUrl}${path}?token=${token}`,
+      secondaryText: "If you didn't request a password reset, you can safely ignore this email.",
+    };
+  },
 };

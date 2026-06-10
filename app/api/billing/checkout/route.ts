@@ -10,6 +10,7 @@ import { assertTrustedMutationRequest, RequestOriginError } from "@/lib/security
 const checkoutSchema = z.object({
   planId: z.string().min(1),
   billingCycle: z.enum(["MONTHLY", "YEARLY"]),
+  trialPeriodDays: z.number().optional(),
 });
 
 export async function POST(request: Request) {
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
       userName: session.user.name,
       planId,
       billingCycle: parsed.data.billingCycle,
+      trialPeriodDays: parsed.data.trialPeriodDays,
     });
 
     return NextResponse.json({ url: stripeSession.url });

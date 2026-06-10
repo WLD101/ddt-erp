@@ -17,6 +17,7 @@ type StripeCheckoutLauncherProps = {
   };
   compact?: boolean;
   ctaLabel?: string;
+  trialPeriodDays?: number;
 };
 
 export function StripeCheckoutLauncher({
@@ -26,6 +27,7 @@ export function StripeCheckoutLauncher({
   availableCycles,
   compact = false,
   ctaLabel,
+  trialPeriodDays,
 }: StripeCheckoutLauncherProps) {
   const [billingCycle, setBillingCycle] = useState<Extract<BillingCycle, "MONTHLY" | "YEARLY">>(initialBillingCycle);
   const [loading, setLoading] = useState(false);
@@ -48,6 +50,7 @@ export function StripeCheckoutLauncher({
         body: JSON.stringify({
           planId,
           billingCycle,
+          trialPeriodDays,
         }),
       });
       const payload = (await response.json()) as { error?: string; url?: string };

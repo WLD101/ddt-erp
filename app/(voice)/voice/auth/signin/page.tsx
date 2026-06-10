@@ -66,8 +66,7 @@ function VoiceSignInForm() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Password</label>
-            {/* The ERP forgot password works fine for Voice right now since it's shared identity */}
-            <Link href="/auth/forgot-password" className="text-xs font-bold text-cyan-400 hover:text-cyan-300">
+            <Link href="/voice/auth/forgot-password" className="text-xs font-bold text-cyan-400 hover:text-cyan-300">
               Forgot password?
             </Link>
           </div>

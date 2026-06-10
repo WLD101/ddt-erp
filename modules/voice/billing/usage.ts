@@ -122,6 +122,9 @@ export async function checkUsageLimits(organizationId: string) {
     showEstimatedCost = feats?.showVoiceEstimatedCost === true;
   }
 
+  const isTrialing = org?.subscription?.status === "trialing";
+  const trialMinuteLimit = 50; // 50 minutes max for 14-day free trial
+
   const warnings = [];
   let isBlocked = false;
 
@@ -134,11 +137,18 @@ export async function checkUsageLimits(organizationId: string) {
     isBlocked = true;
   }
 
+  if (isTrialing && meter.callMinutesThisMonth >= trialMinuteLimit) {
+    warnings.push("EXCEEDED_TRIAL_MINUTE_LIMIT");
+    isBlocked = true;
+  }
+
   return {
     meter,
     warnings,
     isBlocked,
     limit: voiceLimit,
+    trialMinuteLimit,
+    isTrialing,
     remaining: Math.max(voiceLimit - meter.callsThisMonth, 0),
     showEstimatedCost,
   };

@@ -3,7 +3,7 @@ import { SidebarActiveLink } from "../sidebar-active-link";
 import { signOutAction } from "@/modules/auth/actions";
 import { CommandPalette } from "../dashboard/CommandPalette";
 
-export function VoiceSidebar() {
+export function VoiceSidebar({ isAdmin }: { isAdmin?: boolean }) {
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-[260px] flex-col justify-between border-r border-outline-variant/30 bg-white shadow-soft md:flex">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -31,7 +31,9 @@ export function VoiceSidebar() {
 
         <nav className="mt-6 space-y-1 px-4">
           <SidebarActiveLink href="/dashboard" icon="dashboard" label="Dashboard" />
-          <SidebarActiveLink href="/dashboard/command-center" icon="admin_panel_settings" label="Command Center" />
+          {isAdmin && (
+            <SidebarActiveLink href="/dashboard/command-center" icon="admin_panel_settings" label="Command Center" />
+          )}
           
           <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">Receptionist</div>
           <SidebarActiveLink href="/dashboard/agents" icon="smart_toy" label="AI Agents" />

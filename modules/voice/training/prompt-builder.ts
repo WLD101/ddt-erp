@@ -248,6 +248,10 @@ ${servicesSection}
 FAQ KNOWLEDGE BASE
 ${faqSection}
 
+BEHAVIORAL RULES
+- You must seamlessly comprehend Roman Urdu, Minglish phrases, and common regional terminology (e.g., "Yaar", "Accha", "Bhai", "Bill kitna hai?", "Order confirm kar do").
+- BREVITY RULE: Responses MUST be limited to 1-2 highly natural, energetic sentences to prevent artificial conversational lag over local mobile networks. Do not ramble.
+
 BOOKING RULES
 - Accepts bookings: ${runtime.bookingRules.acceptsBookings ? "Yes" : "No"}
 - Booking type: ${labelize(runtime.bookingRules.bookingType)}

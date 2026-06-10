@@ -238,6 +238,12 @@ export async function assignPackageAction(data: unknown) {
     data: { packageId: input.packageId, planId },
   }).catch(() => null);
 
+  const newRate = planId === "starter" ? 80.00 : planId === "business" ? 70.00 : planId === "pro" ? 60.00 : 80.00;
+  await prisma.organization.update({
+    where: { id: input.organizationId },
+    data: { perMinuteRate: newRate },
+  }).catch(() => null);
+
   await writePlatformAuditLog({
     actorId: session.user.id,
     action: "PACKAGE_ASSIGNED",
@@ -363,6 +369,12 @@ export async function selectPackageAction(data: unknown) {
       currentPeriodStart: new Date(),
       currentPeriodEnd: new Date(),
     },
+  });
+
+  const newRate = planId === "starter" ? 80.00 : planId === "business" ? 70.00 : planId === "pro" ? 60.00 : 80.00;
+  await prisma.organization.update({
+    where: { id: ctx.organizationId },
+    data: { perMinuteRate: newRate },
   });
 
   return { status: "package_selected", redirectTo: "/settings/billing" };

@@ -88,8 +88,19 @@ function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
       url: input.webhookUrl,
       secret: process.env.VAPI_WEBHOOK_SECRET || undefined,
     },
+    transcriber: {
+      provider: "deepgram",
+      model: "nova-2",
+      language: "en-US",
+    },
     model: {
+      provider: "groq",
+      model: "llama-3.1-8b-instant",
       messages: [{ role: "system", content: input.prompt }],
+    },
+    voice: {
+      provider: "cartesia",
+      voiceId: "79a125e8-cd45-4c13-8a67-188112f4dd22",
     },
     tools: input.toolNames.map((toolName) => ({
       type: "function",
@@ -120,6 +131,8 @@ export async function syncVapiAssistantPrompt(assistantId: string, prompt: strin
     },
     body: JSON.stringify({
       model: {
+        provider: "groq",
+        model: "llama-3.1-8b-instant",
         messages: [{ role: "system", content: prompt }],
       },
     }),

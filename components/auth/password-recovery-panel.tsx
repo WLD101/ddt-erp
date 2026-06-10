@@ -14,9 +14,10 @@ import { cn } from "@/lib/utils";
 
 type PasswordRecoveryPanelProps = {
   embedded?: boolean;
+  isVoice?: boolean;
 };
 
-export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPanelProps) {
+export function PasswordRecoveryPanel({ embedded = false, isVoice = false }: PasswordRecoveryPanelProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
 
     setIsLoading(true);
     try {
-      const result = await forgotPasswordAction(email);
+      const result = await forgotPasswordAction(email, isVoice);
       if (result.error) {
         toast.error(result.error);
       } else {
@@ -48,6 +49,8 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
           "text-center",
           embedded
             ? "border-outline-variant/30 bg-surface shadow-soft"
+            : isVoice
+            ? "w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-white backdrop-blur-xl shadow-2xl"
             : "border-white/10 bg-white/5 py-8 text-white backdrop-blur-xl shadow-2xl"
         )}
       >
@@ -55,10 +58,10 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
           <div
             className={cn(
               "mx-auto flex h-16 w-16 items-center justify-center rounded-full",
-              embedded ? "bg-primary/10 ring-2 ring-primary/15" : "bg-green-500/20 ring-2 ring-green-500/30"
+              embedded ? "bg-primary/10 ring-2 ring-primary/15" : isVoice ? "bg-cyan-500/20 ring-2 ring-cyan-500/30" : "bg-green-500/20 ring-2 ring-green-500/30"
             )}
           >
-            <CheckCircle2 className={cn("h-8 w-8", embedded ? "text-primary" : "text-green-400")} />
+            <CheckCircle2 className={cn("h-8 w-8", embedded ? "text-primary" : isVoice ? "text-cyan-400" : "text-green-400")} />
           </div>
           <CardTitle className={cn("text-2xl font-black tracking-tight", embedded ? "text-on-surface" : "text-white")}>
             Check your email
@@ -70,10 +73,10 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
         </CardHeader>
         <CardFooter className="flex justify-center">
           <Link
-            href={embedded ? "/settings/security" : "/auth/signin"}
+            href={embedded ? "/settings/security" : isVoice ? "/voice/auth/signin" : "/auth/signin"}
             className={cn(
               "flex items-center text-sm font-bold transition-all",
-              embedded ? "text-primary hover:opacity-80" : "text-primary hover:underline"
+              embedded ? "text-primary hover:opacity-80" : isVoice ? "text-cyan-400 hover:text-cyan-300 hover:underline" : "text-primary hover:underline"
             )}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -89,6 +92,8 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
       className={cn(
         embedded
           ? "border-outline-variant/30 bg-surface shadow-soft"
+          : isVoice
+          ? "w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/50 p-8 backdrop-blur-xl shadow-2xl animate-in slide-in-from-bottom-4 duration-500"
           : "animate-in slide-in-from-bottom-4 rounded-[32px] border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl duration-500"
       )}
     >
@@ -96,7 +101,7 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
         <div
           className={cn(
             "mb-4 flex h-12 w-12 items-center justify-center rounded-xl ring-1",
-            embedded ? "bg-primary/10 text-primary ring-primary/20" : "mx-auto bg-primary/20 text-primary ring-primary/30"
+            embedded ? "bg-primary/10 text-primary ring-primary/20" : isVoice ? "mx-auto bg-cyan-500/20 text-cyan-400 ring-cyan-500/30" : "mx-auto bg-primary/20 text-primary ring-primary/30"
           )}
         >
           <Send className="h-6 w-6" />
@@ -115,7 +120,7 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
               Email address
             </Label>
             <div className="relative">
-              <Mail className={cn("absolute left-3 top-3 h-4 w-4", embedded ? "text-on-surface-variant/70" : "text-muted-foreground/50")} />
+              <Mail className={cn("absolute left-3 top-3 h-4 w-4", embedded ? "text-on-surface-variant/70" : isVoice ? "text-slate-500" : "text-muted-foreground/50")} />
               <Input
                 id="email"
                 placeholder="name@company.com"
@@ -125,6 +130,8 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
                   "pl-10 transition-all",
                   embedded
                     ? "border-outline-variant/40 bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/50"
+                    : isVoice
+                    ? "border-white/10 bg-black/40 text-white placeholder-slate-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
                     : "border-white/10 bg-black/20 text-white placeholder:text-white/20 focus:ring-primary/50"
                 )}
                 value={email}
@@ -134,27 +141,47 @@ export function PasswordRecoveryPanel({ embedded = false }: PasswordRecoveryPane
             </div>
           </div>
 
-          <Button className="w-full" size="lg" type="submit" disabled={isLoading || !email}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending link...
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Send reset link
-              </>
-            )}
-          </Button>
+          {isVoice ? (
+            <button
+              type="submit"
+              disabled={isLoading || !email}
+              className="mt-6 flex w-full items-center justify-center rounded-xl bg-cyan-500 px-4 py-3 font-bold text-slate-950 transition-all hover:bg-cyan-400 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send reset link
+                </>
+              )}
+            </button>
+          ) : (
+            <Button className="w-full" size="lg" type="submit" disabled={isLoading || !email}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending link...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send reset link
+                </>
+              )}
+            </Button>
+          )}
         </form>
       </CardContent>
-      <CardFooter className={cn("flex justify-center", embedded ? "" : "mt-2 border-t border-white/5 bg-transparent")}>
+      <CardFooter className={cn("flex justify-center", embedded ? "" : isVoice ? "mt-2 border-t border-white/5 bg-transparent pt-4" : "mt-2 border-t border-white/5 bg-transparent")}>
         <Link
-          href={embedded ? "/settings/security" : "/auth/signin"}
+          href={embedded ? "/settings/security" : isVoice ? "/voice/auth/signin" : "/auth/signin"}
           className={cn(
             "flex items-center text-sm transition-colors",
-            embedded ? "font-bold text-primary hover:opacity-80" : "text-muted-foreground hover:text-white"
+            embedded ? "font-bold text-primary hover:opacity-80" : isVoice ? "text-slate-400 hover:text-white font-semibold" : "text-muted-foreground hover:text-white"
           )}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
