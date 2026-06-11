@@ -73,7 +73,7 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
           <div className="font-semibold text-on-surface truncate">{agent.internalName}</div>
         </div>
         <div className="col-span-2">
-          <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-bold mb-1">Generated Vapi Assistant</div>
+          <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-bold mb-1">Generated Assistant</div>
           <div className="font-semibold text-on-surface truncate">{agent.assistantName}</div>
         </div>
         <div>
@@ -127,8 +127,8 @@ export function VoiceAgentCard({ agent, hasProfile, hasSettings }: VoiceAgentCar
       <div className="relative mt-6 flex items-center justify-between border-t border-outline-variant/10 pt-4">
         {isConnected ? (
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-            <VoiceWaveform active className="w-8 text-emerald-500" />
-            <span className="uppercase tracking-wider text-[9px]">Vapi Online</span>
+             <VoiceWaveform active className="w-8 text-emerald-500" />
+            <span className="uppercase tracking-wider text-[9px]">Service Active</span>
           </div>
         ) : (
           <div className="text-xs font-bold text-amber-600 uppercase tracking-wider text-[9px]">

@@ -833,7 +833,7 @@ function PromptPreviewCard({
         toast.error(result.error);
         return;
       }
-      toast.success("Prompt synced to Vapi assistant.");
+      toast.success("Prompt updated successfully.");
       router.refresh();
     });
   };
@@ -858,7 +858,7 @@ function PromptPreviewCard({
           ) : null}
           {isPromptStale ? (
             <div className="rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-              Prompt is stale. Training data changed after the last sync, so this assistant should be synced to Vapi again.
+              Prompt is stale. Training data changed after the last sync, so this assistant should be synced again.
             </div>
           ) : null}
           <div className="flex flex-wrap justify-end gap-3">
@@ -871,19 +871,19 @@ function PromptPreviewCard({
               disabled={!syncAvailable || isPending || validationErrors.length > 0}
               className="bg-primary text-on-primary hover:bg-primary/90"
             >
-              {isPending ? "Syncing..." : "Sync to Vapi assistant"}
+              {isPending ? "Syncing..." : "Sync assistant"}
             </Button>
           </div>
           {!syncAvailable ? (
             <p className="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant mt-2">
-              Sync becomes available only when Vapi keys and a business-specific Vapi assistant ID are configured.
+              Sync becomes available only when voice integration keys and a business-specific assistant ID are configured.
             </p>
           ) : null}
         </div>
       </SectionCard>
 
       <SectionCard
-        title="Vapi mapping"
+        title="Engine mapping"
         description="Read-only mapping status for this tenant's assistant. Public webhook routes must resolve through these tenant-safe identifiers."
       >
         <div className="space-y-4 text-sm text-on-surface">
@@ -908,11 +908,11 @@ function PromptPreviewCard({
             <div className="mt-2 text-on-surface font-semibold">{firstMessage}</div>
           </div>
           <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Vapi assistant ID</div>
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Assistant ID</div>
             <div className="mt-2 break-all text-on-surface font-semibold">{assistantId || "Not connected"}</div>
           </div>
           <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
-            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Vapi phone number ID</div>
+            <div className="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Phone number ID</div>
             <div className="mt-2 break-all text-on-surface font-semibold">{phoneNumberId || "Not connected"}</div>
           </div>
           <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">

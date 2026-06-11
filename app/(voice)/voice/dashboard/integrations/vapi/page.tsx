@@ -6,7 +6,7 @@ import { VoiceStatusPill } from "@/components/voice/ui/voice-status-pill";
 import { VoiceWaveform } from "@/components/voice/ui/voice-waveform";
 import { SyncToVapiButton } from "@/components/voice/ui/sync-to-vapi-button";
 
-export default async function VapiSetupPage() {
+export default async function VoiceSetupPage() {
   const ctx = await getCurrentTenantContext();
   requireRole(ctx, "owner", "admin");
   const organizationId = ctx.organizationId;
@@ -24,7 +24,7 @@ export default async function VapiSetupPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-on-surface">Vapi Assistant Setup</h1>
+          <h1 className="text-2xl font-black text-on-surface">Voice Assistant Setup</h1>
           <p className="mt-1 text-sm text-on-surface-variant">Configure your AI receptionist integration for the demo call flow.</p>
         </div>
         <div className="flex items-center gap-4">
@@ -47,8 +47,8 @@ export default async function VapiSetupPage() {
           <div className="rounded-[28px] border border-outline-variant/30 bg-surface p-8 shadow-soft">
             <h2 className="mb-6 text-lg font-black text-on-surface tracking-tight">Setup Checklist</h2>
             <ul className="space-y-4 text-sm text-on-surface-variant">
-              <li className="flex items-center justify-between"><span>Vapi Private Key</span><VoiceStatusPill variant={vapiStatus.hasPrivateKey ? "online" : "error"} label={vapiStatus.hasPrivateKey ? "Ready" : "Missing"} /></li>
-              <li className="flex items-center justify-between"><span>Vapi Public Key</span><VoiceStatusPill variant={vapiStatus.hasPublicKey ? "online" : "warning"} label={vapiStatus.hasPublicKey ? "Ready" : "Missing"} /></li>
+              <li className="flex items-center justify-between"><span>Private Key</span><VoiceStatusPill variant={vapiStatus.hasPrivateKey ? "online" : "error"} label={vapiStatus.hasPrivateKey ? "Ready" : "Missing"} /></li>
+              <li className="flex items-center justify-between"><span>Public Key</span><VoiceStatusPill variant={vapiStatus.hasPublicKey ? "online" : "warning"} label={vapiStatus.hasPublicKey ? "Ready" : "Missing"} /></li>
               <li className="flex items-center justify-between"><span>Default Voice Agent</span><span className="font-semibold text-on-surface">{defaultAgent?.name || "Missing"}</span></li>
               <li className="flex items-center justify-between"><span>Agent Assistant ID</span><VoiceStatusPill variant={defaultAgent?.vapiAssistantId ? "online" : "warning"} label={defaultAgent?.vapiAssistantId ? "Configured" : "Missing"} /></li>
               <li className="flex items-center justify-between"><span>Agent Phone Number ID</span><VoiceStatusPill variant={defaultAgent?.vapiPhoneNumberId ? "online" : "warning"} label={defaultAgent?.vapiPhoneNumberId ? "Configured" : "Missing"} /></li>
@@ -71,7 +71,7 @@ export default async function VapiSetupPage() {
               <li>handoff_to_staff</li>
             </ul>
             <p className="mt-4 text-xs text-on-surface-variant/70">
-              These tool names must match the tools configured on your Vapi assistant for the demo flow to save leads and call summaries correctly.
+              These tool names must match the tools configured on your voice assistant for the demo flow to save leads and call summaries correctly.
             </p>
           </div>
 
@@ -81,7 +81,7 @@ export default async function VapiSetupPage() {
               {vapiStatus.webhookUrl || "Configure VAPI_SERVER_URL or VOICE_PUBLIC_APP_URL"}
             </code>
             <p className="mt-3 text-xs text-on-surface-variant/70">
-              Calling is still foundation-only until the Vapi assistant, phone number, webhook secret, and live test calls are all verified.
+              Calling is still foundation-only until the voice assistant, phone number, webhook secret, and live test calls are all verified.
             </p>
             {!vapiStatus.callingEnabled ? (
               <p className="mt-3 text-xs text-amber-700">
@@ -98,7 +98,7 @@ export default async function VapiSetupPage() {
                 <span className="font-semibold text-on-surface">{trainingWorkspace.runtime.businessIdentity.businessName}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span>Internal Vapi assistant name</span>
+                <span>Internal assistant name</span>
                 <span className="font-semibold text-on-surface">{trainingWorkspace.assistantName}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
@@ -107,7 +107,7 @@ export default async function VapiSetupPage() {
               </div>
             </div>
             <p className="mt-4 text-xs text-on-surface-variant/70">
-              WhatsQuery Voice owns these names and syncs them to Vapi per tenant and per VoiceAgent. Clients should not configure Vapi manually.
+              WhatsQuery Voice owns these names and syncs them to the Voice Engine per tenant and per VoiceAgent. Clients should not configure it manually.
             </p>
           </div>
 
@@ -130,7 +130,7 @@ export default async function VapiSetupPage() {
         <div className="rounded-[28px] border border-outline-variant/30 bg-surface p-6 shadow-soft">
           <h2 className="mb-4 text-lg font-black text-on-surface">Prompt Preview</h2>
           <p className="mb-4 text-xs text-on-surface-variant/70">
-            This is the system prompt that will be generated dynamically and sent to Vapi when a call begins.
+            This is the system prompt that will be generated dynamically and sent to the Voice Engine when a call begins.
           </p>
           <div className="max-h-[500px] overflow-y-auto rounded-lg bg-surface-container-low p-4 font-mono text-xs whitespace-pre-wrap text-on-surface-variant leading-6">
             {promptPreview}

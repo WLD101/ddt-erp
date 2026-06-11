@@ -22,7 +22,7 @@ export function SyncToVapiButton({ voiceAgentId, isStale }: SyncToVapiButtonProp
         toast.error(result.error);
         return;
       }
-      toast.success("Successfully synced assistant to Vapi.");
+      toast.success("Successfully updated voice receptionist profile.");
       router.refresh();
     });
   };
@@ -33,7 +33,7 @@ export function SyncToVapiButton({ voiceAgentId, isStale }: SyncToVapiButtonProp
       disabled={isPending}
       className={`min-w-[140px] ${isStale ? "bg-amber-400 hover:bg-amber-500 text-black" : "bg-cyan-400 hover:bg-cyan-500 text-black"}`}
     >
-      {isPending ? "Syncing..." : isStale ? "Sync to Vapi (Updates Pending)" : "Sync to Vapi"}
+      {isPending ? "Updating..." : isStale ? "Sync Receptionist (Updates Pending)" : "Sync Receptionist"}
     </Button>
   );
 }

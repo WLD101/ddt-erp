@@ -118,7 +118,7 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
                 <VoiceStatusPill variant={system.dbStatus === "online" ? "online" : "default"} label={system.dbStatus} />
               </li>
               <li className="flex items-center justify-between">
-                <span>Vapi API Keys</span>
+                <span>Voice Engine Keys</span>
                 <VoiceStatusPill variant={vapi.hasPrivateKey ? "online" : "error"} label={vapi.hasPrivateKey ? "Ready" : "Missing"} />
               </li>
               <li className="flex items-center justify-between">
@@ -246,7 +246,7 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
                 <div className="font-semibold text-on-surface">{assistant.afterHoursBehavior}</div>
               </div>
               <div className="col-span-2">
-                <div className="mb-1 text-[10px] font-black uppercase tracking-wider text-on-surface-variant/70">Internal Vapi tracking name</div>
+                <div className="mb-1 text-[10px] font-black uppercase tracking-wider text-on-surface-variant/70">Internal voice tracking name</div>
                 <div className="font-semibold text-on-surface">{assistant.internalTrackingName}</div>
               </div>
               <div className="col-span-2">
@@ -279,7 +279,7 @@ export function VoiceCommandCenter({ overview }: VoiceCommandCenterProps) {
                 href="/voice/dashboard/integrations/vapi"
                 className="inline-block rounded-full border border-outline-variant px-4 py-2 text-xs font-semibold text-on-surface transition hover:bg-surface-container-low"
               >
-                Vapi setup
+                Engine setup
               </Link>
             </div>
           </CardContent>

@@ -20,7 +20,7 @@ export default async function VoiceDashboardAgentsPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-black tracking-tight text-on-surface">AI Agents</h1>
         <p className="text-sm text-on-surface-variant max-w-2xl">
-          Manage your organization&apos;s AI receptionists and specialized order-takers. Each agent can have its own Vapi integration and system prompt.
+          Manage your organization&apos;s AI receptionists and specialized order-takers. Each agent can have its own voice engine integration and system prompt.
         </p>
       </div>
 

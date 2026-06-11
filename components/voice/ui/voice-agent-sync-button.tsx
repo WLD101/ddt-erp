@@ -29,12 +29,12 @@ export function VoiceAgentSyncButton({
             toast.error(result.error);
             return;
           }
-          toast.success("Business-specific assistant prompt synced to Vapi.");
+          toast.success("Business-specific prompt updated successfully.");
           router.refresh();
         })
       }
     >
-      {isPending ? "Syncing..." : "Sync to Vapi"}
+      {isPending ? "Updating..." : "Sync Prompt"}
     </Button>
   );
 }

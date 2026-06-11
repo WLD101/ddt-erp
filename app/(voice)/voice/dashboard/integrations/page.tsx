@@ -7,7 +7,7 @@ import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
 const integrationCards = [
   {
     key: "vapi",
-    title: "Vapi (AI Receptionist)",
+    title: "AI Receptionist (Voice Engine)",
     description: "Manage your AI receptionist, webhook configuration, and prompts.",
     envs: ["VAPI_PRIVATE_API_KEY", "VAPI_PUBLIC_KEY", "VAPI_WEBHOOK_SECRET", "VAPI_SERVER_URL", "VOICE_PUBLIC_APP_URL"],
   },
@@ -54,7 +54,7 @@ export default async function VoiceIntegrationsPage() {
             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-800">Production warning</div>
             <h2 className="mt-2 text-2xl font-black text-on-surface">Calling is not live yet</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-on-surface-variant">
-              Vapi, Twilio, Google Calendar, and WhatsApp follow-up remain controlled demo configurations in this phase.
+              Voice Engine, Twilio, Google Calendar, and WhatsApp follow-up remain controlled demo configurations in this phase.
               The dashboard can store readiness status, but real phone calls, booking sync, and follow-up automation are not fully live until the provider setup is completed and verified.
             </p>
           </div>
@@ -104,7 +104,7 @@ export default async function VoiceIntegrationsPage() {
               {card.key === "vapi" ? (
                 <div className="mt-5 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="mb-3 flex items-center justify-between">
-                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Vapi status</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Engine status</div>
                     <Link href="/voice/dashboard/integrations/vapi" className="text-xs font-bold text-primary hover:underline">
                       Manage setup →
                     </Link>
