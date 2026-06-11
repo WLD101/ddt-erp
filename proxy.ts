@@ -66,6 +66,8 @@ export default async function proxy(req: NextRequest) {
     pathname === "/voice/login" ||
     pathname === "/voice/signup" ||
     pathname === "/voice/status" ||
+    pathname === "/voice/onboarding" ||
+    (voiceHost && pathname === "/onboarding") ||
     pathname.startsWith("/voice/auth") ||
     pathname.startsWith("/auth/verify") ||
     pathname.startsWith("/industries") ||

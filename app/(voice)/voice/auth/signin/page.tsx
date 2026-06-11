@@ -97,7 +97,12 @@ function VoiceSignInForm() {
         </button>
       </form>
 
-
+      <div className="mt-6 text-center text-sm text-slate-400">
+        Don&apos;t have a workspace?{" "}
+        <Link href="/voice/auth/signup" className="font-bold text-cyan-400 hover:underline">
+          Create one now
+        </Link>
+      </div>
     </div>
   );
 }

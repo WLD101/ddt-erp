@@ -26,6 +26,13 @@ export default async function VoiceAuthLayout({
             </div>
             <span className="text-xl font-black tracking-tight text-white">WhatsQuery <span className="text-cyan-400">Voice</span></span>
           </Link>
+
+          <Link
+            href="/voice/auth/signup"
+            className="hidden rounded-full bg-cyan-400/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-cyan-400 border border-cyan-400/20 shadow-lg shadow-cyan-900/20 transition hover:bg-cyan-400/20 md:block"
+          >
+            Create Workspace
+          </Link>
         </nav>
       </header>
 
