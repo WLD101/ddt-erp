@@ -44,11 +44,11 @@ export default async function VoiceDashboardPage() {
               </div>
               <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
                 <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Primary goal</div>
-                <div className="mt-2 text-xl font-black text-on-surface">{summary.businessProfile.mainGoal.replaceAll("_", " ")}</div>
+                <div className="mt-2 text-xl font-black text-on-surface">{summary.businessProfile.mainGoal?.replaceAll("_", " ") || "Not set"}</div>
               </div>
               <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
                 <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Language</div>
-                <div className="mt-2 text-xl font-black text-on-surface">{summary.businessProfile.preferredLanguage.replaceAll("_", " ")}</div>
+                <div className="mt-2 text-xl font-black text-on-surface">{summary.businessProfile.preferredLanguage?.replaceAll("_", " ") || "Not set"}</div>
               </div>
               <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
                 <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Business phone</div>
@@ -117,7 +117,7 @@ export default async function VoiceDashboardPage() {
             <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 md:col-span-2">
               <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Estimated cost</div>
               <div className="mt-2 text-3xl font-black text-on-surface">
-                {summary.usage.showEstimatedCost ? `$${summary.usage.estimatedCostUsdThisMonth.toFixed(2)}` : "Hidden by package"}
+                {summary.usage.showEstimatedCost ? `$${Number(summary.usage.estimatedCostUsdThisMonth || 0).toFixed(2)}` : "Hidden by package"}
               </div>
               <div className="mt-2 text-xs text-on-surface-variant">
                 {summary.usage.showEstimatedCost
