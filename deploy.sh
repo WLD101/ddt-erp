@@ -8,7 +8,7 @@ cd /var/www/whatsquery
 git fetch origin main
 git reset --hard origin/main
 npm install
-npx prisma migrate deploy
+npx prisma db push --accept-data-loss
 npx prisma generate
 npm run build
 '

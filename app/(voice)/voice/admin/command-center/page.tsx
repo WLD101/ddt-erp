@@ -189,13 +189,13 @@ export default async function VoiceAdminCommandCenterPage() {
 
   const disabledAgents = totalAgents - activeAgents;
   const connectedAgents = totalAgents - missingAssistantAgents;
-  const activeCalls = activeCallsData._sum.activeCalls || 0;
-  const totalCostToday = totalCostTodayAgg._sum.costUsd || 0;
-  const totalCostThisMonth = totalCostThisMonthAgg._sum.costUsd || 0;
+  const activeCalls = Number(activeCallsData._sum.activeCalls || 0);
+  const totalCostToday = Number(totalCostTodayAgg._sum.costUsd || 0);
+  const totalCostThisMonth = Number(totalCostThisMonthAgg._sum.costUsd || 0);
 
   const [organizations, agents] = await Promise.all([
     prisma.organization.findMany({
-      where: { id: { in: [...new Set(costByBusinessRows.map((row) => row.organizationId))] } },
+      where: { id: { in: [...new Set(costByBusinessRows.map((row) => row.organizationId).filter(Boolean) as string[])] } },
       select: { id: true, name: true },
     }),
     prisma.voiceAgent.findMany({
@@ -577,7 +577,7 @@ export default async function VoiceAdminCommandCenterPage() {
                         {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
                       </div>
                     </div>
-                    <div className="font-black text-primary">${(row._sum.costUsd || 0).toFixed(2)}</div>
+                    <div className="font-black text-primary">${Number(row._sum.costUsd || 0).toFixed(2)}</div>
                   </div>
                 ))
               )}

@@ -134,13 +134,18 @@ async function processWebhookEventJob(payload: any, jobOrganizationId?: string |
     }
 
     if (type === "end-of-call-report") {
-      await upsertCallLog({
+      const callLog = await upsertCallLog({
         organizationId,
         voiceBusinessProfileId: event.voiceBusinessProfileId,
         voiceAgentId,
         message,
         callStatus: normalizeCallStatus(message.status || "completed"),
       });
+
+      if (callLog && message.transcript) {
+        const { extractConversationInsights } = require("@/modules/sales-crm/insights");
+        await extractConversationInsights(callLog.id, message.transcript, message.summary || "");
+      }
     }
 
     if (type === "tool-calls") {

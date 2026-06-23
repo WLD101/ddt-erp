@@ -1,209 +1,138 @@
-import { prisma } from "@/lib/prisma";
+import { getTenantById } from "@/modules/admin-tenants/actions";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
+import { TenantStatusControls } from "./TenantStatusControls";
 
-const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+export const metadata = {
+  title: "Tenant Details - WhatsQuery",
+};
 
-import { assignVoicePackage } from "./actions";
+export default async function TenantDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePlatformAdmin();
+  const id = (await params).id;
 
-export default async function AdminTenantVoicePage({ params, searchParams }: { params: { id: string }, searchParams: { tab?: string } }) {
-  const organizationId = params.id;
-  const currentTab = searchParams.tab || "overview";
+  const tenant = await getTenantById(id);
+  if (!tenant) return notFound();
 
-  const [org, agents, integration, packages] = await Promise.all([
-    prisma.organization.findUnique({
-      where: { id: organizationId },
-      include: { 
-        voiceBusinessProfile: true,
-        organizationPackage: { include: { package: true } },
-        subscription: true
-      },
-    }),
-    prisma.voiceAgent.findMany({
-      where: { organizationId },
-      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
-    }),
-    prisma.voiceIntegrationSettings.findUnique({
-      where: { organizationId },
-    }),
-    prisma.package.findMany({
-      where: { productType: "VOICE", isActive: true }
-    })
-  ]);
-
-  if (!org) return notFound();
-
-  const agentWorkspaces = await Promise.all(
-    agents.map((agent) => getVoiceTrainingWorkspace(organizationId, { voiceAgentId: agent.id })),
-  );
-
-  const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "agents", label: "AI Receptionist" },
-    { id: "billing", label: "Package & Billing" }
-  ];
+  const activeAgents = tenant.voiceAgents?.filter(a => a.status === "ACTIVE").length || 0;
+  const walletBalance = Number(tenant.walletBalance || 0).toFixed(2);
+  const mrr = Number(tenant.subscription?.monthlyPrice || 0).toFixed(2);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),linear-gradient(180deg,#f8f9ff_0%,#eef4ff_100%)] text-on-surface pb-12">
-      <div className="mx-auto max-w-5xl space-y-8 px-6 pt-8">
-        
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-outline-variant/20 pb-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black text-on-surface">{org.name}</h1>
-              <Badge variant="outline" className={org.accessStatus === "active" ? "border-emerald-500/30 text-emerald-500" : "border-rose-500/30 text-rose-500"}>
-                {org.accessStatus}
-              </Badge>
-            </div>
-            <p className="text-sm font-medium text-on-surface-variant">Manage AI receptionist, usage limits, and Voice billing for {org.slug}.</p>
-          </div>
-          <Link href="/voice/admin/tenants">
-            <Button variant="outline" className="h-10 rounded-2xl border-outline-variant/40 px-4 text-[11px] font-black uppercase tracking-[0.2em]">
-              &larr; All Tenants
-            </Button>
-          </Link>
-        </div>
-
-        <div className="flex flex-wrap gap-2 border-b border-outline-variant/20 pb-4">
-          {tabs.map(tab => (
-            <Link key={tab.id} href={`/voice/admin/tenants/${organizationId}?tab=${tab.id}`}>
-              <Badge 
-                className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest cursor-pointer ${currentTab === tab.id ? "bg-primary text-on-primary shadow-md" : "bg-surface border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container"}`}
-              >
-                {tab.label}
-              </Badge>
+    <div className="flex flex-col gap-8 p-8 min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Link href="/voice/admin/tenants" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+              &larr; Back to Directory
             </Link>
-          ))}
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+            {tenant.name}
+            <span className={`text-[12px] uppercase font-bold px-2 py-1 rounded-full ${
+              tenant.tenantType === "PAID" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" :
+              tenant.tenantType === "DEMO" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
+              tenant.tenantType === "TRIAL" ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300" :
+              "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
+            }`}>
+              {tenant.tenantType}
+            </span>
+          </h1>
+          <p className="text-slate-500 mt-2 text-sm">{tenant.slug} • {tenant.email || "No email"}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <TenantStatusControls tenantId={tenant.id} accessStatus={tenant.accessStatus} lifecycleStatus={tenant.lifecycleStatus} />
+          <button className="bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2 rounded-md shadow-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors">
+            Login As Tenant
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-sm font-medium text-slate-500 mb-1">Health Score</div>
+          <div className={`text-3xl font-bold ${
+            tenant.healthScore >= 80 ? "text-emerald-600" : tenant.healthScore >= 50 ? "text-amber-600" : "text-rose-600"
+          }`}>
+            {tenant.healthScore} / 100
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-sm font-medium text-slate-500 mb-1">Wallet Balance</div>
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">{walletBalance} <span className="text-lg text-slate-400">PKR</span></div>
+        </div>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-sm font-medium text-slate-500 mb-1">Active Agents</div>
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">{activeAgents} <span className="text-lg text-slate-400">/ {tenant.voiceAgents?.length || 0}</span></div>
+        </div>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-sm font-medium text-slate-500 mb-1">MRR</div>
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">{mrr} <span className="text-lg text-slate-400">PKR</span></div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 space-y-6">
+          {/* Recent Call Logs */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Calls</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-medium">
+                  <tr>
+                    <th className="px-6 py-3">Phone</th>
+                    <th className="px-6 py-3">Duration</th>
+                    <th className="px-6 py-3">Status</th>
+                    <th className="px-6 py-3">Cost</th>
+                    <th className="px-6 py-3 text-right">Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {tenant.callLogs?.map(log => (
+                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">{log.customerNumber || "Unknown"}</td>
+                      <td className="px-6 py-3">{Math.floor((log.durationSeconds || 0) / 60)}m {(log.durationSeconds || 0) % 60}s</td>
+                      <td className="px-6 py-3">
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3">{Number(log.cost || 0).toFixed(2)}</td>
+                      <td className="px-6 py-3 text-right text-slate-500">{new Date(log.createdAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                  {!tenant.callLogs?.length && (
+                    <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No calls recorded yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        {currentTab === "overview" && (
-          <div className="grid gap-6 md:grid-cols-2">
-             <div className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm">
-               <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 border-b border-outline-variant/20 pb-2">Business Profile</h3>
-               <div className="space-y-4">
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Name</span><span className="font-bold">{org.voiceBusinessProfile?.businessName || "Not set"}</span></div>
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Phone</span><span className="font-bold">{org.voiceBusinessProfile?.businessPhone || "Not set"}</span></div>
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Language</span><span className="font-bold">{org.voiceBusinessProfile?.preferredLanguage || "Not set"}</span></div>
-               </div>
-             </div>
-             
-             <div className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm">
-               <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 border-b border-outline-variant/20 pb-2">Integration</h3>
-               <div className="space-y-4">
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">WhatsApp</span><span className="font-bold">{integration?.whatsappNotificationsEnabled ? "Enabled" : "Disabled"}</span></div>
-                 <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Staff Phone</span><span className="font-bold">{integration?.staffWhatsAppNumber || "Not set"}</span></div>
-               </div>
-             </div>
-          </div>
-        )}
-
-        {currentTab === "agents" && (
-          <div className="space-y-6">
-             {agents.length === 0 ? (
-               <div className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm text-center py-12">
-                 <p className="text-sm font-medium text-on-surface-variant mb-4">No AI Receptionist created yet.</p>
-                 <Link href={`/voice/admin/tenants/${organizationId}/wizard`}>
-                   <Button className="h-10 rounded-xl bg-primary text-on-primary text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:opacity-90">
-                     Create Receptionist Wizard &rarr;
-                   </Button>
-                 </Link>
-               </div>
-             ) : (
-               agents.map((agent, index) => {
-                 const workspace = agentWorkspaces[index];
-                 return (
-                   <div key={agent.id} className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm">
-                     <div className="flex justify-between items-start mb-6 border-b border-outline-variant/20 pb-4">
-                       <div>
-                         <h3 className="text-xl font-black text-on-surface">{agent.displayName || agent.name}</h3>
-                         <p className="text-xs font-bold text-primary mt-1">{agent.role}</p>
-                       </div>
-                       <Badge variant="outline" className={agent.isActive ? "border-emerald-500/30 text-emerald-500" : "border-outline-variant/50 text-on-surface-variant"}>
-                         {agent.isActive ? "Active" : "Disabled"}
-                       </Badge>
-                     </div>
-                     <div className="grid gap-6 md:grid-cols-2">
-                       <div className="space-y-4 text-sm">
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Vapi Assistant ID</span>
-                           <span className="font-medium bg-surface-container p-2 rounded-xl border border-outline-variant/30">{agent.vapiAssistantId || "None"}</span>
-                         </div>
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Vapi Phone ID</span>
-                           <span className="font-medium bg-surface-container p-2 rounded-xl border border-outline-variant/30">{agent.vapiPhoneNumberId || "None"}</span>
-                         </div>
-                         <div className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
-                           <span className="text-xs font-medium text-on-surface-variant">Forwarding</span>
-                           <Badge variant="outline" className={agent.forwardingStatus === "VERIFIED" ? "border-emerald-500/30 text-emerald-500" : "border-amber-500/30 text-amber-500"}>
-                             {agent.forwardingStatus || "PENDING"}
-                           </Badge>
-                         </div>
-                       </div>
-                       
-                       <div className="space-y-4 text-sm">
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Prompt Sync</span>
-                           <span className={`font-medium ${workspace.syncState.isPromptStale ? "text-amber-500" : "text-emerald-500"}`}>
-                             {workspace.syncState.isPromptStale ? "Stale (needs sync)" : "Up to date"}
-                           </span>
-                         </div>
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Client Number (Public)</span>
-                           <span className="font-medium bg-surface-container p-2 rounded-xl border border-outline-variant/30">{agent.clientPublicPhoneNumber || "None"}</span>
-                         </div>
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">AI Number (Internal)</span>
-                           <span className="font-medium bg-surface-container p-2 rounded-xl border border-outline-variant/30">{agent.assignedVapiPhoneNumber || "None"}</span>
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 )
-               })
-             )}
-          </div>
-        )}
-
-        {currentTab === "billing" && (
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 border-b border-outline-variant/20 pb-2">Assigned Package</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Package</span><span className="font-bold">{org.organizationPackage?.package?.name || "None"}</span></div>
-                <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Status</span><span className="font-bold">{org.subscription?.status || "None"}</span></div>
-                <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Payment Method</span><span className="font-bold">{org.subscription?.manualPaymentMethod || org.subscription?.billingSource || "Manual"}</span></div>
-                <div className="flex justify-between items-center text-sm"><span className="text-on-surface-variant">Stripe Customer</span><span className="font-bold truncate max-w-[150px]">{org.subscription?.stripeCustomerId || "Unlinked"}</span></div>
-              </div>
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Organization Users</h2>
             </div>
-
-            <form action={assignVoicePackage.bind(null, org.id)} className="p-6 rounded-3xl border border-outline-variant/30 bg-surface shadow-sm space-y-4">
-               <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 border-b border-outline-variant/20 pb-2">Manual Assignment Override</h3>
-               <div className="space-y-3">
-                 <label className="text-[10px] font-bold text-on-surface-variant uppercase">Assign Package</label>
-                 <select name="packageId" defaultValue={org.organizationPackage?.packageId || ""} className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none">
-                   <option value="">No Package</option>
-                   {packages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                 </select>
-               </div>
-               <div className="space-y-3">
-                 <label className="text-[10px] font-bold text-on-surface-variant uppercase">Subscription Status</label>
-                 <select name="status" defaultValue={org.subscription?.status || "active"} className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none">
-                   <option value="active">Active</option>
-                   <option value="trialing">Trialing</option>
-                   <option value="past_due">Past Due</option>
-                   <option value="suspended">Suspended</option>
-                 </select>
-               </div>
-               <Button type="submit" className="w-full h-10 rounded-xl bg-primary text-on-primary text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:opacity-90">
-                 Save Override
-               </Button>
-            </form>
+            <div className="divide-y divide-slate-200 dark:divide-slate-700">
+              {tenant.users?.map(u => (
+                <div key={u.id} className="p-4 flex justify-between items-center">
+                  <div>
+                    <div className="font-medium text-slate-900 dark:text-white">{u.user?.name || "Unknown"}</div>
+                    <div className="text-xs text-slate-500">{u.user?.email}</div>
+                  </div>
+                </div>
+              ))}
+              {!tenant.users?.length && (
+                <div className="p-4 text-slate-500 text-sm text-center">No users found.</div>
+              )}
+            </div>
           </div>
-        )}
-
+        </div>
       </div>
     </div>
   );

@@ -140,6 +140,13 @@ model OtpVerification {
 // Enums
 // -----------------------------------------------------------------------------
 
+enum TenantType {
+  DEMO
+  TRIAL
+  PAID
+  INTERNAL
+}
+
 enum InvoiceStatus {
   DRAFT
   ISSUED
@@ -184,6 +191,8 @@ model Organization {
   industryType   String?
   enabledModules String?
 
+  tenantType      TenantType @default(DEMO)
+  healthScore     Float?
   isDemoTenant    Boolean   @default(false)
   lifecycleStatus String    @default("onboarding")
   accessStatus    String    @default("onboarding")
@@ -276,6 +285,7 @@ model Organization {
   VoiceNotificationLog         VoiceNotificationLog[]
   VoiceReservationRequest      VoiceReservationRequest[]
   VoiceOrderRequest            VoiceOrderRequest[]
+  onboardingTasks              OnboardingTask[]
 }
 
 model OrganizationUser {
@@ -2035,4 +2045,77 @@ model PlatformAuditLog {
   entityId   String
   details    String?
   createdAt  DateTime @default(now())
+}
+
+model ProviderMapping {
+  id              String   @id @default(cuid())
+  tenantId        String
+  entityType      String   // 'AGENT', 'KNOWLEDGE_BASE', 'PHONE_NUMBER'
+  internalId      String   // Foreign key to internal entities
+  providerName    String   // 'VAPI', 'WHATSQUERY_ENGINE'
+  externalId      String   // Provider's specific ID
+  syncStatus      String   @default("SYNCED") // 'SYNCED', 'PENDING', 'FAILED'
+  lastSyncedAt    DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([entityType, internalId, providerName])
+  @@index([providerName, externalId])
+  @@index([tenantId])
+}
+
+// -----------------------------------------------------------------------------
+// Voice OS Models (Phase 1 Additions)
+// -----------------------------------------------------------------------------
+
+
+model ConversationInsight {
+  id               String   @id @default(cuid())
+  callId           String   @unique
+  summary          String
+  intent           String
+  sentiment        String
+  bookingRequested Boolean  @default(false)
+  leadQualified    Boolean  @default(false)
+}
+
+model AgentTemplate {
+  id          String   @id @default(cuid())
+  industry    String   // "Restaurant", "Clinic", "Real Estate"
+  basePrompt  String
+  config      String   // Stored as JSON string
+}
+
+model KnowledgeBase {
+  id             String              @id @default(cuid())
+  organizationId String
+  documents      KnowledgeDocument[]
+}
+
+model KnowledgeDocument {
+  id              String         @id @default(cuid())
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase  @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  title           String
+  content         String
+  type            String         // "FAQ", "Menu", "Policy", "Service"
+}
+
+model CostLedger {
+  id         String   @id @default(cuid())
+  tenantId   String
+  callId     String?
+  provider   String   // "OpenAI", "ElevenLabs", "VAPI", "Twilio", "Nayatel"
+  service    String   // "TTS", "STT", "LLM", "Telephony"
+  amount     Float
+  createdAt  DateTime @default(now())
+}
+
+model OnboardingTask {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  taskName       String       // "Assign Phone Number", "Upload Knowledge", "Deploy Agent"
+  status         String       // "pending", "completed"
 }

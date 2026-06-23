@@ -174,6 +174,19 @@ export async function upsertCallLog({
         minutes: payload.durationSeconds || 1,
         costUsd: payload.costUsd ?? 0,
       });
+
+      // Write to granular Cost Ledger
+      if (payload.costUsd && payload.costUsd > 0) {
+        await prisma.costLedger.create({
+          data: {
+            tenantId: organizationId,
+            callId: logRecord.id,
+            provider: "VAPI",
+            service: "Telephony",
+            amount: payload.costUsd,
+          }
+        });
+      }
     }
   }
 
