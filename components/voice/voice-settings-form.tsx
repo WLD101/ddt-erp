@@ -66,21 +66,21 @@ export function VoiceSettingsForm({ initialValues }: VoiceSettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card className="border-white/10 bg-slate-950/35 text-slate-50">
+      <Card className="rounded-[28px] border-outline-variant/30 bg-surface text-on-surface shadow-xs">
         <CardHeader>
-          <CardTitle className="text-white">Receptionist behavior</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-2xl font-black text-on-surface">Receptionist behavior</CardTitle>
+          <CardDescription className="text-sm text-on-surface-variant">
             Configure how the receptionist greets callers, what it collects, and what happens outside office hours.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-slate-200">Receptionist name</Label>
-            <Input {...register("receptionistName")} disabled={isPending} />
-            {errors.receptionistName && <p className="text-xs text-rose-300">{errors.receptionistName.message}</p>}
+            <Label className="text-xs font-bold text-on-surface-variant">Receptionist name</Label>
+            <Input {...register("receptionistName")} disabled={isPending} className="bg-surface-container-lowest" />
+            {errors.receptionistName && <p className="text-xs text-error">{errors.receptionistName.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-200">Language mode</Label>
+            <Label className="text-xs font-bold text-on-surface-variant">Language mode</Label>
             <select {...register("languageMode")} disabled={isPending} className={selectClassName}>
               {voiceLanguageOptions.map((option) => (
                 <option key={option} value={option}>
@@ -88,25 +88,25 @@ export function VoiceSettingsForm({ initialValues }: VoiceSettingsFormProps) {
                 </option>
               ))}
             </select>
-            {errors.languageMode && <p className="text-xs text-rose-300">{errors.languageMode.message}</p>}
+            {errors.languageMode && <p className="text-xs text-error">{errors.languageMode.message}</p>}
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label className="text-slate-200">Greeting message</Label>
-            <Textarea {...register("greetingMessage")} disabled={isPending} className="min-h-[110px]" />
-            {errors.greetingMessage && <p className="text-xs text-rose-300">{errors.greetingMessage.message}</p>}
+            <Label className="text-xs font-bold text-on-surface-variant">Greeting message</Label>
+            <Textarea {...register("greetingMessage")} disabled={isPending} className="min-h-[110px] bg-surface-container-lowest" />
+            {errors.greetingMessage && <p className="text-xs text-error">{errors.greetingMessage.message}</p>}
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label className="text-slate-200">Fallback message</Label>
-            <Textarea {...register("fallbackMessage")} disabled={isPending} className="min-h-[110px]" />
-            {errors.fallbackMessage && <p className="text-xs text-rose-300">{errors.fallbackMessage.message}</p>}
+            <Label className="text-xs font-bold text-on-surface-variant">Fallback message</Label>
+            <Textarea {...register("fallbackMessage")} disabled={isPending} className="min-h-[110px] bg-surface-container-lowest" />
+            {errors.fallbackMessage && <p className="text-xs text-error">{errors.fallbackMessage.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-200">Business hours</Label>
-            <Textarea {...register("businessHours")} disabled={isPending} className="min-h-[110px]" />
-            {errors.businessHours && <p className="text-xs text-rose-300">{errors.businessHours.message}</p>}
+            <Label className="text-xs font-bold text-on-surface-variant">Business hours</Label>
+            <Textarea {...register("businessHours")} disabled={isPending} className="min-h-[110px] bg-surface-container-lowest" />
+            {errors.businessHours && <p className="text-xs text-error">{errors.businessHours.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-200">After-hours behavior</Label>
+            <Label className="text-xs font-bold text-on-surface-variant">After-hours behavior</Label>
             <select {...register("afterHoursBehavior")} disabled={isPending} className={selectClassName}>
               {voiceAfterHoursOptions.map((option) => (
                 <option key={option} value={option}>
@@ -114,10 +114,10 @@ export function VoiceSettingsForm({ initialValues }: VoiceSettingsFormProps) {
                 </option>
               ))}
             </select>
-            {errors.afterHoursBehavior && <p className="text-xs text-rose-300">{errors.afterHoursBehavior.message}</p>}
+            {errors.afterHoursBehavior && <p className="text-xs text-error">{errors.afterHoursBehavior.message}</p>}
           </div>
           <div className="space-y-3 md:col-span-2">
-            <Label className="text-slate-200">Lead capture fields</Label>
+            <Label className="text-xs font-bold text-on-surface-variant">Lead capture fields</Label>
             <Controller
               control={control}
               name="leadCaptureFields"
@@ -128,7 +128,7 @@ export function VoiceSettingsForm({ initialValues }: VoiceSettingsFormProps) {
                     return (
                       <label
                         key={option}
-                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200"
+                        className="flex items-center gap-3 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
                       >
                         <Checkbox
                           checked={checked}
@@ -148,11 +148,11 @@ export function VoiceSettingsForm({ initialValues }: VoiceSettingsFormProps) {
                 </div>
               )}
             />
-            {errors.leadCaptureFields && <p className="text-xs text-rose-300">{errors.leadCaptureFields.message}</p>}
+            {errors.leadCaptureFields && <p className="text-xs text-error">{errors.leadCaptureFields.message}</p>}
           </div>
         </CardContent>
-        <CardFooter className="justify-end border-white/10 bg-slate-950/45">
-          <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+        <CardFooter className="justify-end border-t border-outline-variant/30 bg-surface-container-lowest py-4 rounded-b-[28px]">
+          <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90 rounded-xl px-6">
             {isPending ? "Saving..." : "Save receptionist settings"}
           </Button>
         </CardFooter>

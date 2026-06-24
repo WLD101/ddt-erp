@@ -5,6 +5,7 @@ import { BranchSelector } from "./admin/BranchSelector";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { CommandPalette } from "./dashboard/CommandPalette";
+import Link from "next/link";
 
 export async function Navbar() {
   const session = await auth();
@@ -37,9 +38,9 @@ export async function Navbar() {
 
       <div className="flex items-center gap-8">
         <div className="flex items-center gap-3">
-          <NavActionIcon icon="event_note" />
+          <NavActionIcon icon="event_note" href="/dashboard/reservations" />
           <NotificationBell />
-          <NavActionIcon icon="help_center" />
+          <NavActionIcon icon="help_center" href="/dashboard/knowledge-base" />
         </div>
         
         <div className="h-8 w-px bg-outline-variant/30"></div>
@@ -67,10 +68,12 @@ export async function Navbar() {
   );
 }
 
-function NavActionIcon({ icon }: { icon: string }) {
-  return (
+function NavActionIcon({ icon, href }: { icon: string, href?: string }) {
+  const btn = (
     <button className="w-10 h-10 flex items-center justify-center text-on-surface-variant/60 hover:text-primary transition-all duration-300 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10">
       <span className="material-symbols-outlined text-[22px]">{icon}</span>
     </button>
   );
+  if (href) return <Link href={href}>{btn}</Link>;
+  return btn;
 }
