@@ -6,6 +6,20 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  async redirects() {
+    return [
+      {
+        source: "/wq-command-center",
+        destination: "/voice/admin/command-center",
+        permanent: true,
+      },
+      {
+        source: "/wq-command-center/:path*",
+        destination: "/voice/admin/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

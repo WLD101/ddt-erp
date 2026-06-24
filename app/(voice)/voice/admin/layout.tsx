@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isPlatformAdminEmail } from "@/lib/security/access";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
+import { AdminSidebar } from "./_components/admin-sidebar";
 
 export default async function VoiceAdminLayout({
   children,
@@ -23,9 +24,11 @@ export default async function VoiceAdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Voice Admin Navigation could go here, or we let the page handle it */}
-      {children}
+    <div className="flex h-screen overflow-hidden bg-surface">
+      <AdminSidebar />
+      <main className="flex-1 overflow-y-auto">
+        {children}
+      </main>
     </div>
   );
 }
