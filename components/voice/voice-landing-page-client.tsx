@@ -158,13 +158,6 @@ export function VoiceLandingPageClient({
                 <span>Start 14-Day Free Trial</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link 
-                href={dashboardHref}
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur px-8 py-4 text-sm font-bold text-white hover:border-[#21D4FD]/45 hover:bg-white/10 transition-all"
-              >
-                <Play className="h-4 w-4 fill-white text-white" />
-                <span>Listen to Live Calls</span>
-              </Link>
             </motion.div>
 
             {/* Trust Badges */}
