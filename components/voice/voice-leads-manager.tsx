@@ -20,7 +20,7 @@ import { voiceLeadSchema } from "@/modules/voice/schema";
 type VoiceLeadValues = z.input<typeof voiceLeadSchema>;
 
 const selectClassName =
-  "h-9 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-1 text-sm text-on-surface shadow-sm outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10";
+  "h-9 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1 text-sm text-on-surface shadow-sm outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10";
 
 type VoiceLeadsManagerProps = {
   leads: Array<{
@@ -83,30 +83,30 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="border-white/10 bg-slate-950/35 text-slate-50">
+      <Card className="rounded-[28px] border-outline-variant/30 bg-surface text-on-surface shadow-xs">
         <CardHeader>
-          <CardTitle className="text-white">Manual test lead</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-2xl font-black text-on-surface">Manual test lead</CardTitle>
+          <CardDescription className="text-sm text-on-surface-variant">
             Use this form to test the receptionist lead workflow before telephony starts writing real caller records.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-slate-200">Name</Label>
-              <Input {...register("name")} disabled={isPending} />
+              <Label className="text-xs font-bold text-on-surface-variant">Name</Label>
+              <Input {...register("name")} disabled={isPending} className="bg-surface-container-lowest" />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-200">Phone</Label>
-              <Input {...register("phone")} disabled={isPending} />
+              <Label className="text-xs font-bold text-on-surface-variant">Phone</Label>
+              <Input {...register("phone")} disabled={isPending} className="bg-surface-container-lowest" />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-200">Email</Label>
-              <Input {...register("email")} disabled={isPending} />
-              {errors.email ? <p className="text-xs text-rose-300">{errors.email.message}</p> : null}
+              <Label className="text-xs font-bold text-on-surface-variant">Email</Label>
+              <Input {...register("email")} disabled={isPending} className="bg-surface-container-lowest" />
+              {errors.email ? <p className="text-xs text-error">{errors.email.message}</p> : null}
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-200">Status</Label>
+              <Label className="text-xs font-bold text-on-surface-variant">Status</Label>
               <select {...register("status")} disabled={isPending} className={selectClassName}>
                 {["NEW", "CONTACTED", "QUALIFIED", "CLOSED"].map((option) => (
                   <option key={option} value={option}>
@@ -116,18 +116,18 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
               </select>
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label className="text-slate-200">Reason for call</Label>
-              <Input {...register("reasonForCall")} disabled={isPending} placeholder="Appointment inquiry, pricing, support..." />
-              {errors.reasonForCall ? <p className="text-xs text-rose-300">{errors.reasonForCall.message}</p> : null}
+              <Label className="text-xs font-bold text-on-surface-variant">Reason for call</Label>
+              <Input {...register("reasonForCall")} disabled={isPending} placeholder="Appointment inquiry, pricing, support..." className="bg-surface-container-lowest" />
+              {errors.reasonForCall ? <p className="text-xs text-error">{errors.reasonForCall.message}</p> : null}
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label className="text-slate-200">Notes</Label>
-              <Textarea {...register("notes")} disabled={isPending} className="min-h-[110px]" />
+              <Label className="text-xs font-bold text-on-surface-variant">Notes</Label>
+              <Textarea {...register("notes")} disabled={isPending} className="min-h-[110px] bg-surface-container-lowest" />
             </div>
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 md:col-span-2">
+            <div className="flex items-center justify-between rounded-2xl border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer px-4 py-3 md:col-span-2">
               <div>
-                <div className="text-sm font-semibold text-white">Appointment requested</div>
-                <div className="text-xs text-slate-400">Use this for businesses that want the receptionist to capture booking intent.</div>
+                <div className="text-sm font-semibold text-on-surface">Appointment requested</div>
+                <div className="text-xs text-on-surface-variant">Use this for businesses that want the receptionist to capture booking intent.</div>
               </div>
               <Controller
                 control={control}
@@ -137,8 +137,8 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
                 )}
               />
             </div>
-            <div className="flex justify-end md:col-span-2">
-              <Button type="submit" disabled={isPending} className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+            <div className="flex justify-end md:col-span-2 pt-4 border-t border-outline-variant/30">
+              <Button type="submit" disabled={isPending} className="bg-primary text-on-primary hover:bg-primary/90 rounded-xl px-6">
                 {isPending ? "Saving..." : "Add test lead"}
               </Button>
             </div>
@@ -146,23 +146,23 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10 bg-slate-950/35 text-slate-50">
+      <Card className="rounded-[28px] border-outline-variant/30 bg-surface text-on-surface shadow-xs">
         <CardHeader>
-          <CardTitle className="text-white">Captured leads</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-2xl font-black text-on-surface">Captured leads</CardTitle>
+          <CardDescription className="text-sm text-on-surface-variant">
             Real receptionist lead records will appear here later. Zero-state is shown clearly if no data exists yet.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {leads.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/20 px-5 py-10 text-center text-sm text-slate-300">
+            <div className="rounded-[24px] border border-dashed border-outline-variant/30 bg-surface-container-lowest px-5 py-10 text-center text-sm text-on-surface-variant">
               No leads captured yet. AI leads will appear here.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/40 shadow-xl backdrop-blur">
+            <div className="overflow-hidden rounded-[24px] border border-outline-variant/30 bg-surface shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-950/60 text-slate-400">
+                  <thead className="bg-surface-container-lowest text-on-surface-variant">
                     <tr>
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Name</th>
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Contact</th>
@@ -171,7 +171,7 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 bg-transparent">
+                  <tbody className="divide-y divide-outline-variant/20 bg-transparent">
                     {leads.map((lead) => {
                       const getStatusVariant = (s: string): VoiceStatusVariant => {
                         if (s === "NEW") return "warning";
@@ -182,24 +182,24 @@ export function VoiceLeadsManager({ leads }: VoiceLeadsManagerProps) {
                       };
 
                       return (
-                        <tr key={lead.id} className="transition-colors hover:bg-white/5">
+                        <tr key={lead.id} className="transition-colors hover:bg-surface-container-lowest">
                           <td className="whitespace-nowrap px-6 py-4">
-                            <div className="font-bold text-white">{lead.name || "Unknown caller"}</div>
+                            <div className="font-bold text-on-surface">{lead.name || "Unknown caller"}</div>
                             {lead.appointmentRequested && (
-                              <div className="text-[9px] uppercase tracking-wider font-bold text-cyan-400 mt-1">Appointment Requested</div>
+                              <div className="text-[9px] uppercase tracking-wider font-bold text-primary mt-1">Appointment Requested</div>
                             )}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                            <div className="text-slate-200">{lead.phone || "-"}</div>
-                            <div className="text-slate-400 text-xs mt-0.5">{lead.email || "-"}</div>
+                            <div className="text-on-surface">{lead.phone || "-"}</div>
+                            <div className="text-on-surface-variant text-xs mt-0.5">{lead.email || "-"}</div>
                           </td>
-                          <td className="px-6 py-4 text-slate-300 max-w-[200px] truncate" title={lead.reasonForCall || ""}>
+                          <td className="px-6 py-4 text-on-surface-variant max-w-[200px] truncate" title={lead.reasonForCall || ""}>
                             {lead.reasonForCall || "-"}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
                             <VoiceStatusPill variant={getStatusVariant(lead.status)} label={lead.status} />
                           </td>
-                          <td className="whitespace-nowrap px-6 py-4 text-slate-400 text-xs">
+                          <td className="whitespace-nowrap px-6 py-4 text-on-surface-variant text-xs">
                             {new Date(lead.createdAt).toLocaleString()}
                           </td>
                         </tr>
