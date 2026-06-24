@@ -349,10 +349,17 @@ export function VoiceLandingPageClient({
               { val: "24/7", desc: "response coverage including weekends and after-hours" },
               { val: "-70%", desc: "lower operational costs compared to human call agencies" }
             ].map((stat, idx) => (
-              <div key={idx} className="rounded-3xl border border-white/5 bg-slate-950/30 p-6 space-y-2">
+              <motion.div 
+                key={idx} 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="rounded-3xl border border-white/5 bg-slate-950/30 p-6 space-y-2"
+              >
                 <div className="text-4xl font-extrabold text-[#21D4FD] tracking-tight">{stat.val}</div>
                 <div className="text-xs text-[#A7B0C0] leading-relaxed">{stat.desc}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -594,7 +601,13 @@ export function VoiceLandingPageClient({
 
           <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto">
             {/* Starter */}
-            <div className="rounded-[32px] border border-white/10 bg-slate-900/50 p-8 flex flex-col hover:border-[#21D4FD]/30 transition-all">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6 }}
+              className="rounded-[32px] border border-white/10 bg-slate-900/50 p-8 flex flex-col hover:border-[#21D4FD]/30 transition-all"
+            >
               <h4 className="text-2xl font-black text-white">Starter</h4>
               <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Perfect for small businesses getting started</p>
               <div className="mt-6 mb-8">
@@ -610,10 +623,16 @@ export function VoiceLandingPageClient({
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
               </ul>
               <Link href={onboardingHref} className="mt-8 block w-full py-3 rounded-xl border border-white/20 text-center font-bold text-white hover:bg-white/5 transition-all">Get Started</Link>
-            </div>
+            </motion.div>
 
             {/* Pro */}
-            <div className="rounded-[32px] border border-[#21D4FD]/50 bg-gradient-to-b from-[#21D4FD]/10 to-transparent p-8 flex flex-col relative shadow-2xl shadow-[#21D4FD]/10 transform md:scale-105 z-10">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="rounded-[32px] border border-[#21D4FD]/50 bg-gradient-to-b from-[#21D4FD]/10 to-transparent p-8 flex flex-col relative shadow-2xl shadow-[#21D4FD]/10 transform md:scale-105 z-10"
+            >
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#21D4FD] text-slate-950 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">Most Popular</div>
               <h4 className="text-2xl font-black text-white">Pro</h4>
               <p className="text-sm text-slate-400 mt-2 min-h-[40px]">For businesses with advanced needs</p>
@@ -633,10 +652,16 @@ export function VoiceLandingPageClient({
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
               </ul>
               <Link href={onboardingHref} className="mt-8 block w-full py-3 rounded-xl bg-[#21D4FD] text-center font-bold text-slate-950 hover:opacity-90 transition-all">Get Started</Link>
-            </div>
+            </motion.div>
 
             {/* Growth */}
-            <div className="rounded-[32px] border border-white/10 bg-slate-900/50 p-8 flex flex-col hover:border-[#21D4FD]/30 transition-all">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="rounded-[32px] border border-white/10 bg-slate-900/50 p-8 flex flex-col hover:border-[#21D4FD]/30 transition-all"
+            >
               <h4 className="text-2xl font-black text-white">Growth</h4>
               <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Ideal for growing businesses</p>
               <div className="mt-6 mb-8">
@@ -654,7 +679,7 @@ export function VoiceLandingPageClient({
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
               </ul>
               <Link href={onboardingHref} className="mt-8 block w-full py-3 rounded-xl border border-white/20 text-center font-bold text-white hover:bg-white/5 transition-all">Get Started</Link>
-            </div>
+            </motion.div>
 
           </div>
           
@@ -671,10 +696,17 @@ export function VoiceLandingPageClient({
             { val: "70%", desc: "Lower Call Costs" },
             { val: "< 7 Days", desc: "Deployment Time" }
           ].map((metric, idx) => (
-            <div key={idx} className="text-center space-y-2 border-r border-white/5 last:border-0 py-6">
+            <motion.div 
+              key={idx} 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className="text-center space-y-2 border-r border-white/5 last:border-0 py-6"
+            >
               <div className="text-6xl lg:text-7xl font-extrabold text-[#21D4FD] tracking-tighter">{metric.val}</div>
               <div className="text-sm font-semibold text-white uppercase tracking-wider">{metric.desc}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
