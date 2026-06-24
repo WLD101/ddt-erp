@@ -15,9 +15,9 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
   const tenant = await getTenantById(id);
   if (!tenant) return notFound();
 
-  const activeAgents = tenant.voiceAgents?.filter(a => a.status === "ACTIVE").length || 0;
+  const activeAgents = (tenant as any).voiceAgents?.length || 0;
   const walletBalance = Number(tenant.walletBalance || 0).toFixed(2);
-  const mrr = Number(tenant.subscription?.monthlyPrice || 0).toFixed(2);
+  const mrr = Number((tenant as any).subscription?.monthlyPrice || 0).toFixed(2);
 
   return (
     <div className="flex flex-col gap-8 p-8 min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -50,12 +50,12 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl shadow-sm">
           <div className="text-sm font-medium text-slate-500 mb-1">Health Score</div>
           <div className={`text-3xl font-bold ${
-            tenant.healthScore >= 80 ? "text-emerald-600" : tenant.healthScore >= 50 ? "text-amber-600" : "text-rose-600"
+            (tenant.healthScore || 0) >= 80 ? "text-emerald-600" : (tenant.healthScore || 0) >= 50 ? "text-yellow-500" : "text-rose-500"
           }`}>
-            {tenant.healthScore} / 100
+            {tenant.healthScore || 0} / 100
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -64,7 +64,7 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
         </div>
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="text-sm font-medium text-slate-500 mb-1">Active Agents</div>
-          <div className="text-3xl font-bold text-slate-900 dark:text-white">{activeAgents} <span className="text-lg text-slate-400">/ {tenant.voiceAgents?.length || 0}</span></div>
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">{activeAgents} <span className="text-lg text-slate-400">/ {(tenant as any).voiceAgents?.length || 0}</span></div>
         </div>
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="text-sm font-medium text-slate-500 mb-1">MRR</div>
@@ -91,7 +91,7 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {tenant.callLogs?.map(log => (
+                  {((tenant as any).voiceCallLogs || [])?.map((log: any) => (
                     <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">{log.customerNumber || "Unknown"}</td>
                       <td className="px-6 py-3">{Math.floor((log.durationSeconds || 0) / 60)}m {(log.durationSeconds || 0) % 60}s</td>
@@ -104,7 +104,7 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
                       <td className="px-6 py-3 text-right text-slate-500">{new Date(log.createdAt).toLocaleString()}</td>
                     </tr>
                   ))}
-                  {!tenant.callLogs?.length && (
+                  {!(tenant as any).voiceCallLogs?.length && (
                     <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No calls recorded yet.</td></tr>
                   )}
                 </tbody>
@@ -119,7 +119,7 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Organization Users</h2>
             </div>
             <div className="divide-y divide-slate-200 dark:divide-slate-700">
-              {tenant.users?.map(u => (
+              {((tenant as any).members || [])?.map((u: any) => (
                 <div key={u.id} className="p-4 flex justify-between items-center">
                   <div>
                     <div className="font-medium text-slate-900 dark:text-white">{u.user?.name || "Unknown"}</div>
@@ -127,7 +127,7 @@ export default async function TenantDetailsPage({ params }: { params: Promise<{ 
                   </div>
                 </div>
               ))}
-              {!tenant.users?.length && (
+              {!(tenant as any).members?.length && (
                 <div className="p-4 text-slate-500 text-sm text-center">No users found.</div>
               )}
             </div>

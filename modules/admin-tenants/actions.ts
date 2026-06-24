@@ -23,7 +23,7 @@ export async function getTenants(params?: { search?: string; type?: string }) {
   return prisma.organization.findMany({
     where,
     include: {
-      voiceUsageMeter: true,
+      VoiceUsageMeter: true,
       subscription: true,
       _count: {
         select: { voiceAgents: true }
@@ -39,14 +39,14 @@ export async function getTenantById(id: string) {
   return prisma.organization.findUnique({
     where: { id },
     include: {
-      voiceUsageMeter: true,
+      VoiceUsageMeter: true,
       subscription: true,
       voiceAgents: true,
-      callLogs: {
+      voiceCallLogs: {
         take: 10,
         orderBy: { createdAt: "desc" },
       },
-      users: {
+      members: {
         include: { user: true }
       }
     }

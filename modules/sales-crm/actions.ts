@@ -21,7 +21,7 @@ export async function updateLeadStage(leadId: string, stage: string) {
   await requirePlatformAdmin();
   const lead = await prisma.lead.update({
     where: { id: leadId },
-    data: { stage },
+    data: { status: stage },
   });
   revalidatePath("/voice/admin/sales/pipeline");
   return lead;

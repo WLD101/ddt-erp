@@ -36,6 +36,7 @@ export async function addKnowledgeDocument(kbId: string, data: { title: string; 
       knowledgeBaseId: kbId,
       title: data.title,
       content: data.content,
+      type: "FAQ", // default
       isGlobal: true,
     },
   });

@@ -74,15 +74,15 @@ export default async function TenantDirectoryPage(props: {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${
-                      tenant.healthScore >= 80 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" :
-                      tenant.healthScore >= 50 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
+                      (tenant.healthScore || 0) >= 80 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" :
+                      (tenant.healthScore || 0) >= 50 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
                       "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                     }`}>
-                      {tenant.healthScore} / 100
+                      {tenant.healthScore || 0} / 100
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300 font-medium">
-                    {tenant._count?.voiceAgents || 0}
+                    {(tenant as any)._count?.voiceAgents || 0}
                   </td>
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                     {Number(tenant.walletBalance).toFixed(2)} PKR

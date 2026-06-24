@@ -24,9 +24,21 @@ export async function createPartner(data: {
 
   // Generate a secure API Key for the partner
   const apiKey = "wq_pt_" + crypto.randomBytes(24).toString("hex");
+  const partnerCode = "P" + crypto.randomBytes(4).toString("hex").toUpperCase();
+
+  // For this simplified logic, we are creating a dummy user or linking to an existing one.
+  // Assuming a generic user creation for the partner.
+  const user = await prisma.user.create({
+    data: {
+      email: data.contactEmail,
+      name: data.name,
+    }
+  });
 
   const partner = await prisma.partner.create({
     data: {
+      userId: user.id,
+      partnerCode,
       name: data.name,
       contactEmail: data.contactEmail,
       apiKey,

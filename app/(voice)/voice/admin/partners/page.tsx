@@ -57,7 +57,7 @@ export default async function PartnerPortalPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-mono text-[10px] px-2 py-1 rounded border border-slate-200 dark:border-slate-700 inline-flex items-center gap-2">
-                      <span>{partner.apiKey.slice(0, 12)}••••••••••••</span>
+                      <span>{partner.apiKey ? partner.apiKey.slice(0, 12) + "••••••••••••" : "No API Key"}</span>
                       <button className="hover:text-slate-900 dark:hover:text-white" title="Copy to clipboard">
                         <span className="material-symbols-outlined text-[12px]">content_copy</span>
                       </button>

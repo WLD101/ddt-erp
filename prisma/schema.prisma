@@ -1650,6 +1650,9 @@ model Partner {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   partnerCode    String     @unique
+  name           String?
+  contactEmail   String?
+  apiKey         String?
   status         String     @default("ACTIVE")
   commissionRate Float      @default(0.15)
   referrals      Referral[]
@@ -2082,14 +2085,23 @@ model ConversationInsight {
 
 model AgentTemplate {
   id          String   @id @default(cuid())
+  name        String?
+  description String?
   industry    String   // "Restaurant", "Clinic", "Real Estate"
   basePrompt  String
   config      String   // Stored as JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model KnowledgeBase {
   id             String              @id @default(cuid())
-  organizationId String
+  organizationId String?
+  name           String?
+  description    String?
+  isGlobal       Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
   documents      KnowledgeDocument[]
 }
 
@@ -2100,6 +2112,9 @@ model KnowledgeDocument {
   title           String
   content         String
   type            String         // "FAQ", "Menu", "Policy", "Service"
+  isGlobal        Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model CostLedger {

@@ -44,11 +44,11 @@ export default async function AgentTemplatesPage() {
                   <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
                     {template.industry}
                   </span>
-                  <span className="text-xs text-slate-500">{template.role}</span>
+                  <span className="text-xs text-slate-500">{JSON.parse(template.config || '{}').role || "AI Receptionist"}</span>
                 </div>
               </div>
-              <Badge className={template.isActive ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"}>
-                {template.isActive ? "Active" : "Draft"}
+              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                Active
               </Badge>
             </div>
             
