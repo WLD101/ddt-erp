@@ -17,6 +17,7 @@ export const voiceBusinessProfileSchema = z.object({
   businessName: z.string().trim().min(2, "Business name is required."),
   industry: z.string().trim().min(2, "Industry is required."),
   website: optionalUrl,
+  preferredCallingCountry: z.enum(["PK", "US", "GB"]).default("PK"),
   businessPhone: z.string().trim().min(5, "Business phone is required."),
   preferredLanguage: z.enum(voiceLanguageOptions),
   openingHours: z.string().trim().min(5, "Opening hours are required."),

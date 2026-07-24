@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { reconcileVoiceUsageMeterFromCallLogs } from "@/modules/voice/usage-reconciliation";
 
 function parsePackageFeatures(featureJson: string | null | undefined) {
   if (!featureJson) return null;
@@ -105,7 +107,13 @@ export async function incrementUsageStat(
   });
 }
 
-export async function checkUsageLimits(organizationId: string) {
+export async function checkUsageLimits(
+  organizationId: string,
+  options: { reconcile?: boolean } = {},
+) {
+  if (options.reconcile !== false) {
+    await reconcileVoiceUsageMeterFromCallLogs(organizationId);
+  }
   const meter = await getVoiceUsageMeter(organizationId);
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
@@ -155,23 +163,44 @@ export async function checkUsageLimits(organizationId: string) {
 }
 
 export async function checkAndAcquireActiveCallSlot(organizationId: string) {
-  const meter = await getVoiceUsageMeter(organizationId);
-
-  if (meter.activeCalls >= meter.maxActiveCalls) {
-    return { acquired: false, reason: "CAPACITY_FULL" };
-  }
-
-  const usage = await checkUsageLimits(organizationId);
+  // The assistant-request deadline is fixed by the telephony provider, so use the
+  // worker-maintained meter here instead of scanning the call ledger synchronously.
+  const usage = await checkUsageLimits(organizationId, { reconcile: false });
   if (usage.isBlocked) {
     return { acquired: false, reason: "MONTHLY_LIMIT_EXCEEDED" };
   }
 
-  await prisma.voiceUsageMeter.update({
-    where: { id: meter.id },
-    data: { activeCalls: { increment: 1 } }
-  });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await prisma.$transaction(
+        async (tx) => {
+          const meter = await tx.voiceUsageMeter.findUnique({
+            where: { organizationId },
+          });
+          if (!meter || meter.activeCalls >= meter.maxActiveCalls) {
+            return { acquired: false, reason: "CAPACITY_FULL" };
+          }
 
-  return { acquired: true };
+          await tx.voiceUsageMeter.update({
+            where: { id: meter.id },
+            data: { activeCalls: { increment: 1 } },
+          });
+          return { acquired: true };
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+    } catch (error) {
+      if (
+        !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+        error.code !== "P2034" ||
+        attempt === 2
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  return { acquired: false, reason: "CAPACITY_RETRY_EXHAUSTED" };
 }
 
 export async function releaseActiveCallSlot(organizationId: string) {

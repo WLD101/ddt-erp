@@ -8,6 +8,7 @@ function createRedis() {
     maxRetriesPerRequest: null,
     lazyConnect: true,
     enableOfflineQueue: false,
+    connectTimeout: 500,
     retryStrategy: (times) => {
       // Stop retrying after 3 attempts — we're in local dev without Redis
       if (times > 3) return null;

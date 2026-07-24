@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth";
 import { getCurrentTenantContext } from "@/lib/tenant";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 import { VoiceMarketingShell } from "@/components/voice/voice-marketing-shell";
-import { StripeCheckoutLauncher } from "@/components/billing/stripe-checkout-launcher";
+import { LocalizedVoicePrice, VoiceLocalizedPricingNote } from "@/components/voice/voice-localized-pricing";
 import { CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
 export default async function VoicePricingPage() {
   const session = await auth();
@@ -28,18 +29,37 @@ export default async function VoicePricingPage() {
 
   const loginHref = toVoiceExternalPath("/login", host);
   const homeHref = toVoiceExternalPath("/", host);
+  const dashboardHref = toVoiceExternalPath("/dashboard", host);
+  const pricingHref = toVoiceExternalPath("/pricing", host);
+  const docsHref = toVoiceExternalPath("/docs", host);
+
+  const renderActivationCta = () => (
+    <Link
+      href={dashboardHref}
+      className="flex h-12 w-full items-center justify-center rounded-2xl bg-[#21D4FD] px-4 text-sm font-black uppercase tracking-widest text-slate-950 shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02] hover:bg-cyan-300 active:scale-[0.98]"
+    >
+      Continue Voice Setup
+    </Link>
+  );
 
   return (
-    <VoiceMarketingShell homeHref={homeHref} loginHref={loginHref} onboardingHref="#">
+    <VoiceMarketingShell
+      homeHref={homeHref}
+      loginHref={loginHref}
+      onboardingHref="#"
+      pricingHref={pricingHref}
+      docsHref={docsHref}
+    >
       <main className="mx-auto max-w-7xl px-4 py-16 md:py-32 space-y-16">
         <div className="text-center space-y-4">
           <h2 className="text-xs uppercase tracking-[0.25em] text-[#21D4FD] font-black">Final Step</h2>
           <h3 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
-            Activate Your 14-Day Free Trial
+            Choose Your Voice Setup Plan
           </h3>
           <p className="max-w-xl mx-auto text-[#A7B0C0]">
-            Select a plan to complete your setup. <strong className="text-white">You won&apos;t be charged today.</strong> Cancel anytime within 14 days.
+            Select the package direction for your AI receptionist. <strong className="text-white">Online Voice billing is not live yet.</strong> Your ERP package checkout stays separate.
           </p>
+          <VoiceLocalizedPricingNote className="max-w-2xl mx-auto text-sm text-slate-400" />
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto">
@@ -48,8 +68,11 @@ export default async function VoicePricingPage() {
             <h4 className="text-2xl font-black text-white">Starter</h4>
             <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Perfect for small businesses getting started</p>
             <div className="mt-6 mb-8">
-              <div className="text-4xl font-black text-white">PKR 15,000</div>
-              <div className="text-sm text-slate-400 mt-1">/month</div>
+              <LocalizedVoicePrice
+                prices={{ PKR: 15000, USD: 54, GBP: 43, EUR: 49, AED: 199 }}
+                amountClassName="text-4xl font-black text-white"
+                periodClassName="text-sm text-slate-400 mt-1"
+              />
             </div>
             <ul className="space-y-4 flex-1 text-sm text-slate-300">
               <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 1,500 minutes per month</li>
@@ -60,13 +83,10 @@ export default async function VoicePricingPage() {
               <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 24/7 call handling</li>
             </ul>
             <div className="mt-8 pt-6 border-t border-white/10">
-              <StripeCheckoutLauncher
-                planId="starter"
-                planName="Starter"
-                availableCycles={{ monthly: true, yearly: false }}
-                trialPeriodDays={14}
-                ctaLabel="Start 14-Day Free Trial"
-              />
+              {renderActivationCta()}
+              <p className="mt-3 text-xs leading-relaxed text-slate-400">
+                Voice billing is managed separately from ERP packages. Online checkout will appear here after Voice Stripe prices are configured.
+              </p>
             </div>
           </div>
 
@@ -76,8 +96,11 @@ export default async function VoicePricingPage() {
             <h4 className="text-2xl font-black text-white">Pro</h4>
             <p className="text-sm text-slate-400 mt-2 min-h-[40px]">For businesses with advanced needs</p>
             <div className="mt-6 mb-8">
-              <div className="text-4xl font-black text-white">PKR 55,000</div>
-              <div className="text-sm text-slate-400 mt-1">/month</div>
+              <LocalizedVoicePrice
+                prices={{ PKR: 55000, USD: 197, GBP: 157, EUR: 179, AED: 729 }}
+                amountClassName="text-4xl font-black text-white"
+                periodClassName="text-sm text-slate-400 mt-1"
+              />
             </div>
             <ul className="space-y-4 flex-1 text-sm text-slate-300">
               <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 7,000 minutes per month</li>
@@ -90,13 +113,10 @@ export default async function VoicePricingPage() {
               <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Priority support</li>
             </ul>
             <div className="mt-8 pt-6 border-t border-white/10">
-              <StripeCheckoutLauncher
-                planId="pro"
-                planName="Pro"
-                availableCycles={{ monthly: true, yearly: false }}
-                trialPeriodDays={14}
-                ctaLabel="Start 14-Day Free Trial"
-              />
+              {renderActivationCta()}
+              <p className="mt-3 text-xs leading-relaxed text-slate-400">
+                Voice billing is managed separately from ERP packages. Online checkout will appear here after Voice Stripe prices are configured.
+              </p>
             </div>
           </div>
 
@@ -105,8 +125,11 @@ export default async function VoicePricingPage() {
             <h4 className="text-2xl font-black text-white">Growth</h4>
             <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Ideal for growing businesses</p>
             <div className="mt-6 mb-8">
-              <div className="text-4xl font-black text-white">PKR 35,000</div>
-              <div className="text-sm text-slate-400 mt-1">/month</div>
+              <LocalizedVoicePrice
+                prices={{ PKR: 35000, USD: 125, GBP: 99, EUR: 114, AED: 469 }}
+                amountClassName="text-4xl font-black text-white"
+                periodClassName="text-sm text-slate-400 mt-1"
+              />
             </div>
             <ul className="space-y-4 flex-1 text-sm text-slate-300">
               <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 3,500 minutes per month</li>
@@ -118,13 +141,10 @@ export default async function VoicePricingPage() {
               <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> Chat + email support</li>
             </ul>
             <div className="mt-8 pt-6 border-t border-white/10">
-              <StripeCheckoutLauncher
-                planId="business"
-                planName="Growth"
-                availableCycles={{ monthly: true, yearly: false }}
-                trialPeriodDays={14}
-                ctaLabel="Start 14-Day Free Trial"
-              />
+              {renderActivationCta()}
+              <p className="mt-3 text-xs leading-relaxed text-slate-400">
+                Voice billing is managed separately from ERP packages. Online checkout will appear here after Voice Stripe prices are configured.
+              </p>
             </div>
           </div>
         </div>

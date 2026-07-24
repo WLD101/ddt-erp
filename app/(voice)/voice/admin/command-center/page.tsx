@@ -4,9 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { assignPackageAction, approveManualPaymentAction, rejectManualPaymentAction } from "./actions";
-import { signOutAction } from "@/modules/auth/actions";
 
 const shellCardClassName = "overflow-hidden rounded-[28px] border border-outline-variant/30 bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+const terminalCallStatuses = ["COMPLETED", "MISSED", "VOICEMAIL", "ABANDONED"];
+
+function formatExactMinutes(seconds?: number | null) {
+  return Number(((seconds || 0) / 60).toFixed(2));
+}
 
 function MetricCard({
   icon,
@@ -70,14 +74,18 @@ export default async function VoiceAdminCommandCenterPage() {
     whatsappFailed,
     activeCallsData,
     capacityFullEvents,
-    topTenantsByCalls,
+    topTenantsByUsage,
     totalCostTodayAgg,
     totalCostThisMonthAgg,
+    durationTodayAgg,
+    durationThisMonthAgg,
     callsWithoutCostData,
+    callsWithoutDurationData,
     callsWithoutMappedTenantOrAgent,
     costByBusinessRows,
     costByAgentRows,
     costByPhoneRows,
+    callerDemographicRows,
     allOrganizations,
     voicePackages,
     pendingPayments,
@@ -103,10 +111,16 @@ export default async function VoiceAdminCommandCenterPage() {
     prisma.voiceNotificationLog.count({ where: { type: "whatsapp", status: "failed" } }),
     prisma.voiceUsageMeter.aggregate({ _sum: { activeCalls: true } }),
     prisma.voiceWebhookEvent.count({ where: { errorMessage: { contains: "CAPACITY_FULL" } } }),
-    prisma.voiceUsageMeter.findMany({
-      orderBy: { callsThisMonth: "desc" },
+    prisma.voiceCallLog.groupBy({
+      by: ["organizationId"],
+      where: {
+        createdAt: { gte: startOfMonth },
+        callStatus: { in: terminalCallStatuses },
+      },
+      _sum: { durationSeconds: true, costUsd: true },
+      _count: { organizationId: true },
+      orderBy: { _count: { organizationId: "desc" } },
       take: 5,
-      include: { organization: { select: { name: true } } },
     }),
     prisma.voiceCallLog.aggregate({
       _sum: { costUsd: true },
@@ -115,6 +129,14 @@ export default async function VoiceAdminCommandCenterPage() {
     prisma.voiceCallLog.aggregate({
       _sum: { costUsd: true },
       where: { createdAt: { gte: startOfMonth } },
+    }),
+    prisma.voiceCallLog.aggregate({
+      _sum: { durationSeconds: true },
+      where: { createdAt: { gte: startOfDay }, callStatus: { in: terminalCallStatuses } },
+    }),
+    prisma.voiceCallLog.aggregate({
+      _sum: { durationSeconds: true },
+      where: { createdAt: { gte: startOfMonth }, callStatus: { in: terminalCallStatuses } },
     }),
     prisma.voiceCallLog.count({
       where: {
@@ -125,12 +147,19 @@ export default async function VoiceAdminCommandCenterPage() {
     prisma.voiceCallLog.count({
       where: {
         createdAt: { gte: startOfMonth },
+        callStatus: { in: terminalCallStatuses },
+        OR: [{ durationSeconds: null }, { durationSeconds: 0 }],
+      },
+    }),
+    prisma.voiceCallLog.count({
+      where: {
+        createdAt: { gte: startOfMonth },
         OR: [{ voiceBusinessProfileId: null }, { voiceAgentId: null }],
       },
     }),
     prisma.voiceCallLog.groupBy({
       by: ["organizationId"],
-      where: { createdAt: { gte: startOfMonth } },
+      where: { createdAt: { gte: startOfMonth }, callStatus: { in: terminalCallStatuses } },
       _sum: { costUsd: true, durationSeconds: true },
       _count: { _all: true },
       orderBy: { _sum: { costUsd: "desc" } },
@@ -138,7 +167,7 @@ export default async function VoiceAdminCommandCenterPage() {
     }),
     prisma.voiceCallLog.groupBy({
       by: ["voiceAgentId"],
-      where: { createdAt: { gte: startOfMonth }, voiceAgentId: { not: null } },
+      where: { createdAt: { gte: startOfMonth }, voiceAgentId: { not: null }, callStatus: { in: terminalCallStatuses } },
       _sum: { costUsd: true, durationSeconds: true },
       _count: { _all: true },
       orderBy: { _sum: { costUsd: "desc" } },
@@ -146,10 +175,18 @@ export default async function VoiceAdminCommandCenterPage() {
     }),
     prisma.voiceCallLog.groupBy({
       by: ["providerPhoneNumberId"],
-      where: { createdAt: { gte: startOfMonth }, providerPhoneNumberId: { not: null } },
+      where: { createdAt: { gte: startOfMonth }, providerPhoneNumberId: { not: null }, callStatus: { in: terminalCallStatuses } },
       _sum: { costUsd: true, durationSeconds: true },
       _count: { _all: true },
       orderBy: { _sum: { costUsd: "desc" } },
+      take: 10,
+    }),
+    prisma.voiceCallLog.groupBy({
+      by: ["callerCountry", "callerNumberCountryCode"],
+      where: { createdAt: { gte: startOfMonth }, callStatus: { in: terminalCallStatuses } },
+      _sum: { durationSeconds: true, costUsd: true },
+      _count: { _all: true },
+      orderBy: { _count: { callerCountry: "desc" } },
       take: 10,
     }),
     prisma.organization.findMany({ orderBy: { name: "asc" } }),
@@ -182,7 +219,6 @@ export default async function VoiceAdminCommandCenterPage() {
         name: true,
         email: true,
         subscription: { select: { currentPeriodEnd: true } },
-        VoiceUsageMeter: { select: { callMinutesThisMonth: true, callsThisMonth: true } }
       }
     }),
   ]);
@@ -192,27 +228,44 @@ export default async function VoiceAdminCommandCenterPage() {
   const activeCalls = Number(activeCallsData._sum.activeCalls || 0);
   const totalCostToday = Number(totalCostTodayAgg._sum.costUsd || 0);
   const totalCostThisMonth = Number(totalCostThisMonthAgg._sum.costUsd || 0);
+  const minutesToday = formatExactMinutes(durationTodayAgg._sum.durationSeconds);
+  const minutesThisMonth = formatExactMinutes(durationThisMonthAgg._sum.durationSeconds);
 
-  const [organizations, agents] = await Promise.all([
-    prisma.organization.findMany({
-      where: { id: { in: [...new Set(costByBusinessRows.map((row) => row.organizationId).filter(Boolean) as string[])] } },
-      select: { id: true, name: true },
-    }),
-    prisma.voiceAgent.findMany({
-      where: { id: { in: [...new Set(costByAgentRows.map((row) => row.voiceAgentId).filter(Boolean) as string[])] } },
-      select: {
-        id: true,
-        name: true,
-        displayName: true,
-        internalName: true,
-        vapiPhoneNumberId: true,
-        vapiPhoneNumberName: true,
-        organization: { select: { name: true } },
-      },
-    }),
-  ]);
+  const trialUsageRows = trialOrganizations.length === 0
+    ? []
+    : await prisma.voiceCallLog.groupBy({
+        by: ["organizationId"],
+        where: {
+          organizationId: { in: trialOrganizations.map((org) => org.id) },
+          createdAt: { gte: startOfMonth },
+          callStatus: { in: terminalCallStatuses },
+        },
+        _sum: { durationSeconds: true },
+        _count: { _all: true },
+      });
+  const trialUsageMap = new Map(trialUsageRows.map((row) => [row.organizationId, row]));
 
-  const organizationMap = new Map(organizations.map((org) => [org.id, org.name]));
+  const agentIds = [...new Set(costByAgentRows.map((row) => row.voiceAgentId).filter(Boolean) as string[])];
+  const phoneNumberIds = [...new Set(costByPhoneRows.map((row) => row.providerPhoneNumberId).filter(Boolean) as string[])];
+  const agents = await prisma.voiceAgent.findMany({
+    where: {
+      OR: [
+        { id: { in: agentIds } },
+        { vapiPhoneNumberId: { in: phoneNumberIds } },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      internalName: true,
+      vapiPhoneNumberId: true,
+      vapiPhoneNumberName: true,
+      organization: { select: { name: true } },
+    },
+  });
+
+  const organizationMap = new Map(allOrganizations.map((org) => [org.id, org.name]));
   const agentMap = new Map(agents.map((agent) => [agent.id, agent]));
 
   let capacityStatus = "Healthy";
@@ -237,7 +290,7 @@ export default async function VoiceAdminCommandCenterPage() {
                   Voice Platform
                 </h1>
                 <p className="max-w-2xl text-sm font-medium leading-6 text-on-surface-variant sm:text-base">
-                  Platform Owner view of all Voice SaaS operations, AI agents, telephony costs, and tenant billing.
+                  Platform Owner view of all Voice SaaS operations, AI agents, provider costs, tenant billing, and call demographics.
                 </p>
               </div>
             </div>
@@ -366,10 +419,12 @@ export default async function VoiceAdminCommandCenterPage() {
                     </thead>
                     <tbody className="divide-y divide-outline-variant/5">
                       {trialOrganizations.map((org) => {
-                        const minutesUsed = org.VoiceUsageMeter?.callMinutesThisMonth || 0;
-                        const callsUsed = org.VoiceUsageMeter?.callsThisMonth || 0;
+                        const usage = trialUsageMap.get(org.id);
+                        const exactMinutesUsed = formatExactMinutes(usage?._sum.durationSeconds);
+                        const billableMinutesUsed = Math.ceil((usage?._sum.durationSeconds || 0) / 60);
+                        const callsUsed = usage?._count._all || 0;
                         const trialLimit = 50;
-                        const isExceeded = minutesUsed >= trialLimit;
+                        const isExceeded = billableMinutesUsed >= trialLimit;
                         
                         return (
                           <tr key={org.id} className="transition-colors hover:bg-surface-container/30">
@@ -381,7 +436,10 @@ export default async function VoiceAdminCommandCenterPage() {
                               {org.subscription?.currentPeriodEnd ? new Date(org.subscription.currentPeriodEnd).toLocaleDateString() : "N/A"}
                             </td>
                             <td className="px-6 py-4 font-black text-on-surface">{callsUsed}</td>
-                            <td className="px-6 py-4 font-black text-on-surface">{minutesUsed} / {trialLimit}</td>
+                            <td className="px-6 py-4 font-black text-on-surface">
+                              {exactMinutesUsed} exact / {trialLimit}
+                              <div className="text-[10px] font-semibold text-on-surface-variant">{billableMinutesUsed} rounded package min</div>
+                            </td>
                             <td className="px-6 py-4 text-right">
                               {isExceeded ? (
                                 <Badge className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20">Exceeded</Badge>
@@ -494,11 +552,12 @@ export default async function VoiceAdminCommandCenterPage() {
         </section>
 
         {/* Usage metrics / numbers */}
-        <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
           <MetricCard icon="call" label="Active Calls Now" value={activeCalls} tone="primary" subtitle={`${capacityFullEvents} capacity drops`} />
           <MetricCard icon="today" label="Calls Today" value={callsToday} tone="default" subtitle={`${callsThisMonth} this month`} />
+          <MetricCard icon="timer" label="Exact Minutes Today" value={minutesToday} tone="secondary" subtitle={`${minutesThisMonth} this month from call logs`} />
           <MetricCard icon="contact_mail" label="Total Leads Captured" value={totalLeads} tone="secondary" subtitle="Since inception" />
-          <MetricCard icon="payments" label="Vapi Cost Today" value={`$${totalCostToday.toFixed(2)}`} tone="default" subtitle={`$${totalCostThisMonth.toFixed(2)} this month`} />
+          <MetricCard icon="payments" label="Provider Cost Today" value={`$${totalCostToday.toFixed(2)}`} tone="default" subtitle={`$${totalCostThisMonth.toFixed(2)} this month`} />
         </section>
 
         {/* Health status metrics card */}
@@ -515,6 +574,8 @@ export default async function VoiceAdminCommandCenterPage() {
               <div className="flex justify-between text-error"><span>Failed Jobs</span><span className="font-bold">{failedJobs}</span></div>
               <div className="flex justify-between"><span>Failed Webhooks</span><span className="font-bold text-error">{failedWebhooks}</span></div>
               <div className="flex justify-between text-amber-500"><span>Mapping Failures</span><span className="font-bold">{mappingFailures}</span></div>
+              <div className="flex justify-between"><span>WhatsApp Queued</span><span className="font-bold">{whatsappQueued}</span></div>
+              <div className="flex justify-between text-error"><span>WhatsApp Failed</span><span className="font-bold">{whatsappFailed}</span></div>
             </CardContent>
           </Card>
 
@@ -522,11 +583,13 @@ export default async function VoiceAdminCommandCenterPage() {
             <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-4 pt-5">
               <CardTitle className="text-xs font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[18px]">phonelink_ring</span>
-                Telephony Health
+                Provider Health
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 py-4 space-y-3 text-sm text-on-surface">
-              <div className="flex justify-between"><span>Vapi Connected Agents</span><span className="font-bold">{connectedAgents}</span></div>
+              <div className="flex justify-between"><span>Connected Agents</span><span className="font-bold">{connectedAgents}</span></div>
+              <div className="flex justify-between"><span>Disabled Agents</span><span className="font-bold">{disabledAgents}</span></div>
+              <div className="flex justify-between"><span>Voice Packages</span><span className="font-bold">{voicePackagesCount}</span></div>
               <div className="flex justify-between text-error"><span>Missing Assistant IDs</span><span className="font-bold">{missingAssistantAgents}</span></div>
               <div className="flex justify-between text-error"><span>Missing Phone IDs</span><span className="font-bold">{missingPhoneAgents}</span></div>
             </CardContent>
@@ -541,7 +604,81 @@ export default async function VoiceAdminCommandCenterPage() {
             </CardHeader>
             <CardContent className="px-6 py-4 space-y-3 text-sm text-on-surface">
               <div className="flex justify-between text-amber-500"><span>Calls without cost</span><span className="font-bold">{callsWithoutCostData}</span></div>
+              <div className="flex justify-between text-amber-500"><span>Calls without duration</span><span className="font-bold">{callsWithoutDurationData}</span></div>
               <div className="flex justify-between text-error"><span>Calls unmapped</span><span className="font-bold">{callsWithoutMappedTenantOrAgent}</span></div>
+              <div className="flex justify-between text-error"><span>Failed Calls</span><span className="font-bold">{failedCalls}</span></div>
+              <div className="flex justify-between text-amber-500"><span>Missed Calls</span><span className="font-bold">{missedCalls}</span></div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">groups</span>
+                Top Tenants By Call Usage
+              </CardTitle>
+              <CardDescription className="text-xs text-on-surface-variant">
+                Calculated from call logs, not cached usage counters.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-4 space-y-3">
+              {topTenantsByUsage.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No call usage has been captured this month.</p>
+              ) : (
+                topTenantsByUsage.map((row) => (
+                  <div key={row.organizationId} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
+                    <div>
+                      <div className="font-bold text-on-surface">{organizationMap.get(row.organizationId) || row.organizationId}</div>
+                      <div className="text-xs text-on-surface-variant">
+                        {formatExactMinutes(row._sum.durationSeconds)} exact min / {Math.ceil((row._sum.durationSeconds || 0) / 60)} package min
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-black text-primary">{row._count.organizationId} calls</div>
+                      <div className="text-xs font-semibold text-on-surface-variant">${Number(row._sum.costUsd || 0).toFixed(2)}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">public</span>
+                Caller Demographics This Month
+              </CardTitle>
+              <CardDescription className="text-xs text-on-surface-variant">
+                Country is captured from provider metadata when available, with phone-code fallback.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-4 space-y-3">
+              {callerDemographicRows.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No caller geography has been captured yet.</p>
+              ) : (
+                callerDemographicRows.map((row) => {
+                  const countryLabel = row.callerCountry || "Unknown";
+                  const codeLabel = row.callerNumberCountryCode ? `+${row.callerNumberCountryCode}` : "No phone code";
+
+                  return (
+                    <div key={`${countryLabel}-${codeLabel}`} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
+                      <div>
+                        <div className="font-bold text-on-surface">{countryLabel}</div>
+                        <div className="text-xs text-on-surface-variant">{codeLabel}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-black text-primary">{row._count._all} calls</div>
+                        <div className="text-xs font-semibold text-on-surface-variant">
+                          {formatExactMinutes(row._sum.durationSeconds)} min / ${Number(row._sum.costUsd || 0).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </CardContent>
           </Card>
         </section>
@@ -565,12 +702,74 @@ export default async function VoiceAdminCommandCenterPage() {
                     <div>
                       <div className="font-bold text-on-surface">{organizationMap.get(row.organizationId) || row.organizationId}</div>
                       <div className="text-xs text-on-surface-variant">
-                        {Math.round((row._sum.durationSeconds || 0) / 60)} min • {row._count._all} calls
+                        {formatExactMinutes(row._sum.durationSeconds)} exact min / {row._count._all} calls
                       </div>
                     </div>
                     <div className="font-black text-primary">${Number(row._sum.costUsd || 0).toFixed(2)}</div>
                   </div>
                 ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">support_agent</span>
+                Cost By AI Receptionist
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-4 space-y-3">
+              {costByAgentRows.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No agent-level cost data available yet.</p>
+              ) : (
+                costByAgentRows.map((row) => {
+                  const agent = row.voiceAgentId ? agentMap.get(row.voiceAgentId) : null;
+                  const label = agent?.displayName || agent?.name || agent?.internalName || row.voiceAgentId || "Unmapped agent";
+
+                  return (
+                    <div key={row.voiceAgentId || "unknown-agent"} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
+                      <div>
+                        <div className="font-bold text-on-surface">{label}</div>
+                        <div className="text-xs text-on-surface-variant">
+                          {agent?.organization?.name || "Unknown tenant"} / {formatExactMinutes(row._sum.durationSeconds)} exact min / {row._count._all} calls
+                        </div>
+                      </div>
+                      <div className="font-black text-primary">${Number(row._sum.costUsd || 0).toFixed(2)}</div>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={shellCardClassName}>
+            <CardHeader className="border-b border-outline-variant/10 bg-surface px-6 pb-5 pt-6">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.12em] text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">phone_in_talk</span>
+                Cost By Phone Line
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-4 space-y-3">
+              {costByPhoneRows.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No phone-line cost data available yet.</p>
+              ) : (
+                costByPhoneRows.map((row) => {
+                  const agent = agents.find((item) => item.vapiPhoneNumberId === row.providerPhoneNumberId);
+                  const label = agent?.vapiPhoneNumberName || row.providerPhoneNumberId || "Unmapped phone line";
+
+                  return (
+                    <div key={row.providerPhoneNumberId || "unknown-phone"} className="flex items-center justify-between rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm">
+                      <div>
+                        <div className="font-bold text-on-surface">{label}</div>
+                        <div className="text-xs text-on-surface-variant">
+                          {agent?.organization?.name || "Unknown tenant"} / {formatExactMinutes(row._sum.durationSeconds)} exact min / {row._count._all} calls
+                        </div>
+                      </div>
+                      <div className="font-black text-primary">${Number(row._sum.costUsd || 0).toFixed(2)}</div>
+                    </div>
+                  );
+                })
               )}
             </CardContent>
           </Card>

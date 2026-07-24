@@ -97,7 +97,7 @@ async function main() {
 
   const webhookUrl =
     process.env.VAPI_SERVER_URL ||
-    (process.env.VOICE_PUBLIC_APP_URL ? `${process.env.VOICE_PUBLIC_APP_URL}/api/voice/vapi/webhook` : null);
+    (process.env.VOICE_PUBLIC_APP_URL ? `${process.env.VOICE_PUBLIC_APP_URL}/api/webhooks/vapi` : null);
 
   const integrationNotes = [
     "Demo cafe profile for WhatsQuery Voice.",

@@ -41,7 +41,9 @@ export function VoiceSidebar({ isAdmin }: { isAdmin?: boolean }) {
           <SidebarActiveLink href="/dashboard/training" icon="model_training" label="Training" />
           
           <div className="pt-6 pb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40">Activity</div>
+          <SidebarActiveLink href="/dashboard/whatsapp/inbox" icon="chat" label="WhatsApp Inbox" />
           <SidebarActiveLink href="/dashboard/call-logs" icon="call" label="Call Logs" />
+          <SidebarActiveLink href="/dashboard/numbers" icon="settings_phone" label="Phone Numbers" />
           <SidebarActiveLink href="/dashboard/leads" icon="person_add" label="Leads" />
           <SidebarActiveLink href="/dashboard/reservations" icon="event_seat" label="Reservations" />
           <SidebarActiveLink href="/dashboard/orders" icon="shopping_bag" label="Orders" />

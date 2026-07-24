@@ -11,25 +11,35 @@ export default async function VoiceOnboardingPage() {
   const host = await getVoiceRequestHost();
   const homeHref = toVoiceExternalPath("/", host);
   const loginHref = toVoiceExternalPath("/login", host);
+  const pricingHref = toVoiceExternalPath("/pricing", host);
+  const docsHref = toVoiceExternalPath("/docs", host);
   const dashboardHref = toVoiceExternalPath("/dashboard", host);
   const session = await auth();
   const isAuthenticated = !!session?.user?.id;
+
+  if (!isAuthenticated) {
+    redirect(`${loginHref}?callbackUrl=${encodeURIComponent(toVoiceExternalPath("/onboarding", host))}`);
+  }
   
   let businessProfile = null;
   let receptionistSettings = null;
   let organization = null;
 
-  if (isAuthenticated) {
-    const ctx = await getCurrentTenantContext();
-    requireRole(ctx, "owner", "admin");
-    const data = await getVoiceOnboardingData(ctx.organizationId);
-    businessProfile = data.businessProfile;
-    receptionistSettings = data.receptionistSettings;
-    organization = data.organization;
-  }
+  const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
+  const data = await getVoiceOnboardingData(ctx.organizationId);
+  businessProfile = data.businessProfile;
+  receptionistSettings = data.receptionistSettings;
+  organization = data.organization;
 
   return (
-    <VoiceMarketingShell homeHref={homeHref} loginHref={loginHref} onboardingHref={toVoiceExternalPath("/onboarding", host)}>
+    <VoiceMarketingShell
+      homeHref={homeHref}
+      loginHref={loginHref}
+      onboardingHref={toVoiceExternalPath("/onboarding", host)}
+      pricingHref={pricingHref}
+      docsHref={docsHref}
+    >
       <main className="mx-auto max-w-5xl px-4 py-8 md:py-16">
         <SmartVoiceOnboardingForm
           dashboardHref={dashboardHref}
@@ -38,6 +48,8 @@ export default async function VoiceOnboardingPage() {
             businessName: businessProfile?.businessName ?? organization?.name ?? "",
             industry: businessProfile?.industry ?? organization?.industryType ?? "",
             website: businessProfile?.website ?? "",
+            preferredCallingCountry:
+              (organization?.country as "PK" | "US" | "GB" | undefined) ?? "PK",
             businessPhone: businessProfile?.businessPhone ?? organization?.phone ?? "",
             preferredLanguage:
               (businessProfile?.preferredLanguage as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??

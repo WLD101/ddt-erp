@@ -3,7 +3,7 @@
 
 import fetch from "node-fetch";
 
-const WEBHOOK_URL = process.env.VAPI_SERVER_URL || "http://localhost:3000/api/voice/vapi/webhook";
+const WEBHOOK_URL = process.env.VAPI_SERVER_URL || "http://localhost:3000/api/webhooks/vapi";
 const SECRET = process.env.VAPI_WEBHOOK_SECRET || "";
 
 async function sendWebhook(payload: any) {

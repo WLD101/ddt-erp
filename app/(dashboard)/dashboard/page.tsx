@@ -11,6 +11,7 @@ import {
 import { RevenueChart } from "@/modules/reports/components/revenue-chart";
 import { DashboardShowcaseWidgets } from "@/modules/reports/components/dashboard-showcase-widgets";
 import { EcommerceIntelligence } from "@/modules/reports/components/ecommerce-intelligence";
+import { DashboardIntroOverlay } from "@/components/dashboard/DashboardIntroOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { triggerNotificationPulse } from "@/modules/notifications/actions";
 import { auth } from "@/lib/auth";
@@ -75,6 +76,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="wq-shell flex flex-1 flex-col space-y-8 px-5 py-6 pb-10 md:px-8 xl:px-10">
+      <DashboardIntroOverlay />
       <Card className="overflow-hidden rounded-3xl border border-primary/15 bg-[linear-gradient(135deg,rgba(21,65,183,0.08),rgba(255,255,255,0.98)_42%,rgba(21,65,183,0.04))] shadow-soft">
         <CardContent className="flex flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">

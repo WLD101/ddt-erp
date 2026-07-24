@@ -1,9 +1,29 @@
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import {
+  getDefaultEnabledModuleIds,
+  getIndustryProfile,
+  INDUSTRY_PROFILES,
+  industryProfileKeySchema,
+  onboardingOperationalAnswersSchema,
+  resolveIndustryProfileFromLegacyIndustry,
+  resolveIndustryProfileRecommendation,
+  type OnboardingOperationalAnswers,
+} from "./industry-profiles";
+import {
+  getAvailableIndustryProfilesForMarket,
+  getMarketDefaults,
+  getMarketProfile,
+  marketKeySchema,
+  resolveMarketAwareRecommendation,
+  resolveMarketKeyFromSignals,
+  type MarketKey,
+} from "./market-profiles";
 
 // ─── Step Registry ─────────────────────────────────────────────────────────────
 export const ONBOARDING_STEPS = [
   { id: "welcome",     label: "Welcome",        skippable: false },
+  { id: "market",      label: "Market",         skippable: false },
   { id: "industry",    label: "Industry",       skippable: false },
   { id: "profile",     label: "Business Info",  skippable: false },
   { id: "branch",      label: "Location",       skippable: true  },
@@ -31,6 +51,10 @@ export const profileSchema = z.object({
   currency: z.string().min(3, "Select a currency").default("USD"),
   timezone: z.string().default("UTC"),
   taxLabel: z.string().optional(),
+});
+
+export const marketSelectionSchema = z.object({
+  marketKey: marketKeySchema,
 });
 
 export const branchSchema = z.object({
@@ -61,67 +85,56 @@ export const inviteSchema = z.object({
 });
 
 export const industryModulesSchema = z.object({
-  industry: z.string(),
+  industry: industryProfileKeySchema,
   modules: z.array(z.string()),
+  operationalAnswers: onboardingOperationalAnswersSchema,
 });
 
-export const INDUSTRY_MODULES: Record<string, { label: string; modules: { id: string; label: string; description: string }[] }> = {
-  retail: {
-    label: "Retail",
-    modules: [
-      { id: "inventory_mgmt", label: "Inventory Management", description: "Real-time stock tracking and alerts." },
-      { id: "sales_reports", label: "Sales Reports", description: "Daily sales and profit analytics." },
-      { id: "customer_mgmt", label: "Customer Management", description: "CRM and loyalty tracking." },
-      { id: "supplier_mgmt", label: "Supplier Management", description: "Purchase orders and vendor bills." },
-    ]
-  },
-  wholesale: {
-    label: "Trading / Wholesale",
-    modules: [
-      { id: "bulk_pricing", label: "Bulk Pricing", description: "Tiered pricing for large orders." },
-      { id: "purchases", label: "Purchases", description: "Record supplier bills and inward stock." },
-      { id: "inventory_mgmt", label: "Inventory Management", description: "Track stock levels and reorder signals." },
-      { id: "reports", label: "Business Reports", description: "Monitor sales, profit, and outstanding balances." },
-    ]
-  },
-  ecommerce: {
-    label: "Ecommerce",
-    modules: [
-      { id: "channel_sync", label: "Channel Sync", description: "Sync products, orders, and stock with connected stores." },
-      { id: "csv_import", label: "CSV / Excel Import", description: "Import catalogues and orders without API access." },
-      { id: "inventory_mgmt", label: "Inventory Management", description: "Prevent stock mismatch across online channels." },
-      { id: "reports", label: "Channel Reports", description: "Track revenue and orders by ecommerce channel." },
-    ]
-  },
-  distribution: {
-    label: "Light Distribution",
-    modules: [
-      { id: "branches", label: "Branches", description: "Manage stock across hubs and sales locations." },
-      { id: "inventory_mgmt", label: "Inventory Management", description: "Track dispatch-ready stock by branch." },
-      { id: "purchases", label: "Purchases", description: "Receive supplier stock into branch inventory." },
-      { id: "reports", label: "Operational Reports", description: "Review movement, low stock, and branch activity." },
-    ]
-  },
-  manufacturing: {
-    label: "Manufacturing",
-    modules: [
-      { id: "products", label: "Products", description: "Manage finished goods and production-ready SKUs." },
-      { id: "inventory", label: "Inventory", description: "Track raw materials and finished stock levels." },
-      { id: "purchases", label: "Purchases", description: "Receive materials and supplier bills for production." },
-      { id: "sales", label: "Sales", description: "Create customer invoices for manufactured goods." },
-      { id: "production", label: "Production", description: "Use production workflows for work orders and output tracking." },
-    ]
-  },
-  service_basic: {
-    label: "Service Basic",
-    modules: [
-      { id: "sales_invoices", label: "Sales Invoices", description: "Create invoices for basic service billing." },
-      { id: "customers", label: "Customer Management", description: "Manage client records and contact details." },
-      { id: "expenses", label: "Expenses", description: "Track service delivery costs and overhead." },
-      { id: "reports", label: "Basic Reports", description: "Review invoices, payments, and expenses." },
-    ]
-  },
-};
+export const INDUSTRY_MODULES = Object.fromEntries(
+  Object.values(INDUSTRY_PROFILES)
+    .filter((profile) => ["active", "beta", "planned"].includes(profile.status))
+    .map((profile) => [profile.key, { label: profile.name, modules: profile.enabledModules }])
+) as Record<string, { label: string; modules: { id: string; label: string; description: string }[] }>;
+
+export function getResolvedIndustryProfile(organization: {
+  industry?: string | null;
+  industryProfileKey?: string | null;
+  enabledModules?: string | null;
+  marketKey?: string | null;
+}) {
+  const availableIndustries =
+    organization.marketKey && marketKeySchema.safeParse(organization.marketKey).success
+      ? getAvailableIndustryProfilesForMarket(organization.marketKey as MarketKey)
+      : null;
+  const resolvedKey =
+    (organization.industryProfileKey && industryProfileKeySchema.safeParse(organization.industryProfileKey).success
+      ? organization.industryProfileKey
+      : resolveIndustryProfileFromLegacyIndustry(organization.industry || null)) || "retail";
+  const safeResolvedKey =
+    availableIndustries && !availableIndustries.includes(resolvedKey as any)
+      ? availableIndustries[0]
+      : resolvedKey;
+
+  const profile = getIndustryProfile(safeResolvedKey as z.infer<typeof industryProfileKeySchema>);
+  const enabledModules = organization.enabledModules
+    ? organization.enabledModules.split(",").map((item) => item.trim()).filter(Boolean)
+    : getDefaultEnabledModuleIds(profile.key);
+
+  return {
+    profile,
+    enabledModules,
+  };
+}
+
+function parseOnboardingAnswers(raw: string | null | undefined): OnboardingOperationalAnswers {
+  if (!raw) return onboardingOperationalAnswersSchema.parse({});
+
+  try {
+    return onboardingOperationalAnswersSchema.parse(JSON.parse(raw));
+  } catch {
+    return onboardingOperationalAnswersSchema.parse({});
+  }
+}
 
 // ─── State Helpers ─────────────────────────────────────────────────────────────
 
@@ -130,26 +143,118 @@ export async function getOnboardingState(organizationId: string) {
     where: { organizationId },
   });
 
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      marketKey: true,
+      industry: true,
+      industryProfileKey: true,
+      enabledModules: true,
+      country: true,
+      currency: true,
+      locale: true,
+      timezone: true,
+      countryCode: true,
+      pricingProfile: true,
+      complianceProfile: true,
+      marketRequiresReview: true,
+    },
+  });
+
+  const inferredMarketKey =
+    resolveMarketKeyFromSignals({
+      marketKey: organization?.marketKey,
+      country: organization?.country,
+      currency: organization?.currency,
+      timezone: organization?.timezone,
+      locale: organization?.locale,
+      countryCode: organization?.countryCode,
+    }) || "pk";
+  const market = getMarketProfile(inferredMarketKey);
+  const marketDefaults = getMarketDefaults(inferredMarketKey);
+
+  const resolved = getResolvedIndustryProfile({
+    marketKey: inferredMarketKey,
+    industry: organization?.industry,
+    industryProfileKey: organization?.industryProfileKey,
+    enabledModules: organization?.enabledModules,
+  });
+
   if (!state) {
     // Create initial state on first access
-    return prisma.onboardingState.create({
+    const created = await prisma.onboardingState.create({
       data: {
         organizationId,
         currentStep: 0,
         completedSteps: "",
+        selectedMarketKey: organization?.marketKey || inferredMarketKey,
       },
     });
+
+    return {
+      ...created,
+      selectedMarketKey: created.selectedMarketKey || inferredMarketKey,
+      marketKey: inferredMarketKey,
+      marketProfile: market,
+      marketRequiresReview: organization?.marketRequiresReview ?? organization?.marketKey == null,
+      locale: organization?.locale || marketDefaults.locale,
+      countryCode: organization?.countryCode || marketDefaults.countryCode,
+      currency: organization?.currency || marketDefaults.currency,
+      timezone: organization?.timezone || marketDefaults.timezone,
+      pricingProfile: organization?.pricingProfile || marketDefaults.pricingProfile,
+      complianceProfile: organization?.complianceProfile || marketDefaults.complianceProfile,
+      profileDefaults: {
+        country: organization?.country || marketDefaults.country,
+        currency: organization?.currency || marketDefaults.currency,
+        timezone: organization?.timezone || marketDefaults.timezone,
+      },
+      completedSteps: [],
+      skippedSteps: [],
+      industry: resolved.profile.key,
+      industryProfileKey: resolved.profile.key,
+      enabledModules: resolved.enabledModules,
+      operationalAnswers: onboardingOperationalAnswersSchema.parse({}),
+      profileRecommendation: resolveIndustryProfileRecommendation(resolved.profile.key, onboardingOperationalAnswersSchema.parse({})),
+    } as any;
   }
 
   const steps = state.completedSteps ? state.completedSteps.split(",") : [];
   const completed = steps.filter(s => !s.startsWith("skipped:") && s !== "demoDataInserted");
   const skipped = steps.filter(s => s.startsWith("skipped:")).map(s => s.slice(8));
+  const operationalAnswers = parseOnboardingAnswers(state.operationalAnswersJson);
+  const recommendedProfileKey = state.recommendedProfileKey || resolved.profile.key;
+  const marketAwareRecommendation = resolveMarketAwareRecommendation(
+    inferredMarketKey,
+    recommendedProfileKey as any,
+    operationalAnswers
+  );
 
   // Cast for code compatibility elsewhere
   return {
     ...state,
+    selectedMarketKey: state.selectedMarketKey || inferredMarketKey,
+    marketKey: inferredMarketKey,
+    marketProfile: market,
+    marketRequiresReview: organization?.marketRequiresReview ?? organization?.marketKey == null,
+    locale: organization?.locale || marketDefaults.locale,
+    countryCode: organization?.countryCode || marketDefaults.countryCode,
+    currency: organization?.currency || marketDefaults.currency,
+    timezone: organization?.timezone || marketDefaults.timezone,
+    pricingProfile: organization?.pricingProfile || marketDefaults.pricingProfile,
+    complianceProfile: organization?.complianceProfile || marketDefaults.complianceProfile,
+    profileDefaults: {
+      country: organization?.country || marketDefaults.country,
+      currency: organization?.currency || marketDefaults.currency,
+      timezone: organization?.timezone || marketDefaults.timezone,
+    },
     completedSteps: completed,
     skippedSteps: skipped,
+    industry: resolved.profile.key,
+    industryProfileKey: resolved.profile.key,
+    enabledModules: resolved.enabledModules,
+    operationalAnswers,
+    profileRecommendation: resolveIndustryProfileRecommendation(recommendedProfileKey as any, operationalAnswers),
+    marketRecommendation: marketAwareRecommendation,
   } as any;
 }
 
@@ -213,13 +318,68 @@ export async function updateBusinessProfile(organizationId: string, data: z.infe
 }
 
 export async function updateIndustryAndModules(organizationId: string, data: z.infer<typeof industryModulesSchema>) {
-  return prisma.organization.update({
-    where: { id: organizationId },
-    data: {
-      industry: data.industry,
-      industryType: data.industry,
-      enabledModules: data.modules.join(","),
-    },
+  const resolvedProfile = getIndustryProfile(data.industry);
+  const recommendation = resolveIndustryProfileRecommendation(data.industry, data.operationalAnswers);
+
+  return prisma.$transaction(async (tx) => {
+    await tx.organization.update({
+      where: { id: organizationId },
+      data: {
+        industry: data.industry,
+        industryType: data.industry,
+        industryProfileKey: resolvedProfile.key,
+        enabledModules: data.modules.join(","),
+      },
+    });
+
+    await tx.onboardingState.upsert({
+      where: { organizationId },
+      create: {
+        organizationId,
+        currentStep: 0,
+        completedSteps: "",
+        operationalAnswersJson: JSON.stringify(data.operationalAnswers),
+        recommendedProfileKey: recommendation.profileKey,
+      },
+      update: {
+        operationalAnswersJson: JSON.stringify(data.operationalAnswers),
+        recommendedProfileKey: recommendation.profileKey,
+      },
+    });
+  });
+}
+
+export async function updateMarketSelection(organizationId: string, data: z.infer<typeof marketSelectionSchema>) {
+  const defaults = getMarketDefaults(data.marketKey);
+
+  return prisma.$transaction(async (tx) => {
+    await tx.organization.update({
+      where: { id: organizationId },
+      data: {
+        marketKey: data.marketKey,
+        country: defaults.country,
+        currency: defaults.currency,
+        locale: defaults.locale,
+        timezone: defaults.timezone,
+        countryCode: defaults.countryCode,
+        pricingProfile: defaults.pricingProfile,
+        complianceProfile: defaults.complianceProfile,
+        marketRequiresReview: false,
+      },
+    });
+
+    await tx.onboardingState.upsert({
+      where: { organizationId },
+      create: {
+        organizationId,
+        currentStep: 0,
+        completedSteps: "",
+        selectedMarketKey: data.marketKey,
+      },
+      update: {
+        selectedMarketKey: data.marketKey,
+      },
+    });
   });
 }
 
@@ -233,7 +393,7 @@ export async function seedDemoData(organizationId: string, branchId: string) {
 
   await prisma.$transaction(async (tx) => {
     // Demo Supplier
-    const supplier = await tx.supplier.create({
+    await tx.supplier.create({
       data: {
         organizationId,
         name: "Demo Supplier Co.",
@@ -253,7 +413,7 @@ export async function seedDemoData(organizationId: string, branchId: string) {
         address: "456 Buyer Avenue, Retail Town",
       },
     });
-    const customer2 = await tx.customer.create({
+    await tx.customer.create({
       data: {
         organizationId,
         name: "Metro Wholesale Inc.",

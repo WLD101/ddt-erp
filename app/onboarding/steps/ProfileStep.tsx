@@ -39,16 +39,26 @@ interface Props {
   stepId: string;
   onComplete: (id: string) => void;
   onSkip?: (id: string) => void;
+  state?: any;
 }
 
 type ProfileStepValues = z.input<typeof profileSchema>;
 
-export function ProfileStep({ stepId, onComplete }: Props) {
+export function ProfileStep({ stepId, onComplete, state }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ProfileStepValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { currency: "USD", timezone: "UTC" },
+    defaultValues: {
+      name: state?.name || "",
+      phone: state?.phone || "",
+      email: state?.email || "",
+      address: state?.address || "",
+      country: state?.profileDefaults?.country || state?.country || "",
+      currency: state?.profileDefaults?.currency || state?.currency || "USD",
+      timezone: state?.profileDefaults?.timezone || state?.timezone || "UTC",
+      taxLabel: state?.taxLabel || "",
+    },
   });
 
   const onSubmit = (data: ProfileStepValues) => {

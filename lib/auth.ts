@@ -74,7 +74,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const user = await prisma.user.findFirst({
-          where: { email },
+          where: {
+            email,
+            deletedAt: null,
+            authStatus: "verified",
+          },
         });
 
         if (!user) {
@@ -164,7 +168,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.forceSignOut = true;
           }
 
-          if (securityState.emergencyLockEnabled) {
+          if (securityState.emergencyLockEnabled || securityState.accountDisabled) {
             token.forceSignOut = true;
           }
 

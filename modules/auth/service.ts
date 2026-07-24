@@ -6,7 +6,7 @@ import { z } from "zod";
 import { triggerLifecycleEmail } from "../emails/service";
 import { trackEvent, AnalyticCategory } from "../analytics/service";
 import { createOpaqueToken, hashToken } from "@/lib/security/tokens";
-import { INDUSTRY_MODULES } from "../onboarding/service";
+import { getDefaultEnabledModuleIds, resolveIndustryProfileFromLegacyIndustry } from "../onboarding/industry-profiles";
 import { getCurrencyForCountry } from "@/lib/country-currency";
 
 export const signUpSchema = z.object({
@@ -84,6 +84,7 @@ export async function bootstrapOrganization(data: SignUpInput) {
   const isDemoOrTrial = mode === "demo" || mode === "trial";
   const trialDays = 7;
   const demoExpiresAt = isDemoOrTrial ? new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000) : null;
+  const resolvedIndustryProfileKey = resolveIndustryProfileFromLegacyIndustry(industry || null);
 
   const { user, organization: org } = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
@@ -110,7 +111,8 @@ export async function bootstrapOrganization(data: SignUpInput) {
         currency: defaultCurrency,
         industry,
         industryType: industry,
-        enabledModules: industry ? INDUSTRY_MODULES[industry]?.modules.map(m => m.id).join(",") : null,
+        industryProfileKey: resolvedIndustryProfileKey,
+        enabledModules: resolvedIndustryProfileKey ? getDefaultEnabledModuleIds(resolvedIndustryProfileKey).join(",") : null,
         lifecycleStatus: isDemoOrTrial ? mode : "onboarding",
         accessStatus: isDemoOrTrial ? "active" : "onboarding",
         isDemoTenant: isDemoOrTrial,

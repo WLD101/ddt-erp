@@ -13,9 +13,11 @@ import {
   Activity,
   FileText,
   Building2,
-  ListTodo
+  ListTodo,
+  MessageCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signOutAction } from "@/modules/auth/actions";
 
 const navigation = [
   {
@@ -35,6 +37,9 @@ const navigation = [
     items: [
       { name: "Tenant Directory", href: "/voice/admin/tenants", icon: Building2 },
       { name: "Call Logs", href: "/voice/admin/calls", icon: PhoneCall },
+      { name: "Vapi Health", href: "/voice/admin/vapi-health", icon: Activity },
+      { name: "Telecom Routing", href: "/voice/admin/routing", icon: Activity },
+      { name: "WhatsApp Monitor", href: "/voice/admin/whatsapp", icon: MessageCircle },
       { name: "AI Agents", href: "/voice/admin/agents", icon: Bot },
       { name: "Knowledge Base", href: "/voice/admin/knowledge", icon: BookOpen },
       { name: "Templates", href: "/voice/admin/templates", icon: FileText },
@@ -113,7 +118,7 @@ export function AdminSidebar() {
         </nav>
       </div>
       <div className="p-4 border-t border-outline-variant/30">
-        <form action="/api/auth/signout" method="POST">
+        <form action={signOutAction}>
           <button type="submit" className="w-full text-left px-4 py-2 text-sm font-medium text-error hover:bg-error/10 rounded-xl transition-colors">
             Sign Out
           </button>

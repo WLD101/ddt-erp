@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as {
@@ -50,10 +51,15 @@ function createPrismaClient() {
         timestamp: new Date().toISOString(),
         durationMs: event.duration,
         target: event.target,
-        query: event.query,
-        params: event.params,
+        queryFingerprint: crypto
+          .createHash("sha256")
+          .update(event.query)
+          .digest("hex")
+          .slice(0, 16),
       }).catch((error) => {
-        console.error("[monitoring:slow-query] failed to write slow query event", error);
+        console.error("[monitoring:slow-query] failed to write slow query event", {
+          errorName: error instanceof Error ? error.name : "UnknownError",
+        });
       });
     });
   }

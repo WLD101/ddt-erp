@@ -1,4 +1,16 @@
-const APP_URL_KEYS = ["APP_URL", "NEXTAUTH_URL", "NEXT_PUBLIC_APP_URL"] as const;
+const APP_URL_KEYS = [
+  "APP_URL",
+  "NEXTAUTH_URL",
+  "NEXT_PUBLIC_APP_URL",
+  "VOICE_PUBLIC_APP_URL",
+  "NEXT_PUBLIC_VOICE_URL",
+] as const;
+
+const PRODUCTION_APP_ORIGINS = [
+  "https://whatsquery.com",
+  "https://www.whatsquery.com",
+  "https://voice.whatsquery.com",
+] as const;
 
 export class RequestOriginError extends Error {
   readonly statusCode = 403;
@@ -19,8 +31,17 @@ function normalizeOrigin(value: string | null | undefined) {
   }
 }
 
-export function getTrustedAppOrigins(requestUrl?: string) {
+export function getTrustedAppOrigins(
+  requestUrl?: string,
+  nodeEnv = process.env.NODE_ENV,
+) {
   const origins = new Set<string>();
+
+  if (nodeEnv === "production") {
+    for (const origin of PRODUCTION_APP_ORIGINS) {
+      origins.add(origin);
+    }
+  }
 
   for (const key of APP_URL_KEYS) {
     const origin = normalizeOrigin(process.env[key]);
@@ -29,18 +50,24 @@ export function getTrustedAppOrigins(requestUrl?: string) {
     }
   }
 
-  const requestOrigin = normalizeOrigin(requestUrl);
-  if (requestOrigin) {
-    origins.add(requestOrigin);
+  if (nodeEnv !== "production") {
+    const requestOrigin = normalizeOrigin(requestUrl);
+    if (requestOrigin) {
+      origins.add(requestOrigin);
+    }
   }
 
   return origins;
 }
 
-export function isTrustedAppOrigin(candidate: string | null | undefined, requestUrl?: string) {
+export function isTrustedAppOrigin(
+  candidate: string | null | undefined,
+  requestUrl?: string,
+  nodeEnv = process.env.NODE_ENV,
+) {
   const origin = normalizeOrigin(candidate);
   if (!origin) return false;
-  return getTrustedAppOrigins(requestUrl).has(origin);
+  return getTrustedAppOrigins(requestUrl, nodeEnv).has(origin);
 }
 
 export function assertTrustedMutationRequest(request: Request) {

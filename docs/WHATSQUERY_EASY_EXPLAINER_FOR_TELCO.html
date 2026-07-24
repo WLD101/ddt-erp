@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WhatsQuery Simple Overview for Telecom Partners</title>
+  <style>
+    :root {
+      --ink: #10203f;
+      --muted: #5d6b83;
+      --blue: #123ea4;
+      --violet: #7447ff;
+      --cyan: #0aa6d6;
+      --green: #087f5b;
+      --paper: #ffffff;
+      --soft: #eef4ff;
+      --line: #d8e2f2;
+      --dark: #070b1f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f6f8fc;
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: var(--paper);
+      padding: 18mm;
+      page-break-after: always;
+    }
+
+    .cover {
+      color: white;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(116, 71, 255, .45), transparent 30%),
+        radial-gradient(circle at 90% 70%, rgba(10, 166, 214, .35), transparent 28%),
+        linear-gradient(145deg, #070b1f 0%, #0b1435 54%, #10256b 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    h1, h2, h3 { margin: 0; line-height: 1.15; }
+    h1 { font-size: 42px; letter-spacing: -1.1px; }
+    h2 { font-size: 27px; margin-bottom: 14px; }
+    h3 { font-size: 17px; margin-bottom: 8px; }
+    p { margin: 0 0 12px; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 5px 0; }
+
+    .eyebrow {
+      color: #8fb8ff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .subtitle {
+      color: #d8e4ff;
+      font-size: 18px;
+      max-width: 620px;
+      margin-top: 18px;
+    }
+
+    .tagline {
+      display: inline-block;
+      margin-top: 26px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: #eff6ff;
+      font-weight: 700;
+    }
+
+    .doc-meta {
+      color: #b9c8e7;
+      font-size: 13px;
+    }
+
+    .section {
+      margin-bottom: 22px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      background: #fbfdff;
+      margin: 14px 0;
+    }
+
+    .highlight {
+      border-left: 5px solid var(--blue);
+      background: var(--soft);
+      padding: 16px 18px;
+      border-radius: 16px;
+      margin: 14px 0;
+      font-weight: 650;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .mini strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--blue);
+    }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .node {
+      flex: 1;
+      min-height: 78px;
+      border: 1px solid #cbd8ee;
+      border-radius: 18px;
+      padding: 13px;
+      background: linear-gradient(180deg, #fff, #f5f8ff);
+      text-align: center;
+      font-weight: 750;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arrow {
+      width: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .diagram-box {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      background:
+        radial-gradient(circle at top left, rgba(116,71,255,.10), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(10,166,214,.12), transparent 25%),
+        #ffffff;
+      margin: 14px 0 22px;
+    }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .lane-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .stack {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #f9fbff;
+      min-height: 140px;
+    }
+
+    .chip {
+      display: block;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #dae5f5;
+      padding: 8px 10px;
+      margin: 7px 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #23375e;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft);
+      color: var(--blue);
+    }
+
+    .footer {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      background: #e8f7f2;
+      color: var(--green);
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    @media print {
+      body { background: white; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <div>
+      <div class="eyebrow">WhatsQuery for Telecom Partners</div>
+      <h1>Simple Explanation of How WhatsQuery Works</h1>
+      <p class="subtitle">
+        A plain-English overview of how WhatsQuery connects phone calls, WhatsApp messages, AI receptionist workflows,
+        customer records, and business dashboards.
+      </p>
+      <div class="tagline">Bridging the gap between carrier networks and enterprise databases.</div>
+    </div>
+    <div class="doc-meta">
+      Prepared for telecom and data center discussions<br />
+      Product areas: WhatsQuery Voice and WhatsQuery ERP<br />
+      Note: This document avoids provider-specific naming and explains the system at a business level.
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section">
+      <h2>1. What is WhatsQuery?</h2>
+      <p>
+        WhatsQuery is a business communication and automation platform. It helps businesses manage customer calls,
+        WhatsApp messages, leads, orders, appointments, and business records from one dashboard.
+      </p>
+      <p>
+        For a common business owner, WhatsQuery acts like a smart front desk. It can answer customers, collect details,
+        record conversations, create follow-up tasks, and show all activity in a simple dashboard.
+      </p>
+      <div class="highlight">
+        In simple words: a customer contacts a business, WhatsQuery understands the request, records the important
+        information, and shows it to the business team.
+      </div>
+    </div>
+
+    <div class="diagram-box">
+      <h3>Simple Product Flow</h3>
+      <div class="flow">
+        <div class="node">Customer calls or sends WhatsApp message</div>
+        <div class="arrow">→</div>
+        <div class="node">WhatsQuery AI receptionist responds</div>
+        <div class="arrow">→</div>
+        <div class="node">Lead, order, booking, or call log is saved</div>
+        <div class="arrow">→</div>
+        <div class="node">Business sees everything in dashboard</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Why Telecom Operators Matter</h2>
+      <p>
+        WhatsQuery Voice needs reliable telecom connectivity for business phone calls. A telecom partner can provide
+        SIP trunks, local phone numbers, call routing, and local network support.
+      </p>
+      <p>
+        WhatsQuery adds the business software layer on top of telecom connectivity. Together, the telco provides the
+        reliable communication network, and WhatsQuery provides the customer-facing automation and business dashboard.
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="mini">
+        <strong>Telecom Partner Provides</strong>
+        SIP trunk, local numbers, call routing, network reliability, CDR support, and hosting/data center options.
+      </div>
+      <div class="mini">
+        <strong>WhatsQuery Provides</strong>
+        AI receptionist, customer records, lead capture, dashboard, reports, WhatsApp channel, and business workflows.
+      </div>
+    </div>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>3. Main Parts of WhatsQuery</h2>
+    <p>
+      WhatsQuery is made of simple parts that work together. Each part has a clear role.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Phone Call Layer</h3>
+        <p>Receives business calls through SIP/telecom routing and sends them to the right business AI receptionist.</p>
+      </div>
+      <div class="card">
+        <h3>WhatsApp Layer</h3>
+        <p>Receives customer WhatsApp messages and stores conversations under the correct business account.</p>
+      </div>
+      <div class="card">
+        <h3>AI Receptionist</h3>
+        <p>Answers common questions, asks follow-up questions, and collects useful details from customers.</p>
+      </div>
+      <div class="card">
+        <h3>Business Dashboard</h3>
+        <p>Shows calls, messages, leads, orders, appointments, recordings where enabled, and reports.</p>
+      </div>
+      <div class="card">
+        <h3>Database</h3>
+        <p>Stores business profiles, users, customer activity, call logs, messages, and usage records.</p>
+      </div>
+      <div class="card">
+        <h3>Admin Center</h3>
+        <p>Allows WhatsQuery team to monitor tenants, troubleshoot issues, review usage, and support customers.</p>
+      </div>
+    </div>
+
+    <div class="diagram-box">
+      <h3>Platform Building Blocks</h3>
+      <div class="lane">
+        <div class="stack">
+          <div class="lane-title">Customer Channels</div>
+          <span class="chip">Phone Calls</span>
+          <span class="chip">WhatsApp Messages</span>
+          <span class="chip">Web Dashboard</span>
+        </div>
+        <div class="stack">
+          <div class="lane-title">WhatsQuery Core</div>
+          <span class="chip">AI Receptionist</span>
+          <span class="chip">Business Rules</span>
+          <span class="chip">Tenant Security</span>
+        </div>
+        <div class="stack">
+          <div class="lane-title">Business Output</div>
+          <span class="chip">Leads</span>
+          <span class="chip">Orders / Bookings</span>
+          <span class="chip">Reports</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>4. How a Phone Call Works</h2>
+    <p>
+      When a customer calls a business number, the telecom network sends the call to WhatsQuery through SIP routing.
+      WhatsQuery identifies which business owns that number and starts the correct AI receptionist.
+    </p>
+
+    <div class="diagram-box">
+      <h3>Phone Call Flow</h3>
+      <div class="flow">
+        <div class="node">Customer calls business number</div>
+        <div class="arrow">→</div>
+        <div class="node">Telco sends call through SIP trunk</div>
+        <div class="arrow">→</div>
+        <div class="node">WhatsQuery finds the correct business</div>
+      </div>
+      <div class="flow">
+        <div class="node">AI receptionist answers</div>
+        <div class="arrow">→</div>
+        <div class="node">Important details are saved</div>
+        <div class="arrow">→</div>
+        <div class="node">Business team reviews dashboard</div>
+      </div>
+    </div>
+
+    <h3>Example</h3>
+    <div class="card">
+      <p>
+        A customer calls a restaurant and asks, "Can I book a table for 4 people tonight?"
+      </p>
+      <p>
+        WhatsQuery can collect the customer name, phone number, requested time, and party size. The system saves this
+        as a table request for staff to confirm.
+      </p>
+    </div>
+
+    <h3>What Gets Saved?</h3>
+    <ul>
+      <li>Caller number</li>
+      <li>Call time and duration</li>
+      <li>Call summary</li>
+      <li>Lead, order, or booking request if applicable</li>
+      <li>Recording link if recording is enabled and allowed</li>
+    </ul>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>5. How a WhatsApp Message Works</h2>
+    <p>
+      Many Pakistani businesses rely heavily on WhatsApp. WhatsQuery treats WhatsApp as a full customer service channel,
+      not just a notification tool.
+    </p>
+
+    <div class="diagram-box">
+      <h3>WhatsApp Flow</h3>
+      <div class="flow">
+        <div class="node">Customer sends WhatsApp message</div>
+        <div class="arrow">→</div>
+        <div class="node">WhatsQuery receives secure webhook</div>
+        <div class="arrow">→</div>
+        <div class="node">System identifies correct business</div>
+      </div>
+      <div class="flow">
+        <div class="node">AI prepares reply using business data</div>
+        <div class="arrow">→</div>
+        <div class="node">Conversation is saved</div>
+        <div class="arrow">→</div>
+        <div class="node">Business sees customer chat</div>
+      </div>
+    </div>
+
+    <h3>Important Safety Rule</h3>
+    <div class="highlight">
+      WhatsQuery never uses one business's data to answer another business's customer. Every message is matched to the
+      correct business account before any response is prepared.
+    </div>
+
+    <h3>Example</h3>
+    <div class="card">
+      <p>
+        A customer messages a cafe: "Are you open today and can I order takeaway?"
+      </p>
+      <p>
+        WhatsQuery checks the cafe's business hours and order rules, replies with available information, and asks for
+        customer details if the team needs to confirm the order.
+      </p>
+    </div>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>6. How the AI Receptionist Knows What to Say</h2>
+    <p>
+      The AI receptionist does not guess business facts. Each business trains it using its own information.
+    </p>
+
+    <div class="grid-3">
+      <div class="mini"><strong>Business Profile</strong>Name, industry, phone, website, branches, and basic details.</div>
+      <div class="mini"><strong>Opening Hours</strong>Normal timing, holiday timing, and after-hours behavior.</div>
+      <div class="mini"><strong>FAQs</strong>Common questions and approved answers.</div>
+      <div class="mini"><strong>Services / Menu</strong>What the business offers, with notes and availability rules.</div>
+      <div class="mini"><strong>Booking Rules</strong>How to capture appointment or table booking requests.</div>
+      <div class="mini"><strong>Handoff Rules</strong>When to ask staff or capture customer details.</div>
+    </div>
+
+    <div class="diagram-box">
+      <h3>AI Training Flow</h3>
+      <div class="flow">
+        <div class="node">Business adds profile, FAQs, services, rules</div>
+        <div class="arrow">→</div>
+        <div class="node">WhatsQuery builds safe AI instructions</div>
+        <div class="arrow">→</div>
+        <div class="node">AI answers customers within limits</div>
+      </div>
+    </div>
+
+    <h3>What the AI Must Not Invent</h3>
+    <ul>
+      <li>Exact prices unless configured</li>
+      <li>Discounts unless configured</li>
+      <li>Confirmed availability unless backend/staff confirms</li>
+      <li>Medical, legal, or financial advice</li>
+      <li>Refund policy if not configured</li>
+      <li>Services or menu items not provided by the business</li>
+    </ul>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>7. Business Dashboard</h2>
+    <p>
+      The dashboard gives the business owner and staff one place to see what happened with customers.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Dashboard Area</th>
+          <th>What It Shows</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Calls</td>
+          <td>Caller number, call status, duration, summary, and recording option if enabled.</td>
+        </tr>
+        <tr>
+          <td>WhatsApp Inbox</td>
+          <td>Customer conversations, AI replies, failed messages, and handoff requests.</td>
+        </tr>
+        <tr>
+          <td>Leads</td>
+          <td>Name, phone, reason for contact, status, and notes.</td>
+        </tr>
+        <tr>
+          <td>Orders</td>
+          <td>Takeaway/order requests captured by the AI receptionist.</td>
+        </tr>
+        <tr>
+          <td>Reservations</td>
+          <td>Table bookings or appointment requests needing staff confirmation.</td>
+        </tr>
+        <tr>
+          <td>Usage</td>
+          <td>Calls, minutes, messages, assistant usage, and package limits.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight">
+      The goal is simple: the business should never lose a customer request just because staff were busy.
+    </div>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>8. Data Separation and Privacy</h2>
+    <p>
+      WhatsQuery is designed for many businesses to use the same platform safely. Each business has its own account and
+      its own data area.
+    </p>
+
+    <div class="diagram-box">
+      <h3>Tenant Separation</h3>
+      <div class="lane">
+        <div class="stack">
+          <div class="lane-title">Cafe Tenant</div>
+          <span class="chip">Cafe calls</span>
+          <span class="chip">Cafe WhatsApp</span>
+          <span class="chip">Cafe leads</span>
+        </div>
+        <div class="stack">
+          <div class="lane-title">Restaurant Tenant</div>
+          <span class="chip">Restaurant calls</span>
+          <span class="chip">Restaurant WhatsApp</span>
+          <span class="chip">Restaurant orders</span>
+        </div>
+        <div class="stack">
+          <div class="lane-title">Clinic Tenant</div>
+          <span class="chip">Clinic calls</span>
+          <span class="chip">Clinic appointments</span>
+          <span class="chip">Clinic callbacks</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Plain-English Security Controls</h3>
+    <ul>
+      <li>Users must log in.</li>
+      <li>Users can only see their own business account.</li>
+      <li>Staff roles can be limited.</li>
+      <li>Admin-only areas are not visible to normal tenants.</li>
+      <li>Integration secrets are not shown back to users.</li>
+      <li>Backups and monitoring are planned for production safety.</li>
+    </ul>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>9. Hosting and Pakistan Data Residency</h2>
+    <p>
+      For telecom production, WhatsQuery can host production workloads inside Pakistan. This can be done using a
+      telco-approved cloud/data center, a Pakistan-based cloud/VPS provider, or colocated WhatsQuery-owned servers.
+    </p>
+
+    <div class="diagram-box">
+      <h3>Recommended Hosting Split</h3>
+      <div class="lane">
+        <div class="stack">
+          <div class="lane-title">Public / Non-sensitive</div>
+          <span class="chip">Website</span>
+          <span class="chip">Marketing pages</span>
+          <span class="chip">Demo content</span>
+        </div>
+        <div class="stack">
+          <div class="lane-title">Pakistan Production</div>
+          <span class="chip">Customer records</span>
+          <span class="chip">Call logs</span>
+          <span class="chip">WhatsApp conversations</span>
+        </div>
+        <div class="stack">
+          <div class="lane-title">Telecom Layer</div>
+          <span class="chip">SIP trunk</span>
+          <span class="chip">Asterisk / call routing</span>
+          <span class="chip">Static IP whitelist</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Simple Recommendation</h3>
+    <div class="highlight">
+      Keep production telecom data, call records, and customer operational data inside Pakistan if required by the
+      telecom partner or local compliance expectations.
+    </div>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>10. What We Need from the Telecom Partner</h2>
+    <p>
+      To connect WhatsQuery Voice with telecom calling, we need SIP trunking and related technical information.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Requirement</th>
+          <th>Why It Is Needed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SIP trunk</td>
+          <td>To route customer phone calls into WhatsQuery.</td>
+        </tr>
+        <tr>
+          <td>Local numbers / DIDs</td>
+          <td>To assign business phone numbers to customers.</td>
+        </tr>
+        <tr>
+          <td>Concurrent channels</td>
+          <td>To decide how many calls can happen at the same time.</td>
+        </tr>
+        <tr>
+          <td>Static IP whitelisting</td>
+          <td>To secure SIP traffic between telco and WhatsQuery.</td>
+        </tr>
+        <tr>
+          <td>Codec and RTP details</td>
+          <td>To make audio work correctly.</td>
+        </tr>
+        <tr>
+          <td>CDR access</td>
+          <td>To reconcile call duration, billing, and usage records.</td>
+        </tr>
+        <tr>
+          <td>SLA and support path</td>
+          <td>To resolve production calling issues quickly.</td>
+        </tr>
+        <tr>
+          <td>Hosting/data center option</td>
+          <td>To keep production telecom workloads inside Pakistan if required.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>11. Pilot Plan</h2>
+    <p>
+      We recommend starting with a controlled pilot before large-scale production. The pilot can include a cafe with
+      2 branches and a restaurant with 4 branches.
+    </p>
+
+    <div class="diagram-box">
+      <h3>Pilot Steps</h3>
+      <div class="flow">
+        <div class="node">Host system in Pakistan</div>
+        <div class="arrow">→</div>
+        <div class="node">Connect test SIP trunk</div>
+        <div class="arrow">→</div>
+        <div class="node">Set up 2 pilot businesses</div>
+      </div>
+      <div class="flow">
+        <div class="node">Test calls and WhatsApp</div>
+        <div class="arrow">→</div>
+        <div class="node">Review logs and dashboard</div>
+        <div class="arrow">→</div>
+        <div class="node">Prepare production rollout</div>
+      </div>
+    </div>
+
+    <h3>What Success Looks Like</h3>
+    <ul>
+      <li>Calls reach the correct business AI receptionist.</li>
+      <li>WhatsApp messages appear under the correct business.</li>
+      <li>Leads, orders, and booking requests are captured.</li>
+      <li>No business can see another business's data.</li>
+      <li>Call logs and message logs are accurate.</li>
+      <li>Backups and monitoring are working.</li>
+    </ul>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+
+  <section class="page">
+    <h2>12. Final Summary</h2>
+    <p>
+      WhatsQuery helps businesses handle customer communication more professionally. It connects telecom calls,
+      WhatsApp messages, AI assistance, customer records, and business dashboards.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>For Businesses</h3>
+        <p>Fewer missed customers, better follow-up, organized leads, and easier daily operations.</p>
+      </div>
+      <div class="card">
+        <h3>For Telecom Partner</h3>
+        <p>A value-added business communication platform that can sit on top of SIP trunks and local numbers.</p>
+      </div>
+      <div class="card">
+        <h3>For Customers</h3>
+        <p>Faster answers, easier ordering or booking, and better support through phone or WhatsApp.</p>
+      </div>
+      <div class="card">
+        <h3>For Production</h3>
+        <p>Can be hosted inside Pakistan using telco cloud, local VPS/cloud, or colocated infrastructure.</p>
+      </div>
+    </div>
+
+    <div class="highlight">
+      WhatsQuery is built to be simple for business owners, useful for customers, and flexible enough for telecom-grade
+      deployment.
+    </div>
+
+    <div class="footer">WhatsQuery simple overview | Confidential discussion document</div>
+  </section>
+</body>
+</html>

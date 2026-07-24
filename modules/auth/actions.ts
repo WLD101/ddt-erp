@@ -11,7 +11,7 @@ import { getPostSignInRedirect, sanitizeRedirectPath } from "@/lib/security/acce
 import { isProductionEnv } from "@/lib/security/env";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import {
   createSignInChallenge,
   logSecurityEvent,
@@ -118,7 +118,11 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
   }
 
   const user = await prisma.user.findFirst({
-    where: { email },
+    where: {
+      email,
+      deletedAt: null,
+      authStatus: "verified",
+    },
     include: {
       memberships: {
         include: { role: true },
@@ -245,7 +249,15 @@ export async function signInAction(_prevState: unknown, formData: FormData) {
  * SIGN OUT
  */
 export async function signOutAction() {
-  await signOut({ redirectTo: "/auth/signin" });
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
+  const referer = requestHeaders.get("referer") || "";
+  const redirectTo = host.startsWith("voice.")
+    ? "/login"
+    : referer.includes("/voice/")
+      ? "/voice/login"
+      : "/auth/signin";
+  await signOut({ redirectTo });
 }
 
 /**

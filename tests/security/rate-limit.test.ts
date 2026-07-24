@@ -1,6 +1,15 @@
-import test from "node:test";
+import test, { after } from "node:test";
 import assert from "node:assert/strict";
-import { checkRateLimit, rateLimitKey } from "../../lib/security/rate-limit";
+import {
+  checkRateLimit,
+  getRateLimitFallbackMode,
+  rateLimitKey,
+} from "../../lib/security/rate-limit";
+import redis from "../../lib/redis";
+
+after(() => {
+  redis.disconnect();
+});
 
 test("critical public actions can be rate limited", async () => {
   const key = rateLimitKey("login", "User@Example.com");
@@ -19,4 +28,9 @@ test("rate limit falls back to local protection when Redis is unavailable", asyn
   assert.equal(first.allowed, true);
   assert.equal(second.allowed, false);
   assert.equal(second.retryAfterSeconds > 0, true);
+});
+
+test("production rate limiting fails closed when Redis is unavailable", () => {
+  assert.equal(getRateLimitFallbackMode("production"), "deny");
+  assert.equal(getRateLimitFallbackMode("development"), "memory");
 });

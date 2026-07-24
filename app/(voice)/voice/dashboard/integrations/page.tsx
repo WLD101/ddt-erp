@@ -25,9 +25,9 @@ const integrationCards = [
   },
   {
     key: "whatsapp",
-    title: "WhatsApp follow-up",
-    description: "Future post-call follow-up workflow.",
-    envs: ["VOICE_WHATSAPP_FOLLOW_UP_WEBHOOK_URL"],
+    title: "WhatsApp AI Receptionist",
+    description: "Connect WhatsApp Business Platform for tenant-scoped AI replies, lead capture, order requests, and handoffs.",
+    envs: ["VOICE_PUBLIC_APP_URL", "VOICE_WHATSAPP_WEBHOOK_VERIFY_TOKEN", "VOICE_WHATSAPP_SEND_ENABLED"],
   },
 ] as const;
 
@@ -145,10 +145,13 @@ export default async function VoiceIntegrationsPage() {
                     (() => {
                       try {
                         const parsed = JSON.parse(settings.providerConfigNotes);
+                        const accountSid = typeof parsed.accountSid === "string" ? parsed.accountSid : "";
+                        const phoneNumber = typeof parsed.phoneNumber === "string" ? parsed.phoneNumber : "";
                         return (
                           <ul className="space-y-2 text-sm text-on-surface-variant">
-                            <li className="flex justify-between"><span>Account SID</span><span className="font-semibold text-on-surface">...{parsed.accountSid?.slice(-8)}</span></li>
-                            <li className="flex justify-between"><span>Twilio Phone Number</span><span className="font-semibold text-primary">{parsed.phoneNumber}</span></li>
+                            <li className="flex justify-between"><span>Account SID</span><span className="font-semibold text-on-surface">{accountSid ? `...${accountSid.slice(-8)}` : "Configured"}</span></li>
+                            <li className="flex justify-between"><span>Twilio Phone Number</span><span className="font-semibold text-primary">{phoneNumber || "Configured"}</span></li>
+                            <li className="flex justify-between"><span>Auth Token</span><span className="font-semibold text-on-surface">Stored securely</span></li>
                             <li className="flex justify-between"><span>Status</span><span className="font-bold text-emerald-500">CONNECTED</span></li>
                           </ul>
                         );
@@ -159,6 +162,23 @@ export default async function VoiceIntegrationsPage() {
                   ) : (
                     <p className="text-xs text-on-surface-variant">No Twilio credentials configured. Connect a Twilio account to get an active Pakistani call-forwarding route.</p>
                   )}
+                </div>
+              ) : null}
+
+              {card.key === "whatsapp" ? (
+                <div className="mt-5 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">WhatsApp channel</div>
+                    <Link href="/voice/dashboard/integrations/whatsapp" className="text-xs font-bold text-primary hover:underline">
+                      Manage setup →
+                    </Link>
+                  </div>
+                  <ul className="space-y-2 text-sm text-on-surface-variant">
+                    <li className="flex justify-between"><span>Tenant mapping</span><span className="font-semibold text-on-surface">Phone Number ID required</span></li>
+                    <li className="flex justify-between"><span>AI replies</span><span className="font-semibold text-on-surface">Business training profile</span></li>
+                    <li className="flex justify-between"><span>Live sending</span><span className="font-semibold text-on-surface">{process.env.VOICE_WHATSAPP_SEND_ENABLED === "true" ? "Enabled" : "Disabled"}</span></li>
+                    <li className="flex justify-between"><span>ERP writes</span><span className="font-semibold text-on-surface">Disabled</span></li>
+                  </ul>
                 </div>
               ) : null}
             </div>

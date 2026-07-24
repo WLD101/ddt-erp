@@ -18,7 +18,7 @@ export default async function VoiceDashboardPage() {
     ["Order requests", summary.stats.orderRequests, "Takeaway and order requests stay in the voice queue until staff confirms details."],
     ["Callback requests", summary.stats.callbackRequests, "Human handoff requests are saved for follow-up without triggering outbound actions."],
     ["Calls this month", summary.usage.callsThisMonth, `Current package usage across this tenant. Remaining limit: ${summary.usage.remaining}/${summary.usage.limit}.`],
-    ["Minutes this month", summary.usage.minutesThisMonth, "Tracked from completed call logs so tenants can see monthly voice usage."],
+    ["Minutes this month", summary.usage.minutesThisMonth, `Exact duration from completed call records. Billable rounded minutes: ${summary.usage.billableMinutesThisMonth}.`],
   ] as const;
 
   return (
@@ -112,7 +112,14 @@ export default async function VoiceDashboardPage() {
             <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
               <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Call minutes</div>
               <div className="mt-2 text-3xl font-black text-on-surface">{summary.usage.minutesThisMonth}</div>
-              <div className="mt-2 text-xs text-on-surface-variant">Measured from completed or ended calls only.</div>
+              <div className="mt-2 text-xs text-on-surface-variant">
+                Exact customer-call duration from completed call records. Rounded package minutes: {summary.usage.billableMinutesThisMonth}.
+              </div>
+              {summary.usage.callsWithoutDurationThisMonth > 0 && (
+                <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-700">
+                  {summary.usage.callsWithoutDurationThisMonth} call record(s) are missing provider duration and will be updated after provider sync.
+                </div>
+              )}
             </div>
             <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 md:col-span-2">
               <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Estimated cost</div>
@@ -121,9 +128,14 @@ export default async function VoiceDashboardPage() {
               </div>
               <div className="mt-2 text-xs text-on-surface-variant">
                 {summary.usage.showEstimatedCost
-                  ? "Shown only for this tenant and sourced from provider cost data captured on call logs."
+                  ? "Shown only for this tenant and sourced from cost data captured on completed call logs."
                   : "Estimated provider cost is not exposed on your current package or tenant settings."}
               </div>
+              {summary.usage.showEstimatedCost && summary.usage.callsWithoutCostThisMonth > 0 && (
+                <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-700">
+                  {summary.usage.callsWithoutCostThisMonth} call record(s) are missing provider cost and may update after provider sync.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -363,7 +363,6 @@ export async function approveDemoRequestAction(leadId: string) {
     details: `Demo approved. Temporary password generated for ${lead.email}.`,
   });
 
-  console.log(`[Demo Approved] ${lead.email} temp password: ${tempPassword}`);
   revalidatePath("/platform/leads");
   revalidatePath("/platform/tenants");
   return { success: true, organizationId: result.organization.id };

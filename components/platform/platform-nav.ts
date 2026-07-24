@@ -6,6 +6,7 @@ import {
   FileDown,
   FileSearch,
   KeyRound,
+  LifeBuoy,
   Mail,
   PackageOpen,
   SearchCheck,
@@ -45,6 +46,7 @@ export const PLATFORM_NAV_SECTIONS: PlatformNavSection[] = [
     label: "Customers",
     items: [
       { href: "/platform/tenants", label: "Live Customers", icon: Users },
+      { href: "/platform/support", label: "Support Inbox", icon: LifeBuoy },
       { href: "/platform/exports", label: "Export Queue", icon: FileDown },
     ],
   },

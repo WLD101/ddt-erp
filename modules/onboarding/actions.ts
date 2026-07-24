@@ -2,10 +2,8 @@
 
 import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { prisma } from "@/lib/prisma";
-import { getTenantStore } from "@/lib/db/client";
 import * as service from "./service";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { trackEvent, AnalyticCategory } from "../analytics/service";
 
@@ -15,12 +13,30 @@ export async function getOnboardingState() {
   const state = await service.getOnboardingState(ctx.organizationId);
   const org = await prisma.organization.findUnique({
     where: { id: ctx.organizationId },
-    select: { industry: true }
+    select: {
+      industry: true,
+      industryProfileKey: true,
+      enabledModules: true,
+      marketKey: true,
+      locale: true,
+      countryCode: true,
+      pricingProfile: true,
+      complianceProfile: true,
+      marketRequiresReview: true,
+    }
   });
 
   return {
     ...state,
-    industry: org?.industry
+    industry: org?.industry ?? state.industry,
+    industryProfileKey: org?.industryProfileKey ?? state.industryProfileKey,
+    enabledModules: org?.enabledModules ?? state.enabledModules,
+    marketKey: org?.marketKey ?? state.marketKey,
+    locale: org?.locale ?? state.locale,
+    countryCode: org?.countryCode ?? state.countryCode,
+    pricingProfile: org?.pricingProfile ?? state.pricingProfile,
+    complianceProfile: org?.complianceProfile ?? state.complianceProfile,
+    marketRequiresReview: org?.marketRequiresReview ?? state.marketRequiresReview,
   };
 }
 
@@ -43,7 +59,7 @@ export async function saveBusinessProfile(data: z.infer<typeof service.profileSc
 }
 
 // ─── Save welcome / business type (just marks step done) ─────────────────────
-export async function saveWelcomeStep(data: z.infer<typeof service.businessTypeSchema>) {
+export async function saveWelcomeStep() {
   const ctx = await getCurrentTenantContext();
   try {
     await service.markStepDone(ctx.organizationId, "welcome");
@@ -223,6 +239,23 @@ export async function completeOnboarding() {
     revalidatePath("/");
     revalidatePath("/onboarding");
     revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: (e as any).message };
+  }
+}
+
+export async function saveMarketSelectionAction(data: z.infer<typeof service.marketSelectionSchema>) {
+  const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
+
+  const parsed = service.marketSelectionSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  try {
+    await service.updateMarketSelection(ctx.organizationId, parsed.data);
+    await service.markStepDone(ctx.organizationId, "market");
+    revalidatePath("/onboarding");
     return { success: true };
   } catch (e) {
     return { success: false, error: (e as any).message };

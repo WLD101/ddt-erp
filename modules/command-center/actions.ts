@@ -18,7 +18,7 @@ import {
   initializeTenantFinances,
   initializeTenantRoles,
 } from "@/lib/security/seed";
-import { INDUSTRY_MODULES } from "@/modules/onboarding/service";
+import { getDefaultEnabledModuleIds } from "@/modules/onboarding/industry-profiles";
 import {
   assignPackageAction,
   markSubscriptionPaymentFailedAction,
@@ -888,7 +888,8 @@ export async function createClientFromCommandCenterAction(
           currency,
           industry: input.industry,
           industryType: input.industry,
-          enabledModules: INDUSTRY_MODULES[input.industry]?.modules.map((module) => module.id).join(",") ?? null,
+          industryProfileKey: input.industry,
+          enabledModules: getDefaultEnabledModuleIds(input.industry).join(","),
           lifecycleStatus: accessState.lifecycleStatus,
           accessStatus: accessState.organizationAccessStatus,
           activatedAt: accessState.organizationAccessStatus === "active" ? now : null,

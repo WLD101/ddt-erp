@@ -63,10 +63,10 @@ Serverless runtimes require lightweight, highly pooled database connections and 
     if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
     ```
 
-### 2. Connection Pooling via Supabase Supavisor
-*   **Pooled Port (`6543`):** Use the transaction pooler URL in Vercel's `DATABASE_URL` environment variable. This allows hundreds of concurrent serverless instances to reuse a limited number of actual PostgreSQL database connections.
-*   **Direct Port (`5432`):** Use the direct connection URL in Vercel's `DIRECT_URL` environment variable. This is exclusively used by the Prisma CLI for migrations (`prisma migrate deploy`) which bypasses the pooler to avoid transaction conflicts.
-*   **Connection Limits:** Always append `&connection_limit=1` to the `DATABASE_URL` pooler string to ensure each serverless function invocation holds at most one connection.
+### 2. Connection Pooling on Self-Hosted Supabase
+*   **Runtime connection:** `DATABASE_URL` may use locally hosted Supavisor or PgBouncer only when the service is confirmed in the Contabo Docker deployment.
+*   **Migration connection:** `DIRECT_URL` must use direct PostgreSQL. From the VPS host, use loopback and the actual published port. From a container, use the actual Compose database service and internal port.
+*   **Inspection:** Run `scripts/contabo-db-topology.sh` before changing either URL. Do not expose PostgreSQL publicly for workstation migrations.
 
 ### 3. Optimizing APIs and Server Actions
 *   **Timeouts Prevention:** Keep API handlers lightweight. Avoid running massive analytical queries synchronously. Instead, defer calculations to the frontend or slice queries using pagination.
@@ -114,36 +114,24 @@ Keep your database queries fast and responsive with these active optimization pr
 ---
 
 ## 🧠 PROMPT 5: Future VPS Migration Plan
-Transitioning from Supabase & Vercel to a fully managed Hostinger VPS PostgreSQL instance is straightforward because Prisma acts as your database abstraction layer.
+WhatsQuery already runs self-hosted Supabase on the Contabo VPS. It is not a
+Supabase Cloud project and does not require a cloud-to-VPS database migration.
 
-### 1. Database Export Steps (From Supabase)
-Run the `pg_dump` command from your local machine or terminal to export the schema and data from your Supabase PostgreSQL database:
+### 1. Inspect and Back Up
+
 ```bash
-pg_dump -h db.project-ref.supabase.co -U postgres -d postgres -F c -b -v -f whatsquery_production_backup.dump
+cd /var/www/whatsquery
+sudo bash scripts/contabo-db-topology.sh
+sudo env WHATSQUERY_DB_CONTAINER="<reported-container-name>" \
+  bash scripts/contabo-postgres-backup.sh
 ```
 
-### 2. Database Import Steps (To VPS)
-On your Hostinger VPS, create a fresh PostgreSQL database and import the backup using `pg_restore`:
+### 2. Apply Prisma Migrations
+
 ```bash
-# Create fresh database on VPS
-createdb -h localhost -U postgres whatsquery_production
-
-# Restore dump file
-pg_restore -h localhost -U postgres -d whatsquery_production -v whatsquery_production_backup.dump
+sudo -u whatsquery env \
+  WHATSQUERY_BACKUP_REFERENCE="/var/backups/whatsquery/postgres/<verified-file>.dump" \
+  bash scripts/contabo-prisma-migrate.sh deploy
 ```
 
-### 3. Environment Variable Changes Needed
-Update your VPS `.env` file to point directly to your new VPS database instance. Because you are no longer in a highly ephemeral serverless runtime, you can connect directly to port `5432` with a standard connection pool size (e.g., `10` or `20`):
-```env
-# VPS Database URL
-DATABASE_URL="postgresql://postgres:your_vps_secure_password@localhost:5432/whatsquery_production?schema=public&connection_limit=10"
-DIRECT_URL="postgresql://postgres:your_vps_secure_password@localhost:5432/whatsquery_production?schema=public"
-```
-
-### 4. VPS Migration Checklist
-- [ ] Install PostgreSQL 15+ on VPS and configure firewall access.
-- [ ] Export Supabase database data and restore it onto the VPS.
-- [ ] Update the environment variables `DATABASE_URL` and `DIRECT_URL`.
-- [ ] Run `npx prisma migrate deploy` to verify database sync.
-- [ ] Run `npx prisma generate` to rebuild the local Prisma client on the VPS.
-- [ ] Start your node process using PM2: `pm2 start ecosystem.config.js`.
+See `docs/whatsquery-database-migration-resolution.md` for the complete procedure.

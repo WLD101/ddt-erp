@@ -2,7 +2,7 @@
 
 import { inferPlanIdFromPackage } from "@/lib/billing/catalog";
 import { prisma } from "@/lib/prisma";
-import { getCurrentTenantContext } from "@/lib/tenant";
+import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { requirePlatformAdmin } from "@/lib/security/guards";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
 import { PLAN_ORDER, PLANS } from "@/lib/billing/plans";
@@ -257,6 +257,8 @@ export async function assignPackageAction(data: unknown) {
 
 export async function selectPackageAction(data: unknown) {
   const ctx = await getCurrentTenantContext();
+  requireRole(ctx, "owner", "admin");
+
   const schema = z.object({
     packageId: z.string().optional(),
     enterprise: z.boolean().optional(),

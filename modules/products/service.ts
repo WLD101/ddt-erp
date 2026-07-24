@@ -21,6 +21,8 @@ export const productSchema = formProductSchema.extend({
 export type CategoryInput = z.infer<typeof categorySchema>;
 export type ProductInput = z.infer<typeof productSchema>;
 
+const DEFAULT_LIST_LIMIT = 500;
+
 // --- Categories ---
 
 export async function getCategories(db: ScopedPrisma) {
@@ -50,6 +52,7 @@ export async function getProducts(db: ScopedPrisma, branchId: string) {
       },
     },
     orderBy: { createdAt: "desc" },
+    take: DEFAULT_LIST_LIMIT,
   });
 }
 

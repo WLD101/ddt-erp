@@ -3,6 +3,8 @@ import { listVoiceAgents } from "@/modules/voice/agents/service";
 import { checkUsageLimits } from "@/modules/voice/billing/usage";
 import { parseLeadCaptureFields } from "@/modules/voice/schema";
 import { getVapiEnvStatus } from "@/modules/voice/vapi/service";
+import { getVoiceUsageSummaryFromCallLogs } from "@/modules/voice/usage-reconciliation";
+import { getVoiceCallMetrics } from "@/modules/voice/vapi/metrics";
 
 const RESERVATION_KEYWORDS = ["reservation", "booking", "table", "appointment"];
 const ORDER_KEYWORDS = ["order", "takeaway", "pickup", "delivery", "burger", "meal", "food"];
@@ -30,6 +32,7 @@ type VoiceQueueRow = {
   status: string;
   notes: string | null;
   source: string;
+  providerCallId: string | null;
   createdAt: Date;
 };
 
@@ -103,13 +106,13 @@ export async function getVoiceDashboardSummary(orgId: string) {
     receptionistSettings,
     integrationSettings,
     voiceAgents,
-    totalCalls,
-    missedCalls,
+    callMetrics,
     appointmentRequestedCalls,
     knowledgeCount,
     reservationRequestCount,
     orderRequestCount,
     usage,
+    usageSummary,
   ] = await Promise.all([
     prisma.voiceLead.findMany({
       where: { organizationId: orgId },
@@ -130,8 +133,7 @@ export async function getVoiceDashboardSummary(orgId: string) {
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceIntegrationSettings.findUnique({ where: { organizationId: orgId } }),
     listVoiceAgents(orgId),
-    prisma.voiceCallLog.count({ where: { organizationId: orgId } }),
-    prisma.voiceCallLog.count({ where: { organizationId: orgId, isMissed: true } }),
+    getVoiceCallMetrics({ organizationId: orgId }),
     prisma.voiceCallLog.count({ where: { organizationId: orgId, appointmentRequested: true } }),
     prisma.voiceKnowledgeBaseItem.count({
       where: { organizationId: orgId, isActive: true },
@@ -139,6 +141,7 @@ export async function getVoiceDashboardSummary(orgId: string) {
     prisma.voiceReservationRequest.count({ where: { organizationId: orgId } }),
     prisma.voiceOrderRequest.count({ where: { organizationId: orgId } }),
     checkUsageLimits(orgId),
+    getVoiceUsageSummaryFromCallLogs(orgId),
   ]);
 
   const reservationLeads = leads.filter(isReservationLead);
@@ -165,8 +168,21 @@ export async function getVoiceDashboardSummary(orgId: string) {
     defaultAgent,
     stats: {
       totalLeads: leads.length,
-      totalCalls,
-      missedCalls,
+      totalCalls: callMetrics.totalCalls,
+      inboundCalls: callMetrics.inboundCalls,
+      outboundCalls: callMetrics.outboundCalls,
+      answeredCalls: callMetrics.answeredCalls,
+      completedCalls: callMetrics.completedCalls,
+      missedCalls: callMetrics.missedCalls,
+      failedCalls: callMetrics.failedCalls,
+      transferredCalls: callMetrics.transferredCalls,
+      voicemailCalls: callMetrics.voicemailCalls,
+      averageConversationSeconds: callMetrics.averageConversationSeconds,
+      totalConversationSeconds: callMetrics.totalConversationSeconds,
+      providerCostUsd: callMetrics.providerCostUsd,
+      customerBillableAmount: callMetrics.customerBillableAmount,
+      resolvedCalls: callMetrics.resolvedCalls,
+      humanEscalationRate: callMetrics.humanEscalationRate,
       appointmentsRequested: appointmentRequestedCalls + reservationRequestCount + reservationLeads.length,
       orderRequests: orderRequestCount + orderRequestLeads.length,
       callbackRequests: callbackLeads.length,
@@ -174,8 +190,12 @@ export async function getVoiceDashboardSummary(orgId: string) {
     },
     usage: {
       callsThisMonth: usage.meter.callsThisMonth,
-      minutesThisMonth: usage.meter.callMinutesThisMonth,
-      estimatedCostUsdThisMonth: usage.meter.callCostUsdThisMonth,
+      minutesThisMonth: usageSummary.minutesThisMonth,
+      billableMinutesThisMonth: usageSummary.billableMinutesThisMonth,
+      durationSecondsThisMonth: usageSummary.durationSecondsThisMonth,
+      estimatedCostUsdThisMonth: usageSummary.costUsdThisMonth,
+      callsWithoutDurationThisMonth: usageSummary.callsWithoutDurationThisMonth,
+      callsWithoutCostThisMonth: usageSummary.callsWithoutCostThisMonth,
       limit: usage.limit,
       remaining: usage.remaining,
       warnings: usage.warnings,
@@ -189,7 +209,7 @@ export async function getVoiceOnboardingData(orgId: string) {
   const [businessProfile, receptionistSettings, organization] = await Promise.all([
     prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
-    prisma.organization.findUnique({ where: { id: orgId }, select: { name: true, industryType: true, phone: true } }),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { name: true, industryType: true, phone: true, country: true } }),
   ]);
 
   return { businessProfile, receptionistSettings, organization };
@@ -219,7 +239,7 @@ export async function getVoiceIntegrationsOverview(orgId: string) {
     vapi: vapiStatus.hasPrivateKey && vapiStatus.hasPublicKey,
     twilio: !!process.env.VOICE_TWILIO_ACCOUNT_SID && !!process.env.VOICE_TWILIO_AUTH_TOKEN,
     googleCalendar: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
-    whatsapp: !!process.env.VOICE_WHATSAPP_FOLLOW_UP_WEBHOOK_URL,
+    whatsapp: !!process.env.VOICE_PUBLIC_APP_URL || !!process.env.VOICE_WHATSAPP_WEBHOOK_VERIFY_TOKEN,
   };
 
   return {
@@ -256,6 +276,7 @@ export async function getVoiceRequestQueues(orgId: string) {
     status: request.status,
     notes: request.specialRequests || null,
     source: "VOICE_RESERVATION_REQUEST",
+    providerCallId: request.providerCallId || null,
     createdAt: request.createdAt,
   }));
 
@@ -268,6 +289,7 @@ export async function getVoiceRequestQueues(orgId: string) {
     status: request.status,
     notes: request.orderDetailsText,
     source: "VOICE_ORDER_REQUEST",
+    providerCallId: request.providerCallId || null,
     createdAt: request.createdAt,
   }));
 
@@ -275,7 +297,10 @@ export async function getVoiceRequestQueues(orgId: string) {
     reservations: [...reservationRows, ...leads.filter(isReservationLead)].sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     ),
-    orders: [...orderRows, ...leads.filter(isOrderLead)].sort(
+    orders: [
+      ...orderRows,
+      ...leads.filter(isOrderLead).map((lead) => ({ ...lead, providerCallId: null })),
+    ].sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     ),
     callbacks: leads.filter(isCallbackLead),

@@ -1,0 +1,83 @@
+name: Apply production Prisma migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_path:
+        description: Absolute path to the verified Contabo backup archive
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-prisma-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on:
+      - self-hosted
+      - linux
+      - whatsquery-vps
+    timeout-minutes: 20
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      BACKUP_PATH: ${{ inputs.backup_path }}
+
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Verify backup archive checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${BACKUP_PATH}"
+          test -f "${BACKUP_PATH}.sha256"
+          cd "$(dirname "${BACKUP_PATH}")"
+          sha256sum --check "$(basename "${BACKUP_PATH}").sha256"
+
+      - name: Audit migration SQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          migrations=(
+            prisma/migrations/202607220001_industry_profile_onboarding/migration.sql
+            prisma/migrations/202607220002_shared_integration_foundation/migration.sql
+            prisma/migrations/202607220003_market_profile_foundation/migration.sql
+            prisma/migrations/202607220004_integration_runtime_hardening/migration.sql
+          )
+          if grep -Eiq 'DROP[[:space:]]+(TABLE|COLUMN)|TRUNCATE[[:space:]]+TABLE|DELETE[[:space:]]+FROM' "${migrations[@]}"; then
+            echo "Destructive SQL pattern detected."
+            exit 1
+          fi
+
+      - name: Validate and generate
+        run: |
+          npx prisma validate
+          npx prisma generate
+
+      - name: Show pre-deployment status
+        continue-on-error: true
+        run: npx prisma migrate status
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Verify migration status and live schema
+        run: |
+          npx prisma migrate status
+          node scripts/verify-live-database.mjs

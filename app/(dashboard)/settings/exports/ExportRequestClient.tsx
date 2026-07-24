@@ -7,7 +7,7 @@ import { requestExportAction } from "@/modules/exports/actions";
 import { Button } from "@/components/ui/button";
 
 export function ExportRequestClient() {
-  const [scope, setScope] = useState("tenant_summary");
+  const [scope, setScope] = useState("customers");
   const [isLoading, setIsLoading] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -35,7 +35,6 @@ export function ExportRequestClient() {
           onChange={(event) => setScope(event.target.value)}
           className="h-10 w-full rounded-md border border-outline-variant/30 bg-surface/40 px-3 text-sm text-on-surface"
         >
-          <option value="tenant_summary">Tenant summary</option>
           <option value="customers">Customers</option>
           <option value="suppliers">Suppliers</option>
           <option value="products">Products</option>

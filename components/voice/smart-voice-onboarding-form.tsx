@@ -305,7 +305,7 @@ export function SmartVoiceOnboardingForm({ initialValues, dashboardHref, isAuthe
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
     if (currentStep === 0) fieldsToValidate = ["businessName", "industry", "website"];
-    if (currentStep === 1) fieldsToValidate = ["businessPhone", "openingHours"];
+    if (currentStep === 1) fieldsToValidate = ["preferredCallingCountry", "businessPhone", "openingHours"];
     
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
@@ -420,10 +420,21 @@ export function SmartVoiceOnboardingForm({ initialValues, dashboardHref, isAuthe
                   <p className="text-sm text-slate-400">When should your AI tell customers you are open?</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Business Phone</Label>
-                  <Input {...register("businessPhone")} className={inputClassName} disabled={isPending} placeholder="+1..." />
-                  {errors.businessPhone && <p className="text-xs text-rose-400">{errors.businessPhone.message}</p>}
+                <div className="grid gap-4 md:grid-cols-[0.75fr_1.25fr]">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Primary Calling Country</Label>
+                    <select {...register("preferredCallingCountry")} className={selectClassName} disabled={isPending}>
+                      <option value="PK">Pakistan (+92) - Local SIP</option>
+                      <option value="US">USA (+1) - Twilio</option>
+                      <option value="GB">UK (+44) - Twilio</option>
+                    </select>
+                    {errors.preferredCallingCountry && <p className="text-xs text-rose-400">{errors.preferredCallingCountry.message}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Business Phone</Label>
+                    <Input {...register("businessPhone")} className={inputClassName} disabled={isPending} placeholder="+923001234567" />
+                    {errors.businessPhone && <p className="text-xs text-rose-400">{errors.businessPhone.message}</p>}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

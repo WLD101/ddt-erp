@@ -14,13 +14,18 @@ export default async function TwilioSetupPage() {
 
   let twilioConfig = {
     accountSid: "",
-    authToken: "",
+    hasAuthToken: false,
     phoneNumber: "",
   };
 
   if (settings?.providerConfigNotes) {
     try {
-      twilioConfig = JSON.parse(settings.providerConfigNotes);
+      const parsed = JSON.parse(settings.providerConfigNotes);
+      twilioConfig = {
+        accountSid: typeof parsed.accountSid === "string" ? parsed.accountSid : "",
+        hasAuthToken: Boolean(parsed.authTokenEncrypted || parsed.authToken),
+        phoneNumber: typeof parsed.phoneNumber === "string" ? parsed.phoneNumber : "",
+      };
     } catch {
       // Ignored if invalid JSON
     }
@@ -81,7 +86,6 @@ export default async function TwilioSetupPage() {
               <input
                 type="password"
                 name="authToken"
-                defaultValue={twilioConfig.authToken}
                 required
                 placeholder="••••••••••••••••••••••••••••••••"
                 className="h-10 w-full rounded-xl border border-outline-variant bg-surface-container px-3 text-sm text-on-surface outline-none focus:border-primary"
@@ -121,8 +125,8 @@ export default async function TwilioSetupPage() {
               </li>
               <li className="flex items-center justify-between">
                 <span>Auth Token Status</span>
-                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${twilioConfig.authToken ? "bg-emerald-500/10 text-emerald-700" : "bg-outline-variant text-on-surface-variant"}`}>
-                  {twilioConfig.authToken ? "Configured" : "Missing"}
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${twilioConfig.hasAuthToken ? "bg-emerald-500/10 text-emerald-700" : "bg-outline-variant text-on-surface-variant"}`}>
+                  {twilioConfig.hasAuthToken ? "Configured" : "Missing"}
                 </span>
               </li>
               <li className="flex items-center justify-between">

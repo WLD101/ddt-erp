@@ -1,6 +1,65 @@
 // modules/voice/vapi/service.ts
 
 import { timingSafeEqual } from "node:crypto";
+import { prisma } from "@/lib/prisma";
+import { reconcileVoiceUsageMeterFromCallLogs } from "@/modules/voice/usage-reconciliation";
+
+function toNumberOrNull(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function parseProviderDate(value: unknown): Date | null {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const date = new Date(value > 10_000_000_000 ? value : value * 1000);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  if (typeof value === "string" && value.trim().length > 0) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  return null;
+}
+
+function readProviderPath(source: any, paths: string[]) {
+  for (const path of paths) {
+    const value = path.split(".").reduce((acc, part) => acc?.[part], source);
+    if (typeof value !== "undefined" && value !== null && value !== "") return value;
+  }
+  return null;
+}
+
+function extractProviderDurationSeconds(call: any, existingDuration?: number | null) {
+  const directDuration =
+    toNumberOrNull(call?.durationSeconds) ??
+    toNumberOrNull(call?.duration) ??
+    toNumberOrNull(call?.analysis?.durationSeconds) ??
+    toNumberOrNull(call?.analysis?.duration);
+
+  if (directDuration !== null) return Math.max(0, Math.round(directDuration));
+
+  const startedAt = parseProviderDate(readProviderPath(call, ["startedAt", "startTime", "createdAt"]));
+  const endedAt = parseProviderDate(readProviderPath(call, ["endedAt", "endTime", "updatedAt"]));
+  if (startedAt && endedAt && endedAt.getTime() >= startedAt.getTime()) {
+    return Math.round((endedAt.getTime() - startedAt.getTime()) / 1000);
+  }
+
+  return existingDuration ?? null;
+}
+
+function extractProviderCost(call: any) {
+  return (
+    toNumberOrNull(call?.costUsd) ??
+    toNumberOrNull(call?.cost) ??
+    toNumberOrNull(call?.analysis?.costUsd) ??
+    toNumberOrNull(call?.analysis?.cost)
+  );
+}
 
 function getConfiguredWebhookUrl() {
   if (process.env.VAPI_SERVER_URL) {
@@ -8,7 +67,7 @@ function getConfiguredWebhookUrl() {
   }
 
   if (process.env.VOICE_PUBLIC_APP_URL) {
-    return `${process.env.VOICE_PUBLIC_APP_URL}/api/voice/vapi/webhook`;
+    return `${process.env.VOICE_PUBLIC_APP_URL}/api/webhooks/vapi`;
   }
 
   return undefined;
@@ -78,16 +137,47 @@ type UpsertVapiAssistantInput = {
   prompt: string;
   webhookUrl: string;
   toolNames: string[];
+  recordingEnabled: boolean;
+  recordingDisclosureEnabled: boolean;
+  recordingDisclosureType: "verbal" | "stay-on-line";
+  recordingDisclosureText?: string | null;
+  transcriptionEnabled: boolean;
 };
 
-function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
+export function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
+  const credentialId = process.env.VAPI_SERVER_CREDENTIAL_ID?.trim();
+  const compliancePlan =
+    input.recordingEnabled && input.recordingDisclosureEnabled
+      ? {
+          recordingConsentPlan: {
+            type: input.recordingDisclosureType,
+            message: input.recordingDisclosureText,
+            ...(input.recordingDisclosureType === "stay-on-line"
+              ? { waitSeconds: 3 }
+              : {}),
+          },
+        }
+      : undefined;
+
   return {
     name: input.assistantName,
     firstMessage: input.firstMessage,
     server: {
       url: input.webhookUrl,
-      secret: process.env.VAPI_WEBHOOK_SECRET || undefined,
+      ...(credentialId
+        ? { credentialId }
+        : { secret: process.env.VAPI_WEBHOOK_SECRET || undefined }),
     },
+    artifactPlan: {
+      recordingEnabled: input.recordingEnabled,
+      loggingEnabled: input.transcriptionEnabled,
+      transcriptPlan: {
+        enabled: input.transcriptionEnabled,
+        assistantName: "Assistant",
+        userName: "Customer",
+      },
+    },
+    ...(compliancePlan ? { compliancePlan } : {}),
     transcriber: {
       provider: "deepgram",
       model: "nova-2",
@@ -185,12 +275,77 @@ export async function syncVapiCallCostByProviderCallId(providerCallId: string) {
     };
   }
 
-  // Placeholder for a later reconciliation job. Some providers may delay cost
-  // details until after the webhook lifecycle, so we keep a single safe entrypoint
-  // to backfill cost data by providerCallId when that API contract is finalized.
+  const callLog = await prisma.voiceCallLog.findFirst({
+    where: { provider: "vapi", providerCallId },
+    select: {
+      id: true,
+      organizationId: true,
+      durationSeconds: true,
+      costUsd: true,
+      costBreakdownJson: true,
+      recordingUrl: true,
+    },
+  });
+
+  if (!callLog) {
+    return {
+      synced: false,
+      reason: "No local call log is mapped to this provider call ID.",
+      providerCallId,
+    };
+  }
+
+  const response = await fetch(`https://api.vapi.ai/call/${encodeURIComponent(providerCallId)}`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    return {
+      synced: false,
+      reason: `Provider call lookup failed (${response.status}): ${body || response.statusText}`,
+      providerCallId,
+      callLogId: callLog.id,
+    };
+  }
+
+  const providerCall = await response.json();
+  const durationSeconds = extractProviderDurationSeconds(providerCall, callLog.durationSeconds);
+  const costUsd = extractProviderCost(providerCall) ?? callLog.costUsd;
+  const costBreakdown =
+    providerCall?.costBreakdown ||
+    providerCall?.costBreakdownJson ||
+    providerCall?.analysis?.costBreakdown ||
+    null;
+  const recordingUrl =
+    providerCall?.recordingUrl ||
+    providerCall?.recording?.url ||
+    providerCall?.artifact?.recordingUrl ||
+    callLog.recordingUrl ||
+    null;
+
+  await prisma.voiceCallLog.update({
+    where: { id: callLog.id },
+    data: {
+      durationSeconds,
+      costUsd,
+      costBreakdownJson: costBreakdown ? JSON.stringify(costBreakdown) : callLog.costBreakdownJson,
+      recordingUrl,
+      usageMetricsSource: "provider_api",
+    },
+  });
+
+  await reconcileVoiceUsageMeterFromCallLogs(callLog.organizationId);
+
   return {
-    synced: false,
-    reason: "Provider call cost backfill is not implemented yet.",
+    synced: true,
     providerCallId,
+    callLogId: callLog.id,
+    durationSeconds,
+    costUsd,
   };
 }

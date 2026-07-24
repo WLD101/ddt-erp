@@ -22,7 +22,7 @@ export class VapiAdapter implements IVoiceOrchestrator {
 
   async deployAgent(config: AgentConfig): Promise<string> {
     const assistantName = `WQ | ${config.organizationId} | ${config.name} | PROD`;
-    const serverUrl = "https://voice.whatsquery.com/api/voice/vapi/webhook";
+    const serverUrl = "https://voice.whatsquery.com/api/webhooks/vapi";
 
     const payload = {
       name: assistantName,

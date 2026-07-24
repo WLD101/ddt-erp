@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 
 import { WelcomeStep } from "./steps/WelcomeStep";
+import { MarketStep } from "./steps/MarketStep";
 import { IndustryStep } from "./steps/IndustryStep";
 import { ProfileStep } from "./steps/ProfileStep";
 import { BranchStep } from "./steps/BranchStep";
@@ -25,6 +26,7 @@ interface WizardShellProps {
 
 const STEP_COMPONENTS = [
   WelcomeStep,
+  MarketStep,
   IndustryStep,
   ProfileStep,
   BranchStep,

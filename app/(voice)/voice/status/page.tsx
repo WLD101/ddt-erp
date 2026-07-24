@@ -3,16 +3,24 @@ import { headers } from "next/headers";
 import { VoiceMarketingShell } from "@/components/voice/voice-marketing-shell";
 import { getVoiceRequestHost, isVoiceHost, toVoiceExternalPath, toVoiceInternalPath } from "@/lib/voice/routing";
 
-export default async function VoiceStatusPage(_props: PageProps<"/voice/status">) {
+export default async function VoiceStatusPage() {
   const host = await getVoiceRequestHost();
   const requestHeaders = await headers();
   const pathname = requestHeaders.get("x-pathname") ?? "/";
   const homeHref = toVoiceExternalPath("/", host);
   const loginHref = toVoiceExternalPath("/login", host);
   const onboardingHref = toVoiceExternalPath("/onboarding", host);
+  const pricingHref = toVoiceExternalPath("/pricing", host);
+  const docsHref = toVoiceExternalPath("/docs", host);
 
   return (
-    <VoiceMarketingShell homeHref={homeHref} loginHref={loginHref} onboardingHref={onboardingHref}>
+    <VoiceMarketingShell
+      homeHref={homeHref}
+      loginHref={loginHref}
+      onboardingHref={onboardingHref}
+      pricingHref={pricingHref}
+      docsHref={docsHref}
+    >
       <main className="mx-auto max-w-4xl px-6 py-20">
         <section className="rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.28)] backdrop-blur">
           <div className="text-[11px] font-black uppercase tracking-[0.32em] text-cyan-300">Voice smoke test</div>

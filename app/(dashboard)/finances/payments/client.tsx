@@ -79,7 +79,7 @@ export function PaymentClient({ initialPayments }: { initialPayments: Payment[] 
   };
 
   const handleDownloadReceipt = (paymentId: string) => {
-    window.location.href = `/api/payments/${paymentId}/receipt`;
+    window.location.assign(`/api/payments/${paymentId}/receipt`);
   };
 
   const handlePrintReceipt = (paymentId: string) => {

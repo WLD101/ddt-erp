@@ -8,6 +8,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isPlatformAdminEmail, shouldResolveTenantContext } from "@/lib/security/access";
+import { isPilotTenantAllowed } from "@/lib/security/pilot-access";
 
 // ---------------------------------------------------------------------------
 // Super Admin / Platform Oversight logic
@@ -140,6 +141,13 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
         redirect("/onboarding");
       }
     }
+  }
+
+  if (!isPilotTenantAllowed(membership.organizationId)) {
+    throw new TenantForbiddenError(
+      "This organization is not approved for the controlled pilot.",
+      "TENANT_NOT_PILOT_ENABLED",
+    );
   }
 
   // RESOLVE BRANCH ID

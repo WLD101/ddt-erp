@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { encryptIntegrationCredentials } from "@/lib/integrations";
 
 import { createServerAction } from "@/lib/actions/builder";
 import { prisma } from "@/lib/prisma";
@@ -98,6 +99,11 @@ export const saveVoiceBusinessProfileAction = createServerAction({
         afterHoursBehavior: "TAKE_MESSAGE",
         leadCaptureFields: JSON.stringify(["name", "phone", "reason"]),
       },
+    });
+
+    await db.organization.update({
+      where: { id: orgId },
+      data: { country: input.preferredCallingCountry },
     });
 
     voiceRevalidatePaths.forEach((path) => revalidatePath(path));
@@ -850,7 +856,7 @@ export const saveTwilioSettingsAction = createServerAction({
   handler: async ({ input, context: { db, orgId } }) => {
     const configNotes = JSON.stringify({
       accountSid: input.accountSid,
-      authToken: input.authToken,
+      authTokenEncrypted: encryptIntegrationCredentials({ authToken: input.authToken }),
       phoneNumber: input.phoneNumber,
     });
 
@@ -872,5 +878,3 @@ export const saveTwilioSettingsAction = createServerAction({
     return settings;
   },
 });
-
-

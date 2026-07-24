@@ -368,6 +368,39 @@ export async function syncVoiceTrainingPromptToVapi(orgId: string, options?: { v
     throw new Error("Vapi webhook URL is missing. Configure VOICE_PUBLIC_APP_URL or VAPI_SERVER_URL before syncing.");
   }
 
+  const recordingEnabled =
+    workspace.receptionistSettings?.recordingEnabled ?? false;
+  const recordingDisclosureEnabled =
+    workspace.receptionistSettings?.recordingDisclosureEnabled ?? true;
+  const recordingDisclosureText =
+    workspace.receptionistSettings?.recordingDisclosureText?.trim() || null;
+  const recordingDisclosureType =
+    workspace.receptionistSettings?.recordingDisclosureType === "stay-on-line"
+      ? ("stay-on-line" as const)
+      : ("verbal" as const);
+  if (
+    recordingEnabled &&
+    recordingDisclosureEnabled &&
+    !recordingDisclosureText
+  ) {
+    throw new Error(
+      "Recording is enabled but the tenant recording disclosure text is missing.",
+    );
+  }
+
+  const vapiAuthMode = (
+    process.env.VAPI_WEBHOOK_AUTH_MODE || "hmac"
+  ).toLowerCase();
+  if (
+    process.env.NODE_ENV === "production" &&
+    vapiAuthMode === "hmac" &&
+    !process.env.VAPI_SERVER_CREDENTIAL_ID?.trim()
+  ) {
+    throw new Error(
+      "VAPI_SERVER_CREDENTIAL_ID is required for production HMAC webhook authentication.",
+    );
+  }
+
   if (voiceAgent.vapiAssistantId) {
     const conflictingAgent = await prisma.voiceAgent.findFirst({
       where: {
@@ -390,6 +423,12 @@ export async function syncVoiceTrainingPromptToVapi(orgId: string, options?: { v
     prompt,
     webhookUrl,
     toolNames: workspace.runtime.agent.allowedTools,
+    recordingEnabled,
+    recordingDisclosureEnabled,
+    recordingDisclosureType,
+    recordingDisclosureText,
+    transcriptionEnabled:
+      workspace.receptionistSettings?.transcriptionEnabled ?? false,
   });
   const resolvedAssistantId = syncResult?.id || voiceAgent.vapiAssistantId;
 

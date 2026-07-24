@@ -509,14 +509,29 @@ export async function consumeVerifiedSignInChallenge(rawToken: string) {
     },
   });
 
-  if (!challenge || challenge.expiresAt <= new Date() || challenge.completedAt || !challenge.verifiedAt) {
+  if (
+    !challenge ||
+    challenge.expiresAt <= new Date() ||
+    challenge.completedAt ||
+    !challenge.verifiedAt ||
+    challenge.user.deletedAt ||
+    challenge.user.authStatus !== "verified"
+  ) {
     return null;
   }
 
-  await prisma.authChallenge.update({
-    where: { id: challenge.id },
+  const consumed = await prisma.authChallenge.updateMany({
+    where: {
+      id: challenge.id,
+      completedAt: null,
+      verifiedAt: { not: null },
+      expiresAt: { gt: new Date() },
+    },
     data: { completedAt: new Date() },
   });
+  if (consumed.count !== 1) {
+    return null;
+  }
 
   return challenge.user;
 }
@@ -545,8 +560,14 @@ export async function getSessionSecurityState(input: {
   userId: string;
   organizationId?: string | null;
 }) {
-  const profile = await getOrCreateUserSecurityProfile(input.userId);
-  const policy = input.organizationId ? await getOrCreateSecurityPolicy(input.organizationId) : null;
+  const [user, profile, policy] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: input.userId },
+      select: { deletedAt: true, authStatus: true },
+    }),
+    getOrCreateUserSecurityProfile(input.userId),
+    input.organizationId ? getOrCreateSecurityPolicy(input.organizationId) : null,
+  ]);
 
   return {
     profile,
@@ -554,6 +575,8 @@ export async function getSessionSecurityState(input: {
     sessionVersion: profile.sessionVersion,
     policyUpdatedAt: policy?.updatedAt?.getTime() ?? null,
     emergencyLockEnabled: !!policy?.emergencyLockEnabled,
+    accountDisabled:
+      !user || !!user.deletedAt || user.authStatus !== "verified",
   };
 }
 

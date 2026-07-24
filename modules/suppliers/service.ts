@@ -3,6 +3,8 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { contactSchema } from "@/lib/validations/common";
 
+const DEFAULT_LIST_LIMIT = 500;
+
 export const supplierSchema = z.object({
   name: z.string().min(1, "Name is required"),
   ...contactSchema,
@@ -14,6 +16,7 @@ export async function getSuppliers(db: ScopedPrisma) {
   const suppliers = await db.supplier.findMany({
     include: { purchaseInvoices: true, payments: true },
     orderBy: { createdAt: "desc" },
+    take: DEFAULT_LIST_LIMIT,
   });
 
   return suppliers.map((s) => {

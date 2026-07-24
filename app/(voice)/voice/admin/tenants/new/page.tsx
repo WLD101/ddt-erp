@@ -63,7 +63,7 @@ export default function NewVoiceTenantPage() {
                   className="h-12 w-full rounded-2xl border border-outline-variant/40 bg-surface-container-lowest px-4 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="e.g. admin@acmecorp.com"
                 />
-                <p className="text-xs text-on-surface-variant">If provided, an owner account will be created and linked to this tenant.</p>
+                <p className="text-xs text-on-surface-variant">If provided, this must be an existing user. The action links that user as owner without creating weak placeholder credentials.</p>
               </div>
 
               <div className="pt-6">

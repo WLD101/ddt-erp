@@ -13,7 +13,7 @@ export async function syncAgentToVapi(prompt: string, config: any) {
   }
 
   const assistantName = `WQ | ${businessSlug} | ${agentSlug} | PROD`;
-  const serverUrl = "https://voice.whatsquery.com/api/voice/vapi/webhook";
+  const serverUrl = "https://voice.whatsquery.com/api/webhooks/vapi";
 
   const tools = [
     {

@@ -7,14 +7,19 @@ cd $APP_DIR
 
 echo '--- BEFORE COMMIT ---'
 git log -1 --oneline
-git status --short || true
+git status --short
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Refusing deployment: $APP_DIR has uncommitted changes."
+  exit 1
+fi
 
 echo '--- FIX FULL APP OWNERSHIP ---'
 sudo chown -R $APP_USER:$APP_USER $APP_DIR
 
-echo '--- FETCH RESET AS APP USER ---'
+echo '--- FETCH AND FAST-FORWARD AS APP USER ---'
 sudo -u $APP_USER git fetch origin main
-sudo -u $APP_USER git reset --hard origin/main
+sudo -u $APP_USER git merge --ff-only origin/main
 
 echo '--- FIX OWNERSHIP AFTER RESET ---'
 sudo chown -R $APP_USER:$APP_USER $APP_DIR
@@ -24,12 +29,24 @@ git log -1 --oneline
 git status --short || true
 
 echo '--- INSTALL DEPENDENCIES AS APP USER ---'
-sudo -u $APP_USER npm install
+sudo -u $APP_USER npm ci
+
+echo '--- PRISMA VALIDATE ---'
+sudo -u $APP_USER npx prisma validate
+
+echo '--- PRISMA GENERATE BEFORE STATUS ---'
+sudo -u $APP_USER npx prisma generate
+
+echo '--- PRISMA STATUS BEFORE MIGRATION ---'
+sudo -u $APP_USER npx prisma migrate status || true
 
 echo '--- PRISMA MIGRATE ---'
 sudo -u $APP_USER npx prisma migrate deploy
 
-echo '--- PRISMA GENERATE ---'
+echo '--- PRISMA STATUS AFTER MIGRATION ---'
+sudo -u $APP_USER npx prisma migrate status
+
+echo '--- PRISMA GENERATE AFTER MIGRATION ---'
 sudo -u $APP_USER npx prisma generate
 
 echo '--- CLEAN NEXT BUILD CACHE ---'

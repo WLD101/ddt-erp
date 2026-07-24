@@ -8,6 +8,19 @@ export type RateLimitResult = {
 const memoryFallback = new Map<string, { count: number; expiresAt: number }>();
 let hasLoggedRedisFallback = false;
 
+export function getRateLimitFallbackMode(nodeEnv = process.env.NODE_ENV) {
+  return nodeEnv === "production" ? "deny" : "memory";
+}
+
+function withRedisTimeout<T>(operation: Promise<T>) {
+  return Promise.race([
+    operation,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Redis timeout")), 500),
+    ),
+  ]);
+}
+
 function checkMemoryRateLimit(
   key: string,
   options: { limit: number; windowMs: number }
@@ -49,26 +62,17 @@ export async function checkRateLimit(
   const fullKey = `ratelimit:${key}`;
   
   try {
-    await ensureRedisConnection();
+    await withRedisTimeout(ensureRedisConnection());
 
-    const current = await Promise.race([
-      redis.incr(fullKey),
-      new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout")), 500))
-    ]);
+    const current = await withRedisTimeout(redis.incr(fullKey));
     
     if (current === 1) {
       // First hit, set expiry
-      await Promise.race([
-        redis.pexpire(fullKey, options.windowMs),
-        new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Redis timeout")), 500))
-      ]);
+      await withRedisTimeout(redis.pexpire(fullKey, options.windowMs));
     }
     
     if (current > options.limit) {
-      const ttl = await Promise.race([
-        redis.pttl(fullKey),
-        new Promise<number>((_, reject) => setTimeout(() => reject(new Error("Redis timeout")), 500))
-      ]);
+      const ttl = await withRedisTimeout(redis.pttl(fullKey));
       return {
         allowed: false,
         retryAfterSeconds: Math.ceil(ttl / 1000),
@@ -77,11 +81,18 @@ export async function checkRateLimit(
     
     return { allowed: true, retryAfterSeconds: 0 };
   } catch (error) {
-    // Fallback to in-memory protection so public auth and OTP flows
-    // are still throttled if Redis is unavailable.
     if (!hasLoggedRedisFallback) {
-      console.error("[RateLimit Fallback] Redis unavailable, using in-memory limiter:", error);
+      console.error("[RateLimit] Redis unavailable.", {
+        fallback: getRateLimitFallbackMode(),
+        errorName: error instanceof Error ? error.name : "UnknownError",
+      });
       hasLoggedRedisFallback = true;
+    }
+    if (getRateLimitFallbackMode() === "deny") {
+      return {
+        allowed: false,
+        retryAfterSeconds: 60,
+      };
     }
     return checkMemoryRateLimit(fullKey, options);
   }

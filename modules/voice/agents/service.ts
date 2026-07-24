@@ -242,59 +242,110 @@ export async function ensureDefaultVoiceAgent(organizationId: string) {
 export async function resolveVoiceAgentForWebhook({
   assistantId,
   phoneNumberId,
+  inboundNumber,
   providerCallId,
   tenantHeader,
 }: {
   assistantId?: string;
   phoneNumberId?: string;
+  inboundNumber?: string;
   providerCallId?: string;
   tenantHeader?: string | null;
 }) {
-  const ors: Array<Record<string, string>> = [];
-
-  if (assistantId) {
-    ors.push({ vapiAssistantId: assistantId });
-  }
-
   if (phoneNumberId) {
-    ors.push({ vapiPhoneNumberId: phoneNumberId });
+    const agent = await prisma.voiceAgent.findUnique({
+      where: { vapiPhoneNumberId: phoneNumberId },
+      select: {
+        id: true,
+        organizationId: true,
+        voiceBusinessProfileId: true,
+        vapiAssistantId: true,
+        isActive: true,
+      },
+    });
+    if (agent?.isActive) {
+      return {
+        organizationId: agent.organizationId,
+        voiceBusinessProfileId: agent.voiceBusinessProfileId || null,
+        voiceAgentId: agent.id,
+        vapiAssistantId: agent.vapiAssistantId || null,
+        resolvedBy: "phone_number_id" as const,
+      };
+    }
   }
 
-  if (ors.length > 0) {
+  if (inboundNumber) {
     const matches = await prisma.voiceAgent.findMany({
       where: {
         isActive: true,
-        OR: ors,
+        OR: [
+          { assignedVapiPhoneNumber: inboundNumber },
+          { clientPublicPhoneNumber: inboundNumber },
+        ],
       },
-      select: { id: true, organizationId: true, voiceBusinessProfileId: true },
+      select: {
+        id: true,
+        organizationId: true,
+        voiceBusinessProfileId: true,
+        vapiAssistantId: true,
+      },
       take: 2,
     });
-
     if (matches.length === 1) {
       return {
         organizationId: matches[0].organizationId,
         voiceBusinessProfileId: matches[0].voiceBusinessProfileId || null,
         voiceAgentId: matches[0].id,
+        vapiAssistantId: matches[0].vapiAssistantId || null,
+        resolvedBy: "inbound_number" as const,
       };
     }
-
     if (matches.length > 1) {
-      console.warn("[Voice Agent Mapping] Multiple active agents matched the same assistant or phone number.");
+      console.warn("[Voice Agent Mapping] Multiple active agents matched the same inbound number.");
       return undefined;
+    }
+  }
+
+  if (assistantId) {
+    const agent = await prisma.voiceAgent.findUnique({
+      where: { vapiAssistantId: assistantId },
+      select: {
+        id: true,
+        organizationId: true,
+        voiceBusinessProfileId: true,
+        vapiAssistantId: true,
+        isActive: true,
+      },
+    });
+    if (agent?.isActive) {
+      return {
+        organizationId: agent.organizationId,
+        voiceBusinessProfileId: agent.voiceBusinessProfileId || null,
+        voiceAgentId: agent.id,
+        vapiAssistantId: agent.vapiAssistantId || null,
+        resolvedBy: "assistant_id" as const,
+      };
     }
   }
 
   if (providerCallId) {
     const existingCall = await prisma.voiceCallLog.findFirst({
-      where: { providerCallId },
-      select: { organizationId: true, voiceAgentId: true },
+      where: { provider: "vapi", providerCallId },
+      select: {
+        organizationId: true,
+        voiceAgentId: true,
+        voiceBusinessProfileId: true,
+        providerAssistantId: true,
+      },
     });
 
     if (existingCall?.organizationId) {
       return {
         organizationId: existingCall.organizationId,
-        voiceBusinessProfileId: null,
+        voiceBusinessProfileId: existingCall.voiceBusinessProfileId || null,
         voiceAgentId: existingCall.voiceAgentId || null,
+        vapiAssistantId: existingCall.providerAssistantId || null,
+        resolvedBy: "existing_call" as const,
       };
     }
   }
@@ -304,6 +355,9 @@ export async function resolveVoiceAgentForWebhook({
     return {
       organizationId: tenantHeader,
       voiceAgentId: agent.id,
+      voiceBusinessProfileId: agent.voiceBusinessProfileId || null,
+      vapiAssistantId: agent.vapiAssistantId || null,
+      resolvedBy: "development_tenant_header" as const,
     };
   }
 

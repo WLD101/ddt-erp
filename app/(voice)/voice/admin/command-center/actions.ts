@@ -1,8 +1,11 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 import { revalidatePath } from "next/cache";
 
 export async function assignPackageAction(formData: FormData) {
+  await requirePlatformAdmin();
+
   const organizationId = formData.get("organizationId") as string;
   const packageId = formData.get("packageId") as string;
 
@@ -61,6 +64,8 @@ export async function assignPackageAction(formData: FormData) {
 }
 
 export async function approveManualPaymentAction(formData: FormData) {
+  await requirePlatformAdmin();
+
   const organizationId = formData.get("organizationId") as string;
   if (!organizationId) {
     throw new Error("Organization ID is required.");
@@ -88,6 +93,8 @@ export async function approveManualPaymentAction(formData: FormData) {
 }
 
 export async function rejectManualPaymentAction(formData: FormData) {
+  await requirePlatformAdmin();
+
   const organizationId = formData.get("organizationId") as string;
   if (!organizationId) {
     throw new Error("Organization ID is required.");

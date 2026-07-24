@@ -1,8 +1,11 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 import { revalidatePath } from "next/cache";
 
 export async function assignVoicePackage(organizationId: string, formData: FormData) {
+  await requirePlatformAdmin();
+
   const packageId = formData.get("packageId") as string;
   const status = formData.get("status") as string;
 

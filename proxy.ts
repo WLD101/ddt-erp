@@ -2,15 +2,56 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import {
-  getUnauthenticatedRedirect,
   stripSensitiveSearchParams,
   isSuperAdmin,
 } from "@/lib/security/access";
+import { isTrustedAppOrigin } from "@/lib/security/request-origin";
 import { isVoiceHost, toVoiceInternalPath } from "@/lib/voice/routing";
+
+const EXTERNAL_MUTATION_PREFIXES = [
+  "/api/billing/webhook",
+  "/api/calls/provider-webhook/",
+  "/api/calls/twiml",
+  "/api/voice/jobs/process",
+  "/api/voice/vapi/webhook",
+  "/api/voice/whatsapp/webhook",
+  "/api/webhooks/vapi",
+] as const;
+
+function isUnsafeMethod(method: string) {
+  return !["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase());
+}
+
+function isExternalMutationRoute(pathname: string) {
+  return EXTERNAL_MUTATION_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 export default async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
+  const isApiRoute = pathname.startsWith("/api") || pathname.startsWith("/_next");
+
+  if (isApiRoute) {
+    if (
+      pathname.startsWith("/api") &&
+      isUnsafeMethod(req.method) &&
+      !isExternalMutationRoute(pathname)
+    ) {
+      const origin = req.headers.get("origin");
+      const referer = req.headers.get("referer");
+      if (
+        !isTrustedAppOrigin(origin, req.url) &&
+        !isTrustedAppOrigin(referer, req.url)
+      ) {
+        return NextResponse.json(
+          { error: "This request origin is not allowed." },
+          { status: 403 },
+        );
+      }
+    }
+    return NextResponse.next();
+  }
+
   const forwardedHost = req.headers.get("x-forwarded-host");
   const forwardedProto = req.headers.get("x-forwarded-proto");
   const host =
@@ -50,8 +91,6 @@ export default async function proxy(req: NextRequest) {
   }
 
   const isAuthRoute = pathname.startsWith("/auth");
-  const isApiRoute = pathname.startsWith("/api") || pathname.startsWith("/_next");
-
   const isPublicRoute =
     pathname === "/" ||
     pathname === "/voice" ||
@@ -98,10 +137,6 @@ export default async function proxy(req: NextRequest) {
         headers: requestHeaders,
       },
     });
-  }
-
-  if (isApiRoute) {
-    return NextResponse.next();
   }
 
   if (pathname === "/platform") {
@@ -167,5 +202,8 @@ export default async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: [
+    "/api/:path*",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
+  ],
 };

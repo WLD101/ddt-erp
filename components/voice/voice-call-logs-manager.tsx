@@ -31,7 +31,7 @@ type VoiceCallLogsManagerProps = {
     summary: string | null;
     transcriptPlaceholder: string | null;
     transcript: string | null;
-    recordingUrl: string | null;
+    recordingHref: string | null;
     endedReason: string | null;
     providerCallId: string | null;
     durationSeconds: number | null;
@@ -181,6 +181,7 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Direction</th>
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Duration</th>
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Summary</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Recording</th>
                       <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Date</th>
                     </tr>
                   </thead>
@@ -209,6 +210,20 @@ export function VoiceCallLogsManager({ logs, allowDevTools }: VoiceCallLogsManag
                           </td>
                           <td className="px-6 py-4 text-on-surface-variant max-w-xs truncate" title={log.summary || log.transcriptPlaceholder || ""}>
                             {log.summary || log.transcriptPlaceholder || "Pending live telephony"}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            {log.recordingHref ? (
+                              <a
+                                href={log.recordingHref}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-primary hover:bg-primary/15"
+                              >
+                                Hear Call
+                              </a>
+                            ) : (
+                              <span className="text-xs text-on-surface-variant">Not available</span>
+                            )}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4 text-on-surface-variant text-xs">
                             {new Date(log.createdAt).toLocaleString()}

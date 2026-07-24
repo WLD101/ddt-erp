@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { LocalizedVoicePrice, VoiceLocalizedPricingNote } from "@/components/voice/voice-localized-pricing";
 import { 
   Phone, 
   Play, 
@@ -35,12 +36,16 @@ type VoiceLandingPageClientProps = {
   loginHref: string;
   onboardingHref: string;
   dashboardHref: string;
+  pricingHref: string;
+  docsHref: string;
 };
 
 export function VoiceLandingPageClient({
   loginHref,
   onboardingHref,
   dashboardHref,
+  pricingHref,
+  docsHref,
 }: VoiceLandingPageClientProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mockupStep, setMockupStep] = useState(0);
@@ -90,7 +95,8 @@ export function VoiceLandingPageClient({
             <Link href="#features" className="hover:text-white transition-colors">Product</Link>
             <Link href="#solutions" className="hover:text-white transition-colors">Solutions</Link>
             <Link href="#enterprise" className="hover:text-white transition-colors">Enterprise</Link>
-            <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <Link href={pricingHref} className="hover:text-white transition-colors">Pricing</Link>
+            <Link href={docsHref} className="hover:text-white transition-colors">Docs</Link>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -157,6 +163,12 @@ export function VoiceLandingPageClient({
               >
                 <span>Start 14-Day Free Trial</span>
                 <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href={docsHref}
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-8 py-4 text-sm font-bold text-white hover:bg-white/10 transition-all"
+              >
+                Read Voice Docs
               </Link>
             </motion.div>
 
@@ -542,6 +554,70 @@ export function VoiceLandingPageClient({
         </div>
       </section>
 
+      {/* 8.5 DOCS SECTION */}
+      <section id="docs" className="py-24 border-t border-white/5 bg-slate-950/30 px-6">
+        <div className="mx-auto max-w-7xl grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+          <div className="space-y-6">
+            <h2 className="text-xs uppercase tracking-[0.25em] text-[#21D4FD] font-black">Voice Docs</h2>
+            <h3 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+              Detailed docs your customers can actually follow
+            </h3>
+            <p className="max-w-2xl text-[#A7B0C0] leading-relaxed">
+              Give buyers a clear path from first question to live deployment. The new voice docs explain setup, call routing, knowledge base design, integrations, pricing, and what your team receives after each conversation.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href={docsHref}
+                className="inline-flex items-center gap-2 rounded-full bg-[#21D4FD] px-6 py-3 text-sm font-black text-[#050816] shadow-lg shadow-[#21D4FD]/20 hover:scale-[1.03] transition-all"
+              >
+                Open Docs
+              </Link>
+              <Link
+                href={`${docsHref}#quickstart`}
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-all"
+              >
+                Quickstart
+              </Link>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              {
+                title: "Introduction",
+                copy: "Explain what the AI receptionist does, who it is for, and what the caller experiences.",
+                href: `${docsHref}#introduction`,
+              },
+              {
+                title: "Quickstart",
+                copy: "Show how to connect a number, train the agent, test calls, and go live fast.",
+                href: `${docsHref}#quickstart`,
+              },
+              {
+                title: "Routing & Integrations",
+                copy: "Make escalation, appointments, CRM sync, ERP updates, and handoff rules easy to understand.",
+                href: `${docsHref}#routing`,
+              },
+              {
+                title: "Pricing & FAQs",
+                copy: "Answer package, billing, language, and support questions before prospects need to ask sales.",
+                href: `${docsHref}#pricing`,
+              },
+            ].map((item) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="rounded-3xl border border-white/10 bg-white/5 p-6 transition-all hover:border-[#21D4FD]/35 hover:bg-white/[0.07]"
+              >
+                <div className="space-y-3">
+                  <div className="text-sm font-black uppercase tracking-[0.18em] text-[#21D4FD]">{item.title}</div>
+                  <p className="text-sm leading-relaxed text-[#A7B0C0]">{item.copy}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 9. ENTERPRISE SECTION */}
       <section id="enterprise" className="py-32 border-t border-white/5 bg-slate-950/20 px-6">
         <div className="mx-auto max-w-7xl grid gap-16 lg:grid-cols-12 lg:items-center">
@@ -597,6 +673,7 @@ export function VoiceLandingPageClient({
             <p className="max-w-xl mx-auto text-[#A7B0C0]">
               Transparent pricing with no hidden fees. Upgrade as your call volume grows.
             </p>
+            <VoiceLocalizedPricingNote className="mx-auto max-w-2xl text-sm text-slate-400" />
           </div>
 
           <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto">
@@ -611,8 +688,11 @@ export function VoiceLandingPageClient({
               <h4 className="text-2xl font-black text-white">Starter</h4>
               <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Perfect for small businesses getting started</p>
               <div className="mt-6 mb-8">
-                <div className="text-4xl font-black text-white">PKR 15,000</div>
-                <div className="text-sm text-slate-400 mt-1">/month</div>
+                <LocalizedVoicePrice
+                  prices={{ PKR: 15000, USD: 54, GBP: 43, EUR: 49, AED: 199 }}
+                  amountClassName="text-4xl font-black text-white"
+                  periodClassName="text-sm text-slate-400 mt-1"
+                />
               </div>
               <ul className="space-y-4 flex-1 text-sm text-slate-300">
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 1,500 minutes per month</li>
@@ -637,8 +717,11 @@ export function VoiceLandingPageClient({
               <h4 className="text-2xl font-black text-white">Pro</h4>
               <p className="text-sm text-slate-400 mt-2 min-h-[40px]">For businesses with advanced needs</p>
               <div className="mt-6 mb-8">
-                <div className="text-4xl font-black text-white">PKR 55,000</div>
-                <div className="text-sm text-slate-400 mt-1">/month</div>
+                <LocalizedVoicePrice
+                  prices={{ PKR: 55000, USD: 197, GBP: 157, EUR: 179, AED: 729 }}
+                  amountClassName="text-4xl font-black text-white"
+                  periodClassName="text-sm text-slate-400 mt-1"
+                />
               </div>
               <ul className="space-y-4 flex-1 text-sm text-slate-300">
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 7,000 minutes per month</li>
@@ -665,8 +748,11 @@ export function VoiceLandingPageClient({
               <h4 className="text-2xl font-black text-white">Growth</h4>
               <p className="text-sm text-slate-400 mt-2 min-h-[40px]">Ideal for growing businesses</p>
               <div className="mt-6 mb-8">
-                <div className="text-4xl font-black text-white">PKR 35,000</div>
-                <div className="text-sm text-slate-400 mt-1">/month</div>
+                <LocalizedVoicePrice
+                  prices={{ PKR: 35000, USD: 125, GBP: 99, EUR: 114, AED: 469 }}
+                  amountClassName="text-4xl font-black text-white"
+                  periodClassName="text-sm text-slate-400 mt-1"
+                />
               </div>
               <ul className="space-y-4 flex-1 text-sm text-slate-300">
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-[#21D4FD]" /> 3,500 minutes per month</li>
@@ -683,7 +769,17 @@ export function VoiceLandingPageClient({
 
           </div>
           
-          <p className="text-center text-xs text-slate-500">*Prices are exclusive of tax</p>
+          <div className="text-center space-y-3">
+            <p className="text-xs text-slate-500">*Prices are exclusive of tax</p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link href={pricingHref} className="text-sm font-semibold text-[#21D4FD] hover:text-cyan-300 transition-colors">
+                View pricing details
+              </Link>
+              <Link href={docsHref} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+                Read voice docs
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -731,7 +827,7 @@ export function VoiceLandingPageClient({
               Book a Demo
             </Link>
             <Link 
-              href={loginHref}
+              href="mailto:contact@whatsquery.com?subject=Talk%20to%20Sales"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 backdrop-blur px-8 py-4 text-sm font-bold text-white hover:bg-white/10 transition-all"
             >
               Talk to Sales

@@ -38,12 +38,16 @@ ls -la "$ACTUAL_DIST"/BUILD_ID 2>/dev/null && echo "✓ BUILD_ID found" || echo 
 echo ""
 echo "── Step 3: Pull latest code ──"
 git fetch origin main
-git reset --hard origin/main
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Refusing asset repair: ${PROJECT_DIR} has uncommitted changes."
+  exit 1
+fi
+git merge --ff-only origin/main
 
 # Step 4: Install dependencies
 echo ""
 echo "── Step 4: Install dependencies ──"
-npm install --legacy-peer-deps
+npm ci
 
 # Step 5: Clean ALL build artifacts
 echo ""

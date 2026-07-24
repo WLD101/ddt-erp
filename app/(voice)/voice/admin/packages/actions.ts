@@ -1,10 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function createVoicePackageAction(formData: FormData) {
+  await requirePlatformAdmin();
+
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string;
   const description = formData.get("description") as string;
@@ -70,6 +73,8 @@ export async function createVoicePackageAction(formData: FormData) {
 }
 
 export async function updateVoicePackageAction(formData: FormData) {
+  await requirePlatformAdmin();
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string;
@@ -135,6 +140,8 @@ export async function updateVoicePackageAction(formData: FormData) {
 }
 
 export async function deleteVoicePackageAction(formData: FormData) {
+  await requirePlatformAdmin();
+
   const id = formData.get("id") as string;
   await prisma.package.delete({
     where: { id },

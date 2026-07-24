@@ -32,6 +32,62 @@ export type ImportResult = {
   failures: ImportFailure[];
 };
 
+const MAX_IMPORT_ROWS = 5_000;
+const MAX_IMPORT_COLUMNS = 100;
+const MAX_IMPORT_CELL_CHARACTERS = 2_000;
+const MAX_IMPORT_TOTAL_CHARACTERS = 5 * 1024 * 1024;
+
+export function validateImportPayload(payload: ImportPayload) {
+  if (!IMPORT_TYPES.includes(payload.importType)) {
+    throw new Error("Unsupported import type.");
+  }
+  if (
+    typeof payload.fileName !== "string" ||
+    payload.fileName.length < 1 ||
+    payload.fileName.length > 255 ||
+    !/\.(csv|xlsx)$/i.test(payload.fileName)
+  ) {
+    throw new Error("Import file name must identify a CSV or XLSX file.");
+  }
+  if (!Array.isArray(payload.rows) || payload.rows.length < 1) {
+    throw new Error("Import payload must contain at least one row.");
+  }
+  if (payload.rows.length > MAX_IMPORT_ROWS) {
+    throw new Error(`Import payload cannot exceed ${MAX_IMPORT_ROWS} rows.`);
+  }
+  if (
+    !payload.mapping ||
+    typeof payload.mapping !== "object" ||
+    Object.keys(payload.mapping).length > MAX_IMPORT_COLUMNS
+  ) {
+    throw new Error("Import mapping is invalid or too large.");
+  }
+
+  let totalCharacters = 0;
+  for (const row of payload.rows) {
+    if (!row || typeof row !== "object") {
+      throw new Error("Import rows must be objects.");
+    }
+    const entries = Object.entries(row);
+    if (entries.length > MAX_IMPORT_COLUMNS) {
+      throw new Error(`Import rows cannot exceed ${MAX_IMPORT_COLUMNS} columns.`);
+    }
+    for (const [key, value] of entries) {
+      if (
+        typeof value !== "string" ||
+        key.length > 255 ||
+        value.length > MAX_IMPORT_CELL_CHARACTERS
+      ) {
+        throw new Error("Import row contains an invalid or oversized cell.");
+      }
+      totalCharacters += key.length + value.length;
+      if (totalCharacters > MAX_IMPORT_TOTAL_CHARACTERS) {
+        throw new Error("Import payload exceeds the 5 MB text limit.");
+      }
+    }
+  }
+}
+
 function getValue(row: ImportRow, mapping: ImportMapping, field: string) {
   const column = mapping[field];
   if (!column) {
@@ -577,6 +633,7 @@ export async function runImport(
   payload: ImportPayload,
   createdById: string
 ): Promise<ImportResult> {
+  validateImportPayload(payload);
   const job = await createImportJob(db, payload, createdById);
 
   let result: { successRows: number; failures: ImportFailure[] };

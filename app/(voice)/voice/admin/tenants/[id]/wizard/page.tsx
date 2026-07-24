@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
-import { getVoiceTrainingWorkspace } from "@/modules/voice/training/service";
+import { requirePlatformAdmin } from "@/lib/security/guards";
 
 export default async function AdminTenantWizardPage({ params }: { params: { id: string } }) {
+  await requirePlatformAdmin();
+
   const organizationId = params.id;
   
   const org = await prisma.organization.findUnique({
@@ -18,6 +19,8 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
 
   async function createAgentAction(fd: FormData) {
     "use server"
+    await requirePlatformAdmin();
+
     const name = fd.get("name") as string;
     const role = fd.get("role") as string;
     const voiceId = fd.get("voiceId") as string;
@@ -30,14 +33,14 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
           organizationId,
           businessName: org?.name || "Business",
           industry: "retail",
-          preferredLanguage: "en",
+          preferredLanguage: "ENGLISH",
           mainGoal: "Customer Service",
         }
       });
     }
 
     // Create the agent
-    const newAgent = await prisma.voiceAgent.create({
+    await prisma.voiceAgent.create({
       data: {
         organizationId,
         name: name || "Default AI Receptionist",

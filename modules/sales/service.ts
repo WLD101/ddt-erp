@@ -3,6 +3,8 @@ import { z } from "zod";
 import { moneySchema, quantitySchema } from "@/lib/validations/common";
 import { decrementInventoryOrThrow } from "@/lib/inventory/stock";
 
+const DEFAULT_LIST_LIMIT = 500;
+
 export const salesInvoiceItemSchema = z.object({
   productId: z.string().min(1, "Product is required"),
   quantity: quantitySchema.refine(n => n > 0, "Quantity must be at least 1"),
@@ -25,6 +27,7 @@ export async function getSalesInvoices(db: ScopedPrisma, branchId: string) {
     where: { branchId },
     include: { customer: true, items: { include: { product: true } } },
     orderBy: { createdAt: "desc" },
+    take: DEFAULT_LIST_LIMIT,
   });
 }
 

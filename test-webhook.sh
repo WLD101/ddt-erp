@@ -1,7 +1,7 @@
 #!/bin/bash
 source .env.production
 SECRET=$VAPI_WEBHOOK_SECRET
-URL="https://voice.whatsquery.com/api/voice/vapi/webhook"
+URL="https://voice.whatsquery.com/api/webhooks/vapi"
 
 echo "Testing unauthenticated..."
 curl -s -X POST -H "Content-Type: application/json" -d '{"message":{"type":"status-update","status":"queued"}}' $URL

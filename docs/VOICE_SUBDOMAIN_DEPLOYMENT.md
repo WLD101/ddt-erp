@@ -206,8 +206,14 @@ Deploy voice using the same app/service as ERP:
 ```bash
 cd /var/www/whatsquery
 git fetch origin main
-git reset --hard origin/main
+test -z "$(git status --porcelain)"
+git merge --ff-only origin/main
+npm ci
+npx prisma validate
+npx prisma generate
+npx prisma migrate status || true
 npx prisma migrate deploy
+npx prisma migrate status
 npx prisma generate
 npm run build
 sudo systemctl restart whatsquery

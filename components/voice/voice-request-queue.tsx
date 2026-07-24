@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { VoiceStatusPill, type VoiceStatusVariant } from "@/components/voice/ui/voice-status-pill";
 
 type VoiceRequestQueueProps = {
@@ -17,6 +19,8 @@ type VoiceRequestQueueProps = {
     notes: string | null;
     source: string;
     createdAt: string;
+    receiptHref?: string | null;
+    recordingHref?: string | null;
   }>;
 };
 
@@ -58,6 +62,7 @@ export function VoiceRequestQueue({
                     <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Request</th>
                     <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Status</th>
                     <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Notes</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Actions</th>
                     <th className="px-6 py-4 font-black uppercase tracking-[0.2em] text-[10px]">Date</th>
                   </tr>
                 </thead>
@@ -89,6 +94,31 @@ export function VoiceRequestQueue({
                         </td>
                         <td className="px-6 py-4 text-on-surface-variant max-w-xs truncate" title={row.notes || ""}>
                           {row.notes || "-"}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            {row.receiptHref ? (
+                              <Link
+                                href={row.receiptHref}
+                                className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-primary hover:bg-primary/15"
+                              >
+                                Receipt
+                              </Link>
+                            ) : null}
+                            {row.recordingHref ? (
+                              <a
+                                href={row.recordingHref}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-full border border-outline-variant/40 bg-surface-container-low px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-on-surface-variant hover:text-primary"
+                              >
+                                Hear Call
+                              </a>
+                            ) : null}
+                            {!row.receiptHref && !row.recordingHref ? (
+                              <span className="text-xs text-on-surface-variant">-</span>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-on-surface-variant text-xs">
                           {new Date(row.createdAt).toLocaleString()}

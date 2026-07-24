@@ -1,4 +1,5 @@
-# NexusERP Production VPS Environment
+# Standalone PostgreSQL production alternative.
+# The active self-hosted Supabase stack on Contabo must be inspected separately.
 services:
   db:
     image: postgres:15-alpine
@@ -7,12 +8,14 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: erp_prod
-    # No ports exposed to host, only internal network
+      POSTGRES_DB: ${DB_NAME:-erp_prod}
+    # Loopback-only publishing supports Prisma from the VPS host without public exposure.
+    ports:
+      - "127.0.0.1:${DB_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d erp_prod"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-erp_prod}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,16 +33,33 @@ services:
       dockerfile: Dockerfile
     container_name: erp-app-prod
     restart: always
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: 1g
+    cpus: 1.5
+    tmpfs:
+      - /tmp
+      - /app/.next-build/cache
+    env_file:
+      - ${WHATSQUERY_ENV_FILE:-.env.production}
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_started
     environment:
-      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/erp_prod"
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME:-erp_prod}"
+      DIRECT_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME:-erp_prod}"
       REDIS_URL: "redis://redis:6379"
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    ports:
+      - "127.0.0.1:${APP_HOST_PORT:-3000}:3000"
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
       interval: 30s
@@ -52,32 +72,35 @@ services:
       dockerfile: Dockerfile
     container_name: erp-worker-prod
     restart: always
-    command: node server.js # Note: Production build of worker should be handled
-    # Actually, for the standalone build, we might need a different entrypoint
-    # For now, let's assume we run the next standalone server but with a worker flag or similar
-    # or just use tsx if the image allows it. Better: use the same image but different command.
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.25
+    tmpfs:
+      - /tmp
+    command:
+      - /bin/sh
+      - -c
+      - >
+        while true; do
+          wget --quiet --output-document=/dev/null
+          --header="Authorization: Bearer $${VOICE_JOBS_SECRET}"
+          --post-data=""
+          http://app:3000/api/voice/jobs/process || true;
+          sleep "$${VOICE_JOB_POLL_SECONDS:-15}";
+        done
     depends_on:
-      - db
-      - redis
+      app:
+        condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/erp_prod"
-      REDIS_URL: "redis://redis:6379"
-
-  nginx:
-    image: nginx:stable-alpine
-    container_name: erp-nginx
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - certs:/etc/nginx/certs:ro
-    depends_on:
-      - app
+      VOICE_JOBS_SECRET: ${VOICE_JOBS_SECRET:?Set VOICE_JOBS_SECRET}
+      VOICE_JOB_POLL_SECONDS: ${VOICE_JOB_POLL_SECONDS:-15}
 
 volumes:
   postgres_prod_data:
   redis_prod_data:
-  certs:

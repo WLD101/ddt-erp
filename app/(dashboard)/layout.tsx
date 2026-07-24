@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getOrganizationAccessState } from "@/lib/billing/access";
+import { SupportLauncher } from "@/components/support/SupportLauncher";
 
 export default async function DashboardLayout({
   children,
@@ -152,6 +153,7 @@ export default async function DashboardLayout({
           <main className="flex-1 overflow-auto bg-surface-container-low/20">
             {children}
           </main>
+          <SupportLauncher />
         </div>
       </div>
     </PlanProvider>

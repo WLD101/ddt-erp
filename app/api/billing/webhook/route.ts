@@ -10,6 +10,12 @@ import {
   syncStripeSubscription,
 } from "@/lib/billing/subscription";
 import { getStripe, getStripeWebhookSecret } from "@/lib/billing/stripe";
+import {
+  isRequestBodyTooLarge,
+  readBoundedText,
+} from "@/lib/security/request-body";
+
+const MAX_STRIPE_WEBHOOK_BYTES = 1024 * 1024;
 
 function readOrganizationId(event: Stripe.Event) {
   const object = event.data.object as unknown as Record<string, unknown>;
@@ -28,16 +34,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing Stripe signature." }, { status: 400 });
   }
 
-  const rawBody = await request.text();
+  let rawBody: string;
+  try {
+    rawBody = await readBoundedText(request, MAX_STRIPE_WEBHOOK_BYTES);
+  } catch (error) {
+    if (isRequestBodyTooLarge(error)) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
   let event: Stripe.Event;
 
   try {
     event = getStripe().webhooks.constructEvent(rawBody, signature, webhookSecret);
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Invalid webhook signature." },
-      { status: 400 },
-    );
+  } catch {
+    return NextResponse.json({ error: "Invalid webhook signature." }, { status: 400 });
   }
 
   const created = await recordStripeWebhookEvent(event, readOrganizationId(event));
@@ -65,12 +76,9 @@ export async function POST(request: Request) {
         break;
     }
     await markStripeWebhookEventStatus(event.id, "processed");
-  } catch (error) {
+  } catch {
     await markStripeWebhookEventStatus(event.id, "failed");
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Webhook processing failed." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Webhook processing failed." }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

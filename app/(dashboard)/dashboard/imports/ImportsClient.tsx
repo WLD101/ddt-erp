@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { runImportJob } from "@/modules/imports/actions";
 import { IMPORT_TYPES, type ImportType } from "@/modules/imports/config";
+import { escapeCsvCell } from "@/lib/security/csv";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -128,6 +129,10 @@ function parseCsv(text: string) {
 }
 
 async function parseUploadedFile(file: File): Promise<ParsedFile> {
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Import files must be 5 MB or smaller.");
+  }
+
   const lower = file.name.toLowerCase();
 
   if (lower.endsWith(".xlsx")) {
@@ -199,10 +204,10 @@ function exportCsv(fileName: string, rows: Array<Record<string, string>>) {
 
   const headers = Object.keys(rows[0]);
   const csv = [
-    headers.join(","),
+    headers.map(escapeCsvCell).join(","),
     ...rows.map((row) =>
       headers
-        .map((header) => `"${String(row[header] ?? "").replace(/"/g, "\"\"")}"`)
+        .map((header) => escapeCsvCell(row[header]))
         .join(",")
     ),
   ].join("\n");

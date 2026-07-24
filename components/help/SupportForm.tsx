@@ -1,86 +1,166 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 "use client";
 
-import React, { useTransition } from "react";
+import { usePathname } from "next/navigation";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { submitSupportTicket, supportTicketSchema } from "@/modules/support/actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
-import { HELP_CATEGORIES } from "@/lib/help-content";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { submitSupportTicket } from "@/modules/support/actions";
+import { SUPPORT_REASONS, supportTicketSchema } from "@/modules/support/schema";
+
+type SupportTicketFormValues = z.input<typeof supportTicketSchema>;
 
 export function SupportForm() {
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<z.infer<typeof supportTicketSchema>>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<SupportTicketFormValues>({
     resolver: zodResolver(supportTicketSchema),
     defaultValues: {
-      category: "",
+      priority: "NORMAL",
+      reason: "",
       subject: "",
       description: "",
-    }
+      sourcePage: pathname,
+      contactName: "",
+      contactEmail: "",
+      contactPhone: "",
+    },
   });
 
-  const onSubmit = (data: z.infer<typeof supportTicketSchema>) => {
+  const selectedReason = watch("reason");
+  const selectedPriority = watch("priority");
+
+  function onSubmit(data: SupportTicketFormValues) {
     startTransition(async () => {
-      const result = await submitSupportTicket(data);
+      const result = await submitSupportTicket({
+        ...data,
+        sourcePage: data.sourcePage || pathname,
+      });
+
       if (result.error) {
         toast.error(result.error);
-      } else {
-        toast.success("Support ticket submitted. Our team will review it shortly.");
-        reset();
+        return;
       }
+
+      toast.success("Support ticket submitted. Our team can see your tenant and issue details.");
+      reset({
+        priority: "NORMAL",
+        reason: "",
+        subject: "",
+        description: "",
+        sourcePage: pathname,
+        contactName: "",
+        contactEmail: "",
+        contactPhone: "",
+      });
     });
-  };
+  }
 
   return (
-    <Card className="border border-white/5 bg-black/20 backdrop-blur-md">
+    <Card className="rounded-[30px] border border-outline-variant/30 bg-surface shadow-soft">
       <CardHeader>
-        <CardTitle className="text-xl font-black text-white">Contact Support</CardTitle>
-        <CardDescription>
-          Can't find what you're looking for? Send a direct message to our engineering and support staff.
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">WhatsQuery Support</p>
+        <CardTitle className="text-2xl font-black tracking-tight text-on-surface">Report an issue</CardTitle>
+        <CardDescription className="text-sm leading-6 text-on-surface-variant">
+          Choose the closest reason and describe what happened. Your tenant, user, and page context are attached automatically.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-             <Label className="text-white/70">Issue Category</Label>
-             <Select onValueChange={(val) => setValue("category", val)} disabled={isPending}>
-               <SelectTrigger className="bg-black/20 border-white/10 text-white">
-                 <SelectValue placeholder="Select a domain..." />
-               </SelectTrigger>
-               <SelectContent className="bg-slate-900 border-white/10 text-white">
-                 {HELP_CATEGORIES.map(category => (
-                   <SelectItem key={category.id} value={category.id}>{category.title}</SelectItem>
-                 ))}
-                 <SelectItem value="other">Other / Bug Report</SelectItem>
-               </SelectContent>
-             </Select>
-             {errors.category && <p className="text-[10px] text-red-400">{errors.category.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Reason</Label>
+              <Select value={selectedReason || ""} onValueChange={(value) => setValue("reason", value || "", { shouldValidate: true })} disabled={isPending}>
+                <SelectTrigger className="h-11 rounded-2xl bg-surface-container-low">
+                  <SelectValue placeholder="Select issue reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORT_REASONS.map((reason) => (
+                    <SelectItem key={reason.value} value={reason.value}>
+                      {reason.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.reason && <p className="text-xs font-semibold text-error">{errors.reason.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Priority</Label>
+              <Select value={selectedPriority || "NORMAL"} onValueChange={(value) => setValue("priority", value as SupportTicketFormValues["priority"])} disabled={isPending}>
+                <SelectTrigger className="h-11 rounded-2xl bg-surface-container-low">
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="NORMAL">Normal</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                  <SelectItem value="URGENT">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.priority && <p className="text-xs font-semibold text-error">{errors.priority.message}</p>}
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Subject Line</Label>
-            <Input {...register("subject")} placeholder="Briefly summarize your issue..." className="bg-black/20 border-white/10 text-white" disabled={isPending} />
-            {errors.subject && <p className="text-[10px] text-red-400">{errors.subject.message}</p>}
+            <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Subject</Label>
+            <Input
+              {...register("subject")}
+              placeholder="Briefly summarize the issue"
+              className="h-11 rounded-2xl bg-surface-container-low"
+              disabled={isPending}
+            />
+            {errors.subject && <p className="text-xs font-semibold text-error">{errors.subject.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Detailed Description</Label>
-            <Textarea {...register("description")} placeholder="Provide specific error messages or replication steps..." className="bg-black/20 border-white/10 text-white min-h-[120px]" disabled={isPending} />
-            {errors.description && <p className="text-[10px] text-red-400">{errors.description.message}</p>}
+            <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Details</Label>
+            <Textarea
+              {...register("description")}
+              placeholder="Include steps, screenshots context, expected result, or error messages."
+              className="min-h-[150px] rounded-2xl bg-surface-container-low"
+              disabled={isPending}
+            />
+            {errors.description && <p className="text-xs font-semibold text-error">{errors.description.message}</p>}
           </div>
 
-          <Button type="submit" disabled={isPending} className="w-full font-bold uppercase tracking-widest text-xs h-11 mt-2">
-            {isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Contact name</Label>
+              <Input {...register("contactName")} className="h-11 rounded-2xl bg-surface-container-low" disabled={isPending} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Email</Label>
+              <Input {...register("contactEmail")} className="h-11 rounded-2xl bg-surface-container-low" disabled={isPending} />
+              {errors.contactEmail && <p className="text-xs font-semibold text-error">{errors.contactEmail.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Phone</Label>
+              <Input {...register("contactPhone")} className="h-11 rounded-2xl bg-surface-container-low" disabled={isPending} />
+            </div>
+          </div>
+
+          <input type="hidden" {...register("sourcePage")} value={pathname} />
+
+          <Button type="submit" disabled={isPending} className="h-12 w-full rounded-2xl text-[11px] font-black uppercase tracking-[0.18em]">
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
             Submit Ticket
           </Button>
         </form>

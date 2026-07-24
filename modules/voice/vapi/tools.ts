@@ -9,6 +9,8 @@ type VapiToolContext = {
   callerNumber?: string | null;
   providerAssistantId?: string | null;
   providerPhoneNumberId?: string | null;
+  toolCallId?: string | null;
+  outcomeKey?: string | null;
 };
 
 const ORDER_REASON_DEFAULT = "Takeaway order request";
@@ -303,8 +305,7 @@ async function captureLead(args: Record<string, unknown>, organizationId: string
     };
   }
 
-  const lead = await prisma.voiceLead.create({
-    data: {
+  const leadData = {
       organizationId,
       voiceAgentId: context.voiceAgentId || null,
       name: name || null,
@@ -314,8 +315,16 @@ async function captureLead(args: Record<string, unknown>, organizationId: string
       notes: notes || null,
       source: "VAPI_LEAD_CAPTURE",
       status: "NEW",
-    },
-  });
+      providerCallId: context.providerCallId || null,
+      outcomeKey: context.outcomeKey || null,
+  };
+  const lead = context.outcomeKey
+    ? await prisma.voiceLead.upsert({
+        where: { outcomeKey: context.outcomeKey },
+        update: {},
+        create: leadData,
+      })
+    : await prisma.voiceLead.create({ data: leadData });
 
   await attachCallMetadata(organizationId, context, {
     appointmentRequested: false,
@@ -375,8 +384,7 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
     };
   }
 
-  const request = await prisma.voiceReservationRequest.create({
-    data: {
+  const requestData = {
       organizationId,
       voiceAgentId: context.voiceAgentId || null,
       customerName: name || null,
@@ -386,8 +394,15 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
       specialRequests: notes || null,
       status: "needs_staff_review",
       providerCallId: context.providerCallId || null,
-    },
-  });
+      outcomeKey: context.outcomeKey || null,
+  };
+  const request = context.outcomeKey
+    ? await prisma.voiceReservationRequest.upsert({
+        where: { outcomeKey: context.outcomeKey },
+        update: {},
+        create: requestData,
+      })
+    : await prisma.voiceReservationRequest.create({ data: requestData });
 
   await attachCallMetadata(organizationId, context, {
     appointmentRequested: true,
@@ -469,8 +484,7 @@ async function createOrderRequest(args: Record<string, unknown>, organizationId:
     };
   }
 
-  const request = await prisma.voiceOrderRequest.create({
-    data: {
+  const requestData = {
       organizationId,
       voiceAgentId: context.voiceAgentId || null,
       customerName: name || null,
@@ -479,8 +493,15 @@ async function createOrderRequest(args: Record<string, unknown>, organizationId:
       orderDetailsText: buildOrderDetailsSummary(args) || items,
       status: "needs_staff_review",
       providerCallId: context.providerCallId || null,
-    },
-  });
+      outcomeKey: context.outcomeKey || null,
+  };
+  const request = context.outcomeKey
+    ? await prisma.voiceOrderRequest.upsert({
+        where: { outcomeKey: context.outcomeKey },
+        update: {},
+        create: requestData,
+      })
+    : await prisma.voiceOrderRequest.create({ data: requestData });
 
   await attachCallMetadata(organizationId, context, {
     summary: `Order request saved for ${name || phone || "caller"}${pickupOrDelivery ? ` (${pickupOrDelivery})` : ""}${preferredTime ? ` at ${preferredTime}` : ""}`,
@@ -617,8 +638,7 @@ async function handoffToStaff(args: Record<string, unknown>, organizationId: str
     };
   }
 
-  const lead = await prisma.voiceLead.create({
-    data: {
+  const leadData = {
       organizationId,
       voiceAgentId: context.voiceAgentId || null,
       name: name || null,
@@ -628,8 +648,16 @@ async function handoffToStaff(args: Record<string, unknown>, organizationId: str
       notes: notes || null,
       source: "VAPI_HANDOFF_REQUEST",
       status: "NEW",
-    },
-  });
+      providerCallId: context.providerCallId || null,
+      outcomeKey: context.outcomeKey || null,
+  };
+  const lead = context.outcomeKey
+    ? await prisma.voiceLead.upsert({
+        where: { outcomeKey: context.outcomeKey },
+        update: {},
+        create: leadData,
+      })
+    : await prisma.voiceLead.create({ data: leadData });
 
   await attachCallMetadata(organizationId, context, {
     summary: `Human handoff request saved for ${name || phone || email || "caller"}`,

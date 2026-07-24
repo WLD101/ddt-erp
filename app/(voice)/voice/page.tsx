@@ -6,12 +6,16 @@ export default async function VoiceLandingPage() {
   const loginHref = toVoiceExternalPath("/login", host);
   const onboardingHref = toVoiceExternalPath("/onboarding", host);
   const dashboardHref = toVoiceExternalPath("/dashboard", host);
+  const pricingHref = toVoiceExternalPath("/pricing", host);
+  const docsHref = toVoiceExternalPath("/docs", host);
 
   return (
     <VoiceLandingPageClient
       loginHref={loginHref}
       onboardingHref={onboardingHref}
       dashboardHref={dashboardHref}
+      pricingHref={pricingHref}
+      docsHref={docsHref}
     />
   );
 }

@@ -6,6 +6,8 @@ type VoiceMarketingShellProps = {
   homeHref: string;
   loginHref: string;
   onboardingHref: string;
+  pricingHref: string;
+  docsHref: string;
   children: React.ReactNode;
 };
 
@@ -13,6 +15,8 @@ export function VoiceMarketingShell({
   homeHref,
   loginHref,
   onboardingHref,
+  pricingHref,
+  docsHref,
   children,
 }: VoiceMarketingShellProps) {
   return (
@@ -29,6 +33,12 @@ export function VoiceMarketingShell({
             </Link>
             <Link href={`${homeHref}#deploy`} className="transition hover:text-white">
               Deployment
+            </Link>
+            <Link href={pricingHref} className="transition hover:text-white">
+              Pricing
+            </Link>
+            <Link href={docsHref} className="transition hover:text-white">
+              Docs
             </Link>
           </nav>
           <div className="flex items-center gap-3">

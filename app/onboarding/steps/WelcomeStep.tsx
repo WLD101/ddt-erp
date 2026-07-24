@@ -43,7 +43,7 @@ export function WelcomeStep({ stepId, onComplete }: Props) {
     }
 
     startTransition(async () => {
-      await saveWelcomeStep({ businessType: selected as any });
+      await saveWelcomeStep();
       onComplete(stepId);
     });
   };

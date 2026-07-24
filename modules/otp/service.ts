@@ -61,9 +61,6 @@ export async function requestOtp(params: {
     subject: "Your WhatsQuery verification code",
     html: `<p>Your verification code is <strong>${code}</strong>. It expires in 10 minutes.</p>`,
   }).catch(() => null);
-  if (process.env.NODE_ENV !== "production") {
-    console.log(`[OTP:${params.purpose}] Code for ${email}: ${code}`);
-  }
   return { ok: true, expiresAt };
 }
 

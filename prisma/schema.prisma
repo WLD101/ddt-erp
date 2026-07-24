@@ -33,10 +33,11 @@ model User {
   sessions Session[]
 
   // ERP specific
-  memberships   OrganizationUser[]
-  auditLogs     AuditLog[]
-  notifications Notification[]
-  importJobs    ImportJob[]
+  memberships     OrganizationUser[]
+  auditLogs       AuditLog[]
+  notifications   Notification[]
+  importJobs      ImportJob[]
+  supportRequests SupportRequest[]
 
   createdAt               DateTime                     @default(now())
   updatedAt               DateTime                     @updatedAt
@@ -179,23 +180,30 @@ model Organization {
   logoUrl String?
 
   // Business profile
-  phone          String?
-  email          String?
-  address        String?
-  city           String?
-  country        String?
-  currency       String  @default("USD")
-  timezone       String  @default("UTC")
-  taxLabel       String?
-  industry       String? // textile, manufacturing, retail
-  industryType   String?
-  enabledModules String?
+  phone                String?
+  email                String?
+  address              String?
+  city                 String?
+  country              String?
+  marketKey            String?
+  currency             String  @default("USD")
+  locale               String?
+  timezone             String  @default("UTC")
+  countryCode          String?
+  taxLabel             String?
+  pricingProfile       String?
+  complianceProfile    String?
+  marketRequiresReview Boolean @default(true)
+  industry             String? // textile, manufacturing, retail
+  industryType         String?
+  industryProfileKey   String?
+  enabledModules       String?
 
   tenantType      TenantType @default(DEMO)
   healthScore     Float?
-  isDemoTenant    Boolean   @default(false)
-  lifecycleStatus String    @default("onboarding")
-  accessStatus    String    @default("onboarding")
+  isDemoTenant    Boolean    @default(false)
+  lifecycleStatus String     @default("onboarding")
+  accessStatus    String     @default("onboarding")
   demoExpiresAt   DateTime?
   graceEndsAt     DateTime?
   blockedAt       DateTime?
@@ -208,33 +216,45 @@ model Organization {
   walletBalance Decimal @default(0.00) @db.Decimal(10, 2)
   perMinuteRate Decimal @default(80.00) @db.Decimal(10, 2)
 
-  onboarding          OnboardingState?
-  members             OrganizationUser[]
-  subscription        Subscription?
-  customers           Customer[]
-  suppliers           Supplier[]
-  products            Product[]
-  categories          Category[]
-  inventoryItems      InventoryItem[]
-  stockMovements      StockMovement[]
-  salesChannels       SalesChannel[]
-  externalProductMaps ExternalProductMap[]
-  externalOrderMaps   ExternalOrderMap[]
-  salesInvoices       SalesInvoice[]
-  purchaseInvoices    PurchaseInvoice[]
-  expenses            Expense[]
-  payments            Payment[]
-  auditLogs           AuditLog[]
-  roles               Role[]
-  branches            Branch[]
-  notifications       Notification[]
-  ledgerEntries       LedgerEntry[]
-  financialAccounts   FinancialAccount[]
-  quotations          Quotation[]
-  boms                BOM[]
-  workOrders          WorkOrder[]
-  workOrderMaterials  WorkOrderMaterial[]
-  productionLogs      ProductionLog[]
+  onboarding                   OnboardingState?
+  members                      OrganizationUser[]
+  subscription                 Subscription?
+  customers                    Customer[]
+  suppliers                    Supplier[]
+  products                     Product[]
+  categories                   Category[]
+  inventoryItems               InventoryItem[]
+  stockMovements               StockMovement[]
+  salesChannels                SalesChannel[]
+  externalProductMaps          ExternalProductMap[]
+  externalOrderMaps            ExternalOrderMap[]
+  salesInvoices                SalesInvoice[]
+  purchaseInvoices             PurchaseInvoice[]
+  expenses                     Expense[]
+  payments                     Payment[]
+  auditLogs                    AuditLog[]
+  roles                        Role[]
+  branches                     Branch[]
+  notifications                Notification[]
+  ledgerEntries                LedgerEntry[]
+  financialAccounts            FinancialAccount[]
+  quotations                   Quotation[]
+  boms                         BOM[]
+  workOrders                   WorkOrder[]
+  workOrderMaterials           WorkOrderMaterial[]
+  productionLogs               ProductionLog[]
+  integrationProviders         IntegrationProvider[]
+  tenantIntegrations           TenantIntegration[]
+  integrationSyncJobs          IntegrationSyncJob[]
+  integrationEvents            IntegrationEvent[]
+  integrationActionLogs        IntegrationActionLog[]
+  integrationActionExecutions  IntegrationActionExecution[]
+  integrationApprovalRequests  IntegrationApprovalRequest[]
+  integrationUsageRecords      IntegrationUsageRecord[]
+  integrationRateLimitCounters IntegrationRateLimitCounter[]
+  integrationWebhookEndpoints  IntegrationWebhookEndpoint[]
+  integrationWebhookDeliveries IntegrationWebhookDelivery[]
+  integrationOAuthStates       IntegrationOAuthState[]
 
   // Industry Specific Relations
   fabricLots       FabricLot[]
@@ -253,39 +273,55 @@ model Organization {
   customerLoyalty CustomerLoyalty[]
 
   // Growth & Partnerships
-  referralId                   String?                       @unique
-  referral                     Referral?                     @relation(fields: [referralId], references: [id])
-  Invitation                   Invitation[]
-  AccountTransfer              AccountTransfer[]
-  SalesReturn                  SalesReturn[]
-  PurchaseReturn               PurchaseReturn[]
-  organizationPackage          OrganizationPackage?
-  exportRequests               ExportRequest[]
-  securityPolicy               OrganizationSecurityPolicy?
-  securityEvents               SecurityEvent[]
-  trustedDevices               TrustedDevice[]
-  authChallenges               AuthChallenge[]
-  importJobs                   ImportJob[]
-  SalesChannelSyncLog          SalesChannelSyncLog[]
-  voiceBusinessProfile         VoiceBusinessProfile?
-  voiceReceptionistSettings    VoiceReceptionistSettings?
-  voiceLeads                   VoiceLead[]
-  voiceCallLogs                VoiceCallLog[]
-  voiceAgents                  VoiceAgent[]
-  voiceKnowledgeBaseItems      VoiceKnowledgeBaseItem[]
-  voiceIntegrationSettings     VoiceIntegrationSettings?
-  VoiceBusinessTrainingProfile VoiceBusinessTrainingProfile?
-  VoiceServiceItem             VoiceServiceItem[]
-  VoiceBookingRules            VoiceBookingRules?
-  VoiceOrderRules              VoiceOrderRules?
-  VoiceHandoffRules            VoiceHandoffRules?
-  VoiceAllowedActionPolicy     VoiceAllowedActionPolicy?
-  VoiceActionAuditLog          VoiceActionAuditLog[]
-  VoiceUsageMeter              VoiceUsageMeter?
-  VoiceNotificationLog         VoiceNotificationLog[]
-  VoiceReservationRequest      VoiceReservationRequest[]
-  VoiceOrderRequest            VoiceOrderRequest[]
-  onboardingTasks              OnboardingTask[]
+  referralId                    String?                        @unique
+  referral                      Referral?                      @relation(fields: [referralId], references: [id])
+  Invitation                    Invitation[]
+  AccountTransfer               AccountTransfer[]
+  SalesReturn                   SalesReturn[]
+  PurchaseReturn                PurchaseReturn[]
+  organizationPackage           OrganizationPackage?
+  exportRequests                ExportRequest[]
+  securityPolicy                OrganizationSecurityPolicy?
+  securityEvents                SecurityEvent[]
+  trustedDevices                TrustedDevice[]
+  authChallenges                AuthChallenge[]
+  importJobs                    ImportJob[]
+  SalesChannelSyncLog           SalesChannelSyncLog[]
+  voiceBusinessProfile          VoiceBusinessProfile?
+  voiceReceptionistSettings     VoiceReceptionistSettings?
+  voiceLeads                    VoiceLead[]
+  voiceCallLogs                 VoiceCallLog[]
+  voiceAgents                   VoiceAgent[]
+  voiceKnowledgeBaseItems       VoiceKnowledgeBaseItem[]
+  voiceIntegrationSettings      VoiceIntegrationSettings?
+  VoiceBusinessTrainingProfile  VoiceBusinessTrainingProfile?
+  VoiceServiceItem              VoiceServiceItem[]
+  VoiceBookingRules             VoiceBookingRules?
+  VoiceOrderRules               VoiceOrderRules?
+  VoiceHandoffRules             VoiceHandoffRules?
+  VoiceAllowedActionPolicy      VoiceAllowedActionPolicy?
+  VoiceActionAuditLog           VoiceActionAuditLog[]
+  VoiceUsageMeter               VoiceUsageMeter?
+  VoiceNotificationLog          VoiceNotificationLog[]
+  VoiceReservationRequest       VoiceReservationRequest[]
+  VoiceOrderRequest             VoiceOrderRequest[]
+  voiceWhatsappIntegrations     VoiceWhatsappIntegration[]
+  voiceWhatsappConversations    VoiceWhatsappConversation[]
+  voiceWhatsappMessages         VoiceWhatsappMessage[]
+  voiceWhatsappTemplates        VoiceWhatsappTemplate[]
+  voiceWhatsappNotificationLogs VoiceWhatsappNotificationLog[]
+  telecomPhoneNumbers           PhoneNumber[]
+  telecomCallRoutes             CallRoute[]
+  telecomCallLogs               CallLog[]
+  telecomCalls                  Call[]
+  telecomCallAttempts           CallAttempt[]
+  telecomCallEvents             CallEvent[]
+  telecomWebhookNonces          TelecomWebhookNonce[]
+  telecomUsageLedger            TelecomUsageLedger[]
+  telecomAlerts                 TelecomOperationalAlert[]
+  telecomAllowedDestinations    TelecomAllowedDestination[]
+  onboardingTasks               OnboardingTask[]
+  supportRequests               SupportRequest[]
 }
 
 model OrganizationUser {
@@ -331,13 +367,14 @@ model Branch {
   address String?
   isMain  Boolean @default(false)
 
-  memberships      OrganizationUser[]
-  inventoryItems   InventoryItem[]
-  salesInvoices    SalesInvoice[]
-  purchaseInvoices PurchaseInvoice[]
-  expenses         Expense[]
-  payments         Payment[]
-  stockMovements   StockMovement[]
+  memberships        OrganizationUser[]
+  tenantIntegrations TenantIntegration[]
+  inventoryItems     InventoryItem[]
+  salesInvoices      SalesInvoice[]
+  purchaseInvoices   PurchaseInvoice[]
+  expenses           Expense[]
+  payments           Payment[]
+  stockMovements     StockMovement[]
 
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -536,19 +573,28 @@ model VoiceBusinessProfile {
 }
 
 model VoiceReceptionistSettings {
-  id                 String       @id @default(cuid())
-  organizationId     String       @unique
-  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  receptionistName   String       @default("WhatsQuery Receptionist")
-  greetingMessage    String?
-  fallbackMessage    String?
-  languageMode       String       @default("AUTO_DETECT")
-  businessHours      String?
-  afterHoursBehavior String       @default("TAKE_MESSAGE")
-  capacityMode       String       @default("direct_ai") // direct_ai, queue_then_ai, fallback_to_staff, take_message, voicemail_callback
-  leadCaptureFields  String?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  id                         String       @id @default(cuid())
+  organizationId             String       @unique
+  organization               Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  receptionistName           String       @default("WhatsQuery Receptionist")
+  greetingMessage            String?
+  fallbackMessage            String?
+  languageMode               String       @default("AUTO_DETECT")
+  businessHours              String?
+  afterHoursBehavior         String       @default("TAKE_MESSAGE")
+  capacityMode               String       @default("direct_ai") // direct_ai, queue_then_ai, fallback_to_staff, take_message, voicemail_callback
+  leadCaptureFields          String?
+  recordingEnabled           Boolean      @default(false)
+  recordingDisclosureEnabled Boolean      @default(true)
+  recordingDisclosureType    String       @default("verbal")
+  recordingDisclosureText    String?
+  transcriptionEnabled       Boolean      @default(false)
+  recordingRetentionDays     Int          @default(30)
+  transcriptRetentionDays    Int          @default(30)
+  allowRecordingPlayback     Boolean      @default(false)
+  allowTranscriptAccess      Boolean      @default(false)
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime     @updatedAt
 
   @@index([organizationId])
 }
@@ -567,12 +613,15 @@ model VoiceLead {
   notes                String?
   source               String       @default("MANUAL")
   appointmentRequested Boolean      @default(false)
+  providerCallId       String?
+  outcomeKey           String?      @unique
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceAgentId])
+  @@index([providerCallId])
   @@index([source])
   @@index([status])
 }
@@ -590,11 +639,13 @@ model VoiceReservationRequest {
   specialRequests String?
   status          String       @default("needs_staff_review") // requested, needs_staff_review, confirmed, rejected
   providerCallId  String?
+  outcomeKey      String?      @unique
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceAgentId])
+  @@index([providerCallId])
   @@index([status])
 }
 
@@ -611,11 +662,13 @@ model VoiceOrderRequest {
   totalEstimated   Float?
   status           String       @default("needs_staff_review") // requested, needs_staff_review, confirmed, rejected
   providerCallId   String?
+  outcomeKey       String?      @unique
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceAgentId])
+  @@index([providerCallId])
   @@index([status])
 }
 
@@ -634,32 +687,379 @@ model VoiceCallLog {
   transcriptPlaceholder  String?
 
   // Vapi integration fields
-  provider              String? // "vapi", "twilio", etc.
-  providerCallId        String?
-  providerPhoneNumberId String?
-  providerAssistantId   String?
-  endedReason           String?
-  transcript            String?
-  messagesJson          String?
-  rawEventJson          String?
-  recordingUrl          String?
-  startedAt             DateTime?
-  endedAt               DateTime?
+  provider                       String? // "vapi", "twilio", etc.
+  providerCallId                 String?
+  externalCallKey                String?   @unique
+  providerPhoneNumberId          String?
+  providerAssistantId            String?
+  providerStatus                 String?
+  endedReason                    String?
+  callOutcome                    String?
+  fromNumberMasked               String?
+  toNumberMasked                 String?
+  transcript                     String?
+  messagesJson                   String?
+  rawEventJson                   String?
+  recordingUrl                   String?
+  recordingDisclosureStatus      String    @default("disabled")
+  recordingDisclosureType        String?
+  recordingDisclosureCompletedAt DateTime?
+  recordingDeletedAt             DateTime?
+  transcriptDeletedAt            DateTime?
+  privacyPolicySnapshot          String?
+  startedAt                      DateTime?
+  ringingAt                      DateTime?
+  answeredAt                     DateTime?
+  endedAt                        DateTime?
+  lastEventAt                    DateTime?
+  callerCountry                  String?
+  callerRegion                   String?
+  callerCity                     String?
+  callerTimezone                 String?
+  callerNumberCountryCode        String?
+  usageMetricsSource             String?
 
-  durationSeconds      Int?
-  costUsd              Float?
-  costBreakdownJson    String?
-  appointmentRequested Boolean  @default(false)
-  isMissed             Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  durationSeconds               Int?
+  totalDurationSeconds          Int?
+  ringDurationSeconds           Int?
+  conversationDurationSeconds   Int?
+  billableDurationSeconds       Int?
+  costUsd                       Float?
+  providerActualCostUsd         Float?
+  providerEstimatedCostUsd      Float?
+  customerBillableCost          Float?
+  billingCurrency               String?
+  costBreakdownJson             String?
+  structuredDataJson            String?
+  successEvaluation             String?
+  transcriptStatus              String    @default("not_available")
+  analysisStatus                String    @default("not_available")
+  reconciliationStatus          String    @default("not_checked")
+  reconciliationDiscrepancyJson String?
+  providerSyncedAt              DateTime?
+  activeSlotAcquiredAt          DateTime?
+  activeSlotReleasedAt          DateTime?
+  walletChargedAt               DateTime?
+  appointmentRequested          Boolean   @default(false)
+  isAnswered                    Boolean   @default(false)
+  isCompleted                   Boolean   @default(false)
+  isMissed                      Boolean   @default(false)
+  isFailed                      Boolean   @default(false)
+  isAbandoned                   Boolean   @default(false)
+  isVoicemail                   Boolean   @default(false)
+  transferRequested             Boolean   @default(false)
+  transferConnected             Boolean   @default(false)
+  transferFailed                Boolean   @default(false)
+  isTransferred                 Boolean   @default(false)
+  isQualified                   Boolean   @default(false)
+  isResolved                    Boolean   @default(false)
+  requiresFollowUp              Boolean   @default(false)
+  isTestCall                    Boolean   @default(false)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([voiceBusinessProfileId])
   @@index([voiceAgentId])
   @@index([providerCallId])
+  @@index([provider, providerCallId])
+  @@index([providerPhoneNumberId])
+  @@index([providerAssistantId])
   @@index([callStatus])
+  @@index([organizationId, callDirection, createdAt(sort: Desc)])
+  @@index([organizationId, isMissed, createdAt(sort: Desc)])
+  @@index([organizationId, reconciliationStatus, createdAt(sort: Desc)], map: "VoiceCallLog_org_reconciliation_createdAt_idx")
+}
+
+model Provider {
+  id                    String                @id @default(cuid())
+  name                  String
+  type                  String
+  countryCode           String?               @map("country_code")
+  status                String                @default("ACTIVE")
+  priority              Int                   @default(100)
+  configJson            String?               @map("config_json")
+  credentialsEncrypted  String?               @map("credentials_encrypted")
+  manualHealthStatus    String?               @map("manual_health_status")
+  healthStatus          String                @default("HEALTHY") @map("health_status")
+  lastHealthCheckAt     DateTime?             @map("last_health_check_at")
+  lastSuccessfulCallAt  DateTime?             @map("last_successful_call_at")
+  lastFailedCallAt      DateTime?             @map("last_failed_call_at")
+  temporaryFailures     Int                   @default(0) @map("temporary_failures")
+  permanentFailures     Int                   @default(0) @map("permanent_failures")
+  recentSuccessRate     Float?                @map("recent_success_rate")
+  averageSetupTimeMs    Int?                  @map("average_setup_time_ms")
+  webhookDelayMs        Int?                  @map("webhook_delay_ms")
+  concurrentActiveCalls Int                   @default(0) @map("concurrent_active_calls")
+  providerAvailability  String?               @map("provider_availability")
+  healthMessage         String?               @map("health_message")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  countryRoutingRules   CountryRoutingRule[]  @relation("PrimaryProvider")
+  fallbackRules         CountryRoutingRule[]  @relation("FallbackProvider")
+  phoneNumbers          PhoneNumber[]
+  selectedCallRoutes    CallRoute[]
+  callLogs              CallLog[]
+  callAttempts          CallAttempt[]
+  healthChecks          ProviderHealthCheck[]
+  telecomRateCards      TelecomRateCard[]
+  telecomUsageLedger    TelecomUsageLedger[]
+
+  @@unique([name, countryCode])
+  @@index([countryCode, status, priority])
+  @@index([healthStatus, lastHealthCheckAt])
+  @@map("providers")
+}
+
+model CountryRoutingRule {
+  id                     String        @id @default(cuid())
+  tenantId               String?       @map("tenant_id")
+  countryName            String        @map("country_name")
+  isoCode                String        @map("iso_code")
+  dialCode               String        @map("dial_code")
+  prefix                 String?
+  providerId             String        @map("provider_id")
+  fallbackProviderId     String?       @map("fallback_provider_id")
+  isActive               Boolean       @default(true) @map("is_active")
+  priority               Int           @default(100)
+  weight                 Int           @default(100)
+  validFrom              DateTime?     @map("valid_from")
+  validUntil             DateTime?     @map("valid_until")
+  maxConcurrentCalls     Int?          @map("max_concurrent_calls")
+  callsPerSecond         Int?          @map("calls_per_second")
+  requireHealthyProvider Boolean       @default(true) @map("require_healthy_provider")
+  fallbackEligible       Boolean       @default(true) @map("fallback_eligible")
+  emergencyOverride      Boolean       @default(false) @map("emergency_override")
+  businessHoursJson      String?       @map("business_hours_json")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+  provider               Provider      @relation("PrimaryProvider", fields: [providerId], references: [id], onDelete: Restrict)
+  fallbackProvider       Provider?     @relation("FallbackProvider", fields: [fallbackProviderId], references: [id], onDelete: SetNull)
+  callAttempts           CallAttempt[]
+
+  @@unique([isoCode, dialCode])
+  @@index([tenantId, isoCode, isActive, priority])
+  @@index([dialCode, isActive, priority])
+  @@index([providerId])
+  @@map("country_routing_rules")
+}
+
+model ProviderHealthCheck {
+  id                    String   @id @default(cuid())
+  providerId            String   @map("provider_id")
+  provider              Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  status                String
+  checkedAt             DateTime @default(now()) @map("checked_at")
+  responseTimeMs        Int?     @map("response_time_ms")
+  providerAvailability  String?  @map("provider_availability")
+  temporaryFailureCount Int      @default(0) @map("temporary_failure_count")
+  permanentFailureCount Int      @default(0) @map("permanent_failure_count")
+  recentSuccessRate     Float?   @map("recent_success_rate")
+  averageSetupTimeMs    Int?     @map("average_setup_time_ms")
+  webhookDelayMs        Int?     @map("webhook_delay_ms")
+  concurrentActiveCalls Int      @default(0) @map("concurrent_active_calls")
+  message               String?
+  safeDetailsJson       String?  @map("safe_details_json")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([providerId, checkedAt(sort: Desc)])
+  @@index([status, checkedAt])
+  @@map("provider_health_checks")
+}
+
+model PhoneNumber {
+  id                     String        @id @default(cuid())
+  tenantId               String        @map("tenant_id")
+  tenant                 Organization  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  number                 String
+  countryCode            String        @map("country_code")
+  providerId             String        @map("provider_id")
+  provider               Provider      @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  outboundCalls          Call[]
+  callAttempts           CallAttempt[]
+  type                   String        @default("both")
+  verifiedStatus         String        @default("pending") @map("verified_status")
+  callerIdAllowed        Boolean       @default(false) @map("caller_id_allowed")
+  pilotApproved          Boolean       @default(false) @map("pilot_approved")
+  pilotApprovalReason    String?       @map("pilot_approval_reason")
+  pilotApprovedBy        String?       @map("pilot_approved_by")
+  pilotApprovedAt        DateTime?     @map("pilot_approved_at")
+  pilotApprovalExpiresAt DateTime?     @map("pilot_approval_expires_at")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+
+  @@unique([tenantId, number])
+  @@index([tenantId, countryCode])
+  @@index([tenantId, pilotApproved, pilotApprovalExpiresAt])
+  @@index([providerId])
+  @@map("phone_numbers")
+}
+
+model CallRoute {
+  id                 String       @id @default(cuid())
+  callId             String?      @map("call_id")
+  call               Call?        @relation(fields: [callId], references: [id], onDelete: SetNull)
+  tenantId           String       @map("tenant_id")
+  tenant             Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fromNumber         String?      @map("from_number")
+  toNumber           String       @map("to_number")
+  detectedCountry    String       @map("detected_country")
+  selectedProviderId String       @map("selected_provider_id")
+  selectedProvider   Provider     @relation(fields: [selectedProviderId], references: [id], onDelete: Restrict)
+  routeReason        String       @map("route_reason")
+  status             String       @default("selected")
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([callId])
+  @@index([selectedProviderId])
+  @@index([detectedCountry])
+  @@map("call_routes")
+}
+
+model CallLog {
+  id             String       @id @default(cuid())
+  callId         String?      @map("call_id")
+  call           Call?        @relation(fields: [callId], references: [id], onDelete: SetNull)
+  callAttemptId  String?      @map("call_attempt_id")
+  callAttempt    CallAttempt? @relation(fields: [callAttemptId], references: [id], onDelete: SetNull)
+  tenantId       String       @map("tenant_id")
+  tenant         Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  providerId     String?      @map("provider_id")
+  provider       Provider?    @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  externalCallId String?      @map("external_call_id")
+  fromNumber     String?      @map("from_number")
+  toNumber       String?      @map("to_number")
+  direction      String
+  country        String?
+  callStatus     String       @map("call_status")
+  duration       Int?
+  recordingUrl   String?      @map("recording_url")
+  transcriptId   String?      @map("transcript_id")
+  cost           Decimal?     @db.Decimal(12, 4)
+  currency       String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@unique([providerId, externalCallId])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([callId])
+  @@index([callAttemptId])
+  @@index([providerId])
+  @@index([country])
+  @@index([callStatus])
+  @@map("call_logs")
+}
+
+model Call {
+  id                  String              @id @default(cuid())
+  tenantId            String              @map("tenant_id")
+  tenant              Organization        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdByUserId     String?             @map("created_by_user_id")
+  idempotencyKey      String?             @map("idempotency_key")
+  requestFingerprint  String?             @map("request_fingerprint")
+  originalDestination String              @map("original_destination")
+  destinationE164     String              @map("destination_e164")
+  destinationCountry  String?             @map("destination_country")
+  callerNumberId      String?             @map("caller_number_id")
+  callerNumber        PhoneNumber?        @relation(fields: [callerNumberId], references: [id], onDelete: SetNull)
+  status              String              @default("CREATED")
+  rawProviderStatus   String?             @map("raw_provider_status")
+  failureClass        String?             @map("failure_class")
+  failureCode         String?             @map("failure_code")
+  failureMessage      String?             @map("failure_message")
+  featureFlagSnapshot String?             @map("feature_flag_snapshot")
+  decisionTraceJson   String?             @map("decision_trace_json")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  attempts            CallAttempt[]
+  events              CallEvent[]
+  routes              CallRoute[]
+  logs                CallLog[]
+  usageLedger         TelecomUsageLedger?
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([status])
+  @@index([destinationCountry])
+  @@map("calls")
+}
+
+model CallAttempt {
+  id                String              @id @default(cuid())
+  tenantId          String              @map("tenant_id")
+  tenant            Organization        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  callId            String              @map("call_id")
+  call              Call                @relation(fields: [callId], references: [id], onDelete: Cascade)
+  providerId        String              @map("provider_id")
+  provider          Provider            @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  routeRuleId       String?             @map("route_rule_id")
+  routeRule         CountryRoutingRule? @relation(fields: [routeRuleId], references: [id], onDelete: SetNull)
+  callerNumberId    String?             @map("caller_number_id")
+  callerNumber      PhoneNumber?        @relation(fields: [callerNumberId], references: [id], onDelete: SetNull)
+  destinationE164   String              @map("destination_e164")
+  providerCallId    String?             @map("provider_call_id")
+  attemptNumber     Int                 @map("attempt_number")
+  status            String              @default("CREATED")
+  rawProviderStatus String?             @map("raw_provider_status")
+  failureClass      String?             @map("failure_class")
+  failureCode       String?             @map("failure_code")
+  failureMessage    String?             @map("failure_message")
+  startedAt         DateTime?           @map("started_at")
+  answeredAt        DateTime?           @map("answered_at")
+  endedAt           DateTime?           @map("ended_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  events            CallEvent[]
+  logs              CallLog[]
+
+  @@unique([callId, attemptNumber])
+  @@unique([providerId, providerCallId])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([callId])
+  @@index([status])
+  @@map("call_attempts")
+}
+
+model CallEvent {
+  id               String       @id @default(cuid())
+  tenantId         String       @map("tenant_id")
+  tenant           Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  callId           String       @map("call_id")
+  call             Call         @relation(fields: [callId], references: [id], onDelete: Cascade)
+  callAttemptId    String       @map("call_attempt_id")
+  callAttempt      CallAttempt  @relation(fields: [callAttemptId], references: [id], onDelete: Cascade)
+  provider         String
+  providerEventId  String       @map("provider_event_id")
+  providerStatus   String?      @map("provider_status")
+  normalizedStatus String       @map("normalized_status")
+  eventType        String       @map("event_type")
+  rawPayload       String?      @map("raw_payload")
+  occurredAt       DateTime?    @map("occurred_at")
+  receivedAt       DateTime     @default(now()) @map("received_at")
+  processedAt      DateTime?    @map("processed_at")
+
+  @@unique([provider, providerEventId])
+  @@index([tenantId, receivedAt(sort: Desc)])
+  @@index([callId])
+  @@index([callAttemptId])
+  @@index([normalizedStatus])
+  @@map("call_events")
+}
+
+model TelecomWebhookNonce {
+  id        String        @id @default(cuid())
+  tenantId  String?       @map("tenant_id")
+  tenant    Organization? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider  String
+  nonce     String
+  expiresAt DateTime      @map("expires_at")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@unique([provider, nonce])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@map("telecom_webhook_nonces")
 }
 
 model VoiceKnowledgeBaseItem {
@@ -749,6 +1149,8 @@ model VoiceAgent {
   VoiceActionAuditLog     VoiceActionAuditLog[]
   VoiceReservationRequest VoiceReservationRequest[]
   VoiceOrderRequest       VoiceOrderRequest[]
+  whatsappIntegrations    VoiceWhatsappIntegration[]
+  whatsappConversations   VoiceWhatsappConversation[]
 
   @@unique([organizationId, name])
   @@index([organizationId, isDefault])
@@ -904,8 +1306,20 @@ model VoiceWebhookEvent {
   eventType              String
   status                 String    @default("received") // received, processing, processed, failed, ignored, mapping_failed
   rawPayloadJson         String?
+  encryptedPayload       String?
+  payloadHash            String?
+  deduplicationKey       String?   @unique
   errorMessage           String?
+  lastErrorCode          String?
   retryCount             Int       @default(0)
+  duplicateCount         Int       @default(0)
+  attemptCount           Int       @default(0)
+  correlationId          String?
+  leaseOwner             String?
+  leaseExpiresAt         DateTime?
+  lastAttemptAt          DateTime?
+  nextAttemptAt          DateTime?
+  deadLetteredAt         DateTime?
   receivedAt             DateTime  @default(now())
   processedAt            DateTime?
   createdAt              DateTime  @default(now())
@@ -919,29 +1333,190 @@ model VoiceWebhookEvent {
   @@index([eventType])
   @@index([status])
   @@index([createdAt])
+  @@index([status, nextAttemptAt])
+  @@index([status, leaseExpiresAt])
+}
+
+model VoiceWhatsappIntegration {
+  id                        String                         @id @default(cuid())
+  organizationId            String
+  organization              Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  voiceAgentId              String?
+  voiceAgent                VoiceAgent?                    @relation(fields: [voiceAgentId], references: [id], onDelete: SetNull)
+  whatsappBusinessAccountId String?
+  phoneNumberId             String                         @unique
+  phoneNumberDisplayName    String?
+  accessTokenEncrypted      String?
+  webhookVerifyTokenHash    String?
+  webhookStatus             String                         @default("NOT_VERIFIED")
+  status                    String                         @default("NOT_CONNECTED")
+  isEnabled                 Boolean                        @default(false)
+  staffNotificationNumber   String?
+  templateSettingsJson      String?
+  lastWebhookAt             DateTime?
+  lastInboundMessageAt      DateTime?
+  lastOutboundMessageAt     DateTime?
+  lastError                 String?
+  createdAt                 DateTime                       @default(now())
+  updatedAt                 DateTime                       @updatedAt
+  conversations             VoiceWhatsappConversation[]
+  messages                  VoiceWhatsappMessage[]
+  templates                 VoiceWhatsappTemplate[]
+  notificationLogs          VoiceWhatsappNotificationLog[]
+
+  @@index([organizationId])
+  @@index([voiceAgentId])
+  @@index([status])
+  @@index([isEnabled])
+}
+
+model VoiceWhatsappConversation {
+  id                   String                         @id @default(cuid())
+  organizationId       String
+  organization         Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  integrationId        String
+  integration          VoiceWhatsappIntegration       @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  voiceAgentId         String?
+  voiceAgent           VoiceAgent?                    @relation(fields: [voiceAgentId], references: [id], onDelete: SetNull)
+  contactWaId          String
+  contactName          String?
+  status               String                         @default("OPEN")
+  language             String?
+  lastMessagePreview   String?
+  lastMessageAt        DateTime?
+  lastInboundAt        DateTime?
+  lastOutboundAt       DateTime?
+  handoffRequested     Boolean                        @default(false)
+  leadCreated          Boolean                        @default(false)
+  orderRequested       Boolean                        @default(false)
+  appointmentRequested Boolean                        @default(false)
+  metadataJson         String?
+  createdAt            DateTime                       @default(now())
+  updatedAt            DateTime                       @updatedAt
+  messages             VoiceWhatsappMessage[]
+  notificationLogs     VoiceWhatsappNotificationLog[]
+
+  @@unique([integrationId, contactWaId])
+  @@unique([id, organizationId])
+  @@index([organizationId, lastMessageAt(sort: Desc)])
+  @@index([voiceAgentId])
+  @@index([status])
+}
+
+model VoiceWhatsappMessage {
+  id                String                    @id @default(cuid())
+  organizationId    String
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  integrationId     String
+  integration       VoiceWhatsappIntegration  @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  conversationId    String
+  conversation      VoiceWhatsappConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  providerMessageId String?                   @unique
+  direction         String
+  messageType       String                    @default("text")
+  body              String?
+  status            String                    @default("RECEIVED")
+  aiGenerated       Boolean                   @default(false)
+  aiIntent          String?
+  rawPayloadJson    String?
+  errorMessage      String?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  readAt            DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@unique([id, organizationId])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([integrationId])
+  @@index([conversationId, createdAt])
+  @@index([direction])
+  @@index([status])
+}
+
+model VoiceWhatsappTemplate {
+  id                 String                    @id @default(cuid())
+  organizationId     String
+  organization       Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  integrationId      String?
+  integration        VoiceWhatsappIntegration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+  name               String
+  language           String                    @default("en")
+  category           String?
+  status             String                    @default("DRAFT")
+  body               String
+  providerTemplateId String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  @@unique([organizationId, name, language])
+  @@index([organizationId])
+  @@index([integrationId])
+  @@index([status])
+}
+
+model VoiceWhatsappNotificationLog {
+  id             String                     @id @default(cuid())
+  organizationId String
+  organization   Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  integrationId  String?
+  integration    VoiceWhatsappIntegration?  @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+  conversationId String?
+  conversation   VoiceWhatsappConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  eventType      String
+  status         String                     @default("PENDING")
+  destination    String?
+  message        String?
+  errorMessage   String?
+  metadataJson   String?
+  createdAt      DateTime                   @default(now())
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([integrationId])
+  @@index([conversationId])
+  @@index([status])
 }
 
 model VoiceJob {
-  id             String    @id @default(cuid())
-  organizationId String?
-  voiceAgentId   String?
-  type           String
-  status         String    @default("queued") // queued, processing, completed, failed, retrying
-  payloadJson    String?
-  attempts       Int       @default(0)
-  maxAttempts    Int       @default(3)
-  lastError      String?
-  scheduledAt    DateTime  @default(now())
-  startedAt      DateTime?
-  completedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  organizationId    String?
+  voiceAgentId      String?
+  type              String
+  status            String    @default("queued") // queued, processing, completed, failed, retrying, cancelled
+  idempotencyKey    String?
+  correlationId     String?
+  entityType        String?
+  entityId          String?
+  payloadJson       String?
+  workerVersion     String?   @map("worker_version")
+  attempts          Int       @default(0)
+  maxAttempts       Int       @default(3)
+  lockedAt          DateTime?
+  lockedBy          String?
+  leaseExpiresAt    DateTime? @map("lease_expires_at")
+  lastHeartbeatAt   DateTime? @map("last_heartbeat_at")
+  timeoutAt         DateTime? @map("timeout_at")
+  cancelRequestedAt DateTime? @map("cancel_requested_at")
+  cancelledAt       DateTime? @map("cancelled_at")
+  cancelReason      String?   @map("cancel_reason")
+  deadLetteredAt    DateTime?
+  failureCode       String?
+  lastError         String?
+  scheduledAt       DateTime  @default(now())
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
+  @@unique([type, idempotencyKey])
   @@index([status])
   @@index([type])
   @@index([scheduledAt])
+  @@index([status, scheduledAt])
+  @@index([status, leaseExpiresAt])
   @@index([organizationId])
   @@index([voiceAgentId])
+  @@index([entityType, entityId])
 }
 
 model VoiceUsageMeter {
@@ -990,6 +1565,161 @@ model VoiceNotificationLog {
   @@index([organizationId])
   @@index([status])
   @@index([createdAt])
+}
+
+model TelecomActivationControl {
+  id                       String    @id @default(cuid())
+  scope                    String    @default("global")
+  organizationId           String?
+  providerId               String?
+  mode                     String    @default("OFF")
+  reason                   String?
+  emergencyStopped         Boolean   @default(false)
+  emergencyReason          String?
+  tenantAllowlistJson      String?
+  destinationAllowlistJson String?
+  allowedCountryCodesJson  String?
+  businessHoursJson        String?
+  timezone                 String?
+  maxMonthlySpendUsd       Float?
+  maxDailySpendUsd         Float?
+  maxEstimatedCallCostUsd  Float?
+  maxCallsPerMinute        Int?
+  maxCallsPerHour          Int?
+  maxCallsPerDay           Int?
+  maxConcurrentCalls       Int?
+  maxCallDurationSec       Int?
+  sandboxVerifiedAt        DateTime?
+  sandboxVerifiedBy        String?
+  sandboxVerificationJson  String?
+  effectiveFrom            DateTime?
+  activatedAt              DateTime?
+  activatedBy              String?
+  approvedAt               DateTime?
+  approvedBy               String?
+  expiresAt                DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@unique([scope, organizationId, providerId])
+  @@index([mode, emergencyStopped])
+  @@index([organizationId])
+  @@index([providerId])
+  @@index([effectiveFrom, expiresAt])
+}
+
+model TelecomAllowedDestination {
+  id              String       @id @default(cuid())
+  organizationId  String       @map("organization_id")
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  destinationE164 String       @map("destination_e164")
+  label           String?
+  status          String       @default("verified")
+  verifiedAt      DateTime?    @map("verified_at")
+  verifiedBy      String?      @map("verified_by")
+  effectiveFrom   DateTime?    @map("effective_from")
+  expiresAt       DateTime?    @map("expires_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@unique([organizationId, destinationE164])
+  @@index([organizationId, status, expiresAt])
+  @@index([organizationId, effectiveFrom, expiresAt])
+  @@map("telecom_allowed_destinations")
+}
+
+model TelecomRateCard {
+  id                  String               @id @default(cuid())
+  providerId          String
+  provider            Provider             @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  countryCode         String
+  currency            String               @default("USD")
+  costPerMinute       Decimal              @db.Decimal(12, 6)
+  billingIncrementSec Int                  @default(60)
+  minimumBillableSec  Int                  @default(60)
+  connectionFee       Decimal?             @db.Decimal(12, 6)
+  effectiveFrom       DateTime             @default(now())
+  effectiveUntil      DateTime?
+  source              String               @default("manual")
+  snapshotJson        String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  usageLedger         TelecomUsageLedger[]
+
+  @@index([providerId, countryCode, effectiveFrom])
+  @@index([countryCode, effectiveFrom])
+}
+
+model TelecomUsageLedger {
+  id                 String           @id @default(cuid())
+  organizationId     String
+  organization       Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  callId             String?          @unique
+  call               Call?            @relation(fields: [callId], references: [id], onDelete: SetNull)
+  providerId         String?
+  provider           Provider?        @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  rateCardId         String?
+  rateCard           TelecomRateCard? @relation(fields: [rateCardId], references: [id], onDelete: SetNull)
+  providerCallId     String?
+  destinationCountry String?
+  durationSeconds    Int              @default(0)
+  billableSeconds    Int              @default(0)
+  costAmount         Decimal          @default(0) @db.Decimal(12, 6)
+  currency           String           @default("USD")
+  status             String           @default("estimated")
+  periodStart        DateTime
+  periodEnd          DateTime
+  finalizedAt        DateTime?
+  source             String           @default("call_event")
+  metadataJson       String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([organizationId, periodStart, periodEnd])
+  @@index([providerId, createdAt])
+  @@index([status])
+}
+
+model TelecomBackfillCursor {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  status          String    @default("idle")
+  lastProcessedId String?
+  processedCount  Int       @default(0)
+  errorCount      Int       @default(0)
+  lastError       String?
+  lockedAt        DateTime?
+  lockedBy        String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, updatedAt])
+}
+
+model TelecomOperationalAlert {
+  id             String        @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  providerId     String?
+  severity       String
+  status         String        @default("open")
+  code           String
+  title          String
+  message        String
+  entityType     String?
+  entityId       String?
+  dedupeKey      String        @unique
+  metadataJson   String?
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status, severity, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([providerId, createdAt])
 }
 
 // -----------------------------------------------------------------------------
@@ -1635,10 +2365,13 @@ model OnboardingState {
   organizationId String       @unique
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  currentStep    Int       @default(0)
-  completedSteps String    @default("")
-  isCompleted    Boolean   @default(false)
-  completedAt    DateTime?
+  currentStep            Int       @default(0)
+  completedSteps         String    @default("")
+  selectedMarketKey      String?
+  operationalAnswersJson String?
+  recommendedProfileKey  String?
+  isCompleted            Boolean   @default(false)
+  completedAt            DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2023,6 +2756,35 @@ model Notification {
   @@index([userId])
 }
 
+model SupportRequest {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requestedById  String
+  requestedBy    User         @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+
+  type         String
+  status       String  @default("OPEN")
+  priority     String  @default("NORMAL")
+  reason       String?
+  subject      String
+  description  String
+  sourcePage   String?
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  adminNotes   String?
+  metadata     String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([requestedById])
+  @@index([type, status, createdAt(sort: Desc)])
+}
+
 model SalesChannelSyncLog {
   id             String       @id @default(cuid())
   organizationId String
@@ -2051,45 +2813,411 @@ model PlatformAuditLog {
 }
 
 model ProviderMapping {
-  id              String   @id @default(cuid())
-  tenantId        String
-  entityType      String   // 'AGENT', 'KNOWLEDGE_BASE', 'PHONE_NUMBER'
-  internalId      String   // Foreign key to internal entities
-  providerName    String   // 'VAPI', 'WHATSQUERY_ENGINE'
-  externalId      String   // Provider's specific ID
-  syncStatus      String   @default("SYNCED") // 'SYNCED', 'PENDING', 'FAILED'
-  lastSyncedAt    DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id           String    @id @default(cuid())
+  tenantId     String
+  entityType   String // 'AGENT', 'KNOWLEDGE_BASE', 'PHONE_NUMBER'
+  internalId   String // Foreign key to internal entities
+  providerName String // 'VAPI', 'WHATSQUERY_ENGINE'
+  externalId   String // Provider's specific ID
+  syncStatus   String    @default("SYNCED") // 'SYNCED', 'PENDING', 'FAILED'
+  lastSyncedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([entityType, internalId, providerName])
   @@index([providerName, externalId])
   @@index([tenantId])
+}
+
+model IntegrationProvider {
+  id             String        @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  key            String
+  status         String        @default("development")
+  isEnabled      Boolean       @default(true)
+  minimumPlan    String?
+  configuration  String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([organizationId, key])
+  @@index([key])
+  @@index([organizationId, key])
+}
+
+model TenantIntegration {
+  id                    String                        @id @default(cuid())
+  organizationId        String
+  organization          Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branchId              String?
+  branch                Branch?                       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  providerKey           String
+  connectionName        String
+  externalAccountId     String?
+  externalAccountName   String?
+  status                String                        @default("pending")
+  healthStatus          String                        @default("unknown")
+  encryptedCredentials  String?
+  credentialVersion     Int                           @default(1)
+  grantedScopes         String?
+  selectedResources     String?
+  configuration         String?
+  fieldMappings         String?
+  lastConnectedAt       DateTime?
+  lastTestedAt          DateTime?
+  lastSuccessfulAt      DateTime?
+  lastSyncAt            DateTime?
+  lastHealthCheckAt     DateTime?
+  credentialCheckedAt   DateTime?
+  refreshLeaseOwner     String?
+  refreshLeaseExpiresAt DateTime?
+  expiresAt             DateTime?
+  failureCount          Int                           @default(0)
+  createdBy             String?
+  updatedBy             String?
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime                      @updatedAt
+  resources             IntegrationResource[]
+  permissions           IntegrationPermission[]
+  syncJobs              IntegrationSyncJob[]
+  events                IntegrationEvent[]
+  actionLogs            IntegrationActionLog[]
+  actionExecutions      IntegrationActionExecution[]
+  approvalRequests      IntegrationApprovalRequest[]
+  healthChecks          IntegrationHealthCheck[]
+  fieldMappingRows      IntegrationFieldMapping[]
+  usageRecords          IntegrationUsageRecord[]
+  rateLimitCounters     IntegrationRateLimitCounter[]
+
+  @@unique([organizationId, providerKey, connectionName])
+  @@index([organizationId, providerKey])
+  @@index([status])
+  @@index([healthStatus])
+}
+
+model IntegrationResource {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  resourceType        String
+  externalId          String
+  name                String
+  metadata            String?
+  isEnabled           Boolean           @default(true)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@unique([tenantIntegrationId, resourceType, externalId])
+  @@index([organizationId, tenantIntegrationId])
+}
+
+model IntegrationPermission {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  subjectType         String
+  subjectId           String
+  actionKey           String
+  effect              String
+  approvalMode        String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@unique([tenantIntegrationId, subjectType, subjectId, actionKey])
+  @@index([organizationId, tenantIntegrationId])
+}
+
+model IntegrationSyncJob {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  providerKey         String
+  direction           String
+  entityType          String
+  status              String            @default("queued")
+  cursor              String?
+  recordsProcessed    Int               @default(0)
+  recordsSucceeded    Int               @default(0)
+  recordsFailed       Int               @default(0)
+  attemptCount        Int               @default(0)
+  maxAttempts         Int               @default(3)
+  scheduledAt         DateTime          @default(now())
+  startedAt           DateTime?
+  heartbeatAt         DateTime?
+  leaseOwner          String?
+  leaseExpiresAt      DateTime?
+  nextAttemptAt       DateTime?
+  lastErrorAt         DateTime?
+  cancelRequestedAt   DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  errorCode           String?
+  errorSummary        String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([organizationId, tenantIntegrationId, status])
+  @@index([status, scheduledAt])
+}
+
+model IntegrationEvent {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  providerKey         String
+  eventType           String
+  externalEventId     String?
+  deduplicationKey    String
+  payload             String
+  status              String            @default("received")
+  receivedAt          DateTime          @default(now())
+  processedAt         DateTime?
+  attemptCount        Int               @default(0)
+  errorCode           String?
+  leaseOwner          String?
+  leaseExpiresAt      DateTime?
+  nextAttemptAt       DateTime?
+  lastAttemptAt       DateTime?
+  deadLetteredAt      DateTime?
+  processingNotes     String?
+
+  @@unique([organizationId, providerKey, deduplicationKey])
+  @@index([organizationId, tenantIntegrationId, receivedAt])
+}
+
+model IntegrationActionLog {
+  id                      String            @id @default(cuid())
+  organizationId          String
+  organization            Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId     String
+  tenantIntegration       TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  providerKey             String
+  actionKey               String
+  requestSource           String
+  userId                  String?
+  voiceAgentId            String?
+  callId                  String?
+  correlationId           String
+  requestPayloadRedacted  String?
+  responsePayloadRedacted String?
+  status                  String
+  errorCode               String?
+  durationMs              Int?
+  createdAt               DateTime          @default(now())
+
+  @@index([organizationId, tenantIntegrationId, createdAt])
+  @@index([organizationId, actionKey, createdAt])
+}
+
+model IntegrationActionExecution {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  providerKey         String
+  actionKey           String
+  idempotencyKey      String
+  requestHash         String
+  correlationId       String
+  requestSource       String
+  userId              String?
+  voiceAgentId        String?
+  callId              String?
+  status              String            @default("running")
+  safeResultRedacted  String?
+  errorCode           String?
+  startedAt           DateTime          @default(now())
+  completedAt         DateTime?
+  failedAt            DateTime?
+  expiresAt           DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@unique([organizationId, tenantIntegrationId, idempotencyKey])
+  @@index([organizationId, providerKey, actionKey, status])
+  @@index([organizationId, expiresAt])
+}
+
+model IntegrationApprovalRequest {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  actionKey           String
+  requestSource       String
+  requestedBy         String?
+  voiceAgentId        String?
+  callId              String?
+  payload             String?
+  status              String            @default("pending")
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectedBy          String?
+  rejectedAt          DateTime?
+  expiresAt           DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([organizationId, tenantIntegrationId, status])
+  @@index([status, expiresAt])
+}
+
+model IntegrationHealthCheck {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  status              String
+  latencyMs           Int?
+  scopeStatus         String?
+  credentialStatus    String?
+  resourceStatus      String?
+  webhookStatus       String?
+  errorCode           String?
+  checkedAt           DateTime          @default(now())
+
+  @@index([organizationId, tenantIntegrationId, checkedAt])
+}
+
+model IntegrationRateLimitCounter {
+  id                  String             @id @default(cuid())
+  organizationId      String
+  organization        Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId String?
+  tenantIntegration   TenantIntegration? @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  providerKey         String
+  actionKey           String?
+  bucketKey           String
+  windowStartedAt     DateTime
+  windowEndsAt        DateTime
+  count               Int                @default(0)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@unique([organizationId, bucketKey])
+  @@index([organizationId, providerKey, windowStartedAt])
+  @@index([windowEndsAt])
+}
+
+model IntegrationFieldMapping {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  externalEntity      String
+  externalField       String
+  internalEntity      String
+  internalField       String
+  direction           String
+  transformation      String?
+  defaultValue        String?
+  isRequired          Boolean           @default(false)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@unique([tenantIntegrationId, externalEntity, externalField, internalEntity, internalField, direction])
+  @@index([organizationId, tenantIntegrationId])
+}
+
+model IntegrationUsageRecord {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantIntegrationId String
+  tenantIntegration   TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+  providerKey         String
+  metric              String
+  quantity            Int               @default(1)
+  periodKey           String
+  createdAt           DateTime          @default(now())
+
+  @@index([organizationId, tenantIntegrationId, metric, periodKey])
+}
+
+model IntegrationOAuthState {
+  id                    String       @id @default(cuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stateId               String       @unique
+  userId                String
+  providerKey           String
+  redirectPath          String
+  codeVerifierEncrypted String
+  signature             String
+  expiresAt             DateTime
+  consumedAt            DateTime?
+  createdAt             DateTime     @default(now())
+
+  @@index([organizationId, providerKey, expiresAt])
+}
+
+model IntegrationWebhookEndpoint {
+  id              String                       @id @default(cuid())
+  organizationId  String
+  organization    Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  providerKey     String
+  url             String
+  secretEncrypted String
+  status          String                       @default("active")
+  events          String?
+  lastDeliveredAt DateTime?
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  deliveries      IntegrationWebhookDelivery[]
+
+  @@index([organizationId, providerKey])
+}
+
+model IntegrationWebhookDelivery {
+  id                           String                     @id @default(cuid())
+  organizationId               String
+  organization                 Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  integrationWebhookEndpointId String
+  integrationWebhookEndpoint   IntegrationWebhookEndpoint @relation(fields: [integrationWebhookEndpointId], references: [id], onDelete: Cascade)
+  eventKey                     String
+  deliveryId                   String                     @unique
+  payloadRedacted              String?
+  responseCode                 Int?
+  responseBodyRedacted         String?
+  status                       String                     @default("pending")
+  attemptedAt                  DateTime?
+  completedAt                  DateTime?
+  createdAt                    DateTime                   @default(now())
+
+  @@index([organizationId, status, createdAt])
 }
 
 // -----------------------------------------------------------------------------
 // Voice OS Models (Phase 1 Additions)
 // -----------------------------------------------------------------------------
 
-
 model ConversationInsight {
-  id               String   @id @default(cuid())
-  callId           String   @unique
+  id               String  @id @default(cuid())
+  callId           String  @unique
   summary          String
   intent           String
   sentiment        String
-  bookingRequested Boolean  @default(false)
-  leadQualified    Boolean  @default(false)
+  bookingRequested Boolean @default(false)
+  leadQualified    Boolean @default(false)
 }
 
 model AgentTemplate {
   id          String   @id @default(cuid())
   name        String?
   description String?
-  industry    String   // "Restaurant", "Clinic", "Real Estate"
+  industry    String // "Restaurant", "Clinic", "Real Estate"
   basePrompt  String
-  config      String   // Stored as JSON string
+  config      String // Stored as JSON string
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -2106,31 +3234,31 @@ model KnowledgeBase {
 }
 
 model KnowledgeDocument {
-  id              String         @id @default(cuid())
+  id              String        @id @default(cuid())
   knowledgeBaseId String
-  knowledgeBase   KnowledgeBase  @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
   title           String
   content         String
-  type            String         // "FAQ", "Menu", "Policy", "Service"
-  isGlobal        Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  type            String // "FAQ", "Menu", "Policy", "Service"
+  isGlobal        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model CostLedger {
-  id         String   @id @default(cuid())
-  tenantId   String
-  callId     String?
-  provider   String   // "OpenAI", "ElevenLabs", "VAPI", "Twilio", "Nayatel"
-  service    String   // "TTS", "STT", "LLM", "Telephony"
-  amount     Float
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  tenantId  String
+  callId    String?
+  provider  String // "OpenAI", "ElevenLabs", "VAPI", "Twilio", "Nayatel"
+  service   String // "TTS", "STT", "LLM", "Telephony"
+  amount    Float
+  createdAt DateTime @default(now())
 }
 
 model OnboardingTask {
   id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  taskName       String       // "Assign Phone Number", "Upload Knowledge", "Deploy Agent"
-  status         String       // "pending", "completed"
+  taskName       String // "Assign Phone Number", "Upload Knowledge", "Deploy Agent"
+  status         String // "pending", "completed"
 }
