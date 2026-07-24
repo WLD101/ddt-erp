@@ -1,4 +1,4 @@
-﻿-- WhatsQuery Voice WhatsApp channel foundation.
+-- WhatsQuery Voice WhatsApp channel foundation.
 -- Additive only: creates tenant-scoped WhatsApp integration/conversation/message tables.
 
 CREATE TABLE "VoiceWhatsappIntegration" (
