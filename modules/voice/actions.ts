@@ -6,6 +6,8 @@ import { encryptIntegrationCredentials } from "@/lib/integrations";
 
 import { createServerAction } from "@/lib/actions/builder";
 import { prisma } from "@/lib/prisma";
+import { buildCountryDerivedOrganizationPatch } from "@/modules/countries/policy";
+import { validateVoiceLanguageModeForCountry } from "@/modules/voice/country-policy";
 import {
   deleteVoiceKnowledgeBaseItemSchema,
   voiceBusinessProfileSchema,
@@ -56,6 +58,10 @@ export const saveVoiceBusinessProfileAction = createServerAction({
     getDetails: (input) => `Updated business onboarding for voice receptionist (${input.businessName}).`,
   },
   handler: async ({ input, context: { db, orgId } }) => {
+    if (!validateVoiceLanguageModeForCountry(input.preferredCallingCountry, input.preferredLanguage)) {
+      throw new Error(`Language mode ${input.preferredLanguage} is not supported for ${input.preferredCallingCountry}.`);
+    }
+
     const profile = await db.voiceBusinessProfile.upsert({
       where: { organizationId: orgId },
       update: {
@@ -103,7 +109,7 @@ export const saveVoiceBusinessProfileAction = createServerAction({
 
     await db.organization.update({
       where: { id: orgId },
-      data: { country: input.preferredCallingCountry },
+      data: buildCountryDerivedOrganizationPatch(input.preferredCallingCountry),
     });
 
     voiceRevalidatePaths.forEach((path) => revalidatePath(path));
@@ -123,6 +129,18 @@ export const saveVoiceReceptionistSettingsAction = createServerAction({
     getDetails: (input) => `Updated receptionist settings for ${input.receptionistName}.`,
   },
   handler: async ({ input, context: { db, orgId } }) => {
+    const organization = await db.organization.findUnique({
+      where: { id: orgId },
+      select: { countryCode: true },
+    });
+    const countryCode = organization?.countryCode === "GB" || organization?.countryCode === "PK" ? organization.countryCode : null;
+    if (!countryCode) {
+      throw new Error("Tenant country must be selected before receptionist settings can be saved.");
+    }
+    if (!validateVoiceLanguageModeForCountry(countryCode, input.languageMode)) {
+      throw new Error(`Language mode ${input.languageMode} is not supported for ${countryCode}.`);
+    }
+
     const settings = await db.voiceReceptionistSettings.upsert({
       where: { organizationId: orgId },
       update: {
@@ -304,6 +322,23 @@ export const saveVoiceTrainingProfileAction = createServerAction({
     getDetails: (input) => `Updated business training identity for ${input.businessName}.`,
   },
   handler: async ({ input, context: { db, orgId } }) => {
+    const organization = await db.organization.findUnique({
+      where: { id: orgId },
+      select: { countryCode: true },
+    });
+    const countryCode = organization?.countryCode === "GB" || organization?.countryCode === "PK" ? organization.countryCode : null;
+    if (!countryCode) {
+      throw new Error("Tenant country must be selected before training can be configured.");
+    }
+    if (!validateVoiceLanguageModeForCountry(countryCode, input.primaryLanguage)) {
+      throw new Error(`Primary language ${input.primaryLanguage} is not supported for ${countryCode}.`);
+    }
+    for (const supported of input.supportedLanguages) {
+      if (!validateVoiceLanguageModeForCountry(countryCode, supported)) {
+        throw new Error(`Supported language ${supported} is not valid for ${countryCode}.`);
+      }
+    }
+
     const profile = await db.voiceBusinessProfile.upsert({
       where: { organizationId: orgId },
       update: {
@@ -371,6 +406,14 @@ export const saveVoiceTrainingProfileAction = createServerAction({
         tone: input.tone,
         closingMessage: input.closingMessage,
         holidayClosures: input.holidayClosures || null,
+      },
+    });
+
+    await db.voiceAgent.updateMany({
+      where: { organizationId: orgId },
+      data: {
+        languageMode: input.primaryLanguage,
+        supportedLanguages: JSON.stringify(input.supportedLanguages),
       },
     });
 

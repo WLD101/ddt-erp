@@ -41,6 +41,11 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Check database environment
+        env:
+          DB_ENV_CHECK_MODE: production
+        run: npm run db:env-check
+
       - name: Validate Prisma migration files
         run: npm run migration:encoding-check
 

@@ -209,7 +209,10 @@ export async function getVoiceOnboardingData(orgId: string) {
   const [businessProfile, receptionistSettings, organization] = await Promise.all([
     prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
-    prisma.organization.findUnique({ where: { id: orgId }, select: { name: true, industryType: true, phone: true, country: true } }),
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { name: true, industryType: true, phone: true, country: true, countryCode: true },
+    }),
   ]);
 
   return { businessProfile, receptionistSettings, organization };

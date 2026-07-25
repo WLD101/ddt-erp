@@ -18,9 +18,14 @@ interface MarketStepProps {
 export function MarketStep({ stepId, onComplete, state }: MarketStepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const initial = marketKeySchema.safeParse(state?.marketKey || state?.selectedMarketKey);
-  const [selectedMarket, setSelectedMarket] = useState<MarketKey>(initial.success ? initial.data : "pk");
+  const [selectedMarket, setSelectedMarket] = useState<MarketKey | null>(initial.success ? initial.data : null);
 
   const handleSubmit = async () => {
+    if (!selectedMarket) {
+      toast.error("Select a market before continuing.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -104,7 +109,7 @@ export function MarketStep({ stepId, onComplete, state }: MarketStepProps) {
       <div className="flex justify-end">
         <Button
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isLoading || !selectedMarket}
           className="h-14 rounded-2xl bg-primary px-10 font-black uppercase tracking-widest text-on-primary shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90"
         >
           {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Continue"}

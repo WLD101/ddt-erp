@@ -36,6 +36,22 @@ type PromptRuntime = {
     website?: string | null;
     mainGoal?: string | null;
   };
+  marketContext?: {
+    marketKey: "uk" | "pk";
+    marketName: string;
+    currency: "GBP" | "PKR";
+    locale: string;
+    timezone: string;
+    taxLabel: string;
+    paymentMethods: string[];
+    documentLabels: {
+      invoice: string;
+      receipt: string;
+      amountPaid: string;
+      balanceDue: string;
+      taxBreakdown: string;
+    };
+  } | null;
   agent: {
     id?: string | null;
     name: string;
@@ -132,7 +148,11 @@ export function buildVoiceAssistantFirstMessage(runtime: PromptRuntime) {
     return configuredGreeting;
   }
 
-  return `Assalam-o-Alaikum, thanks for calling ${businessName}. I'm the AI receptionist. How can I help you today?`;
+  if (runtime.marketContext?.marketKey === "pk") {
+    return `Assalam-o-Alaikum, thanks for calling ${businessName}. I'm the AI receptionist. How can I help you today?`;
+  }
+
+  return `Thanks for calling ${businessName}. I'm the AI receptionist. How can I help you today?`;
 }
 
 export function validateBusinessSpecificReceptionistPrompt(runtime: PromptRuntime, prompt: string) {
@@ -179,6 +199,28 @@ export function validateBusinessSpecificReceptionistPrompt(runtime: PromptRuntim
 export function buildBusinessSpecificReceptionistPrompt(runtime: PromptRuntime) {
   const activeServices = runtime.services.filter((item) => item.isActive);
   const activeFaqs = runtime.knowledgeBase.filter((item) => item.isActive);
+  const marketContext = runtime.marketContext;
+  const marketLine = marketContext
+    ? `This tenant operates in ${marketContext.marketName}. Currency is ${marketContext.currency}. Tax wording is ${marketContext.taxLabel}. Timezone is ${marketContext.timezone}.`
+    : "This tenant market is not fully configured yet. Stay in safe review mode and avoid region-specific assumptions.";
+  const marketBehaviorRules = marketContext?.marketKey === "uk"
+    ? [
+        "- Speak in UK English by default and follow UK address, date, and postcode conventions.",
+        "- Quote prices in pounds sterling and use VAT terminology where configured.",
+        "- Only mention these payment methods when relevant: cash, debit card, credit card, bank transfer, Stripe, payment link.",
+        "- Never mention JazzCash, Easypaisa, Raast, FBR, NTN, or STRN for this tenant.",
+      ].join("\n")
+    : marketContext?.marketKey === "pk"
+      ? [
+          "- Seamlessly understand English, Urdu, and Roman Urdu where configured.",
+          "- Quote prices in PKR and use sales-tax/FBR terminology only when it is configured for this tenant.",
+          "- Only mention these payment methods when relevant: cash, bank transfer, card, JazzCash, Easypaisa, Raast.",
+          "- Never mention UK VAT numbers or UK company-number language for this tenant.",
+        ].join("\n")
+      : [
+          "- Do not assume UK or Pakistan-specific payment methods, tax terms, or legal wording.",
+          "- If the caller asks for prices, taxes, receipts, or compliance details, capture the request and hand off safely.",
+        ].join("\n");
 
   const servicesSection =
     activeServices.length > 0
@@ -235,6 +277,7 @@ ${formatList(runtime.businessIdentity.supportedLanguages.map(labelize))}
 - Opening hours: ${runtime.businessIdentity.openingHours || "Not configured"}
 - Holiday/closed days: ${runtime.businessIdentity.holidayClosures || "Not configured"}
 - Fallback contact: ${runtime.businessIdentity.fallbackContactMethod || "Not configured"}
+- Market context: ${marketLine}
 
 REQUIRED GREETING
 ${runtime.businessIdentity.greetingMessage || "Thank you for calling. How can I help you today?"}
@@ -249,8 +292,9 @@ FAQ KNOWLEDGE BASE
 ${faqSection}
 
 BEHAVIORAL RULES
-- You must seamlessly comprehend Roman Urdu, Minglish phrases, and common regional terminology (e.g., "Yaar", "Accha", "Bhai", "Bill kitna hai?", "Order confirm kar do").
 - BREVITY RULE: Responses MUST be limited to 1-2 highly natural, energetic sentences to prevent artificial conversational lag over local mobile networks. Do not ramble.
+- Market rules:
+${marketBehaviorRules}
 
 BOOKING RULES
 - Accepts bookings: ${runtime.bookingRules.acceptsBookings ? "Yes" : "No"}
@@ -296,8 +340,9 @@ CRITICAL OPERATING RULES
     runtime.actionPolicy.backendAutoConfirmationEnabled ? "enabled" : "disabled"
   }.
 6. ERP writes are ${runtime.actionPolicy.erpWritesEnabled ? "enabled" : "disabled"} and should remain disabled unless a specific backend write flow exists.
-7. For angry callers, pricing disputes, refund requests, complex bookings, order issues, medical questions, legal questions, financial advice, or unknown answers, collect safe details and hand off according to the configured rules.
-8. Match the caller's language whenever possible, especially English, Urdu, or Roman Urdu.
+7. Never switch market, currency, tax language, or payment methods because of caller wording alone. Tenant market configuration is the source of truth.
+8. For angry callers, pricing disputes, refund requests, complex bookings, order issues, medical questions, legal questions, financial advice, or unknown answers, collect safe details and hand off according to the configured rules.
+9. Match the caller's language whenever possible, especially the languages configured for this tenant.
 
 TOOL USAGE RULES
 - This call belongs only to agent "${runtime.agent.name}" for this specific business. Never guess another tenant or agent.

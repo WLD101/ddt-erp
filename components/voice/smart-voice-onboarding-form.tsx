@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getAllowedVoiceLanguageModesForCountry } from "@/modules/voice/country-policy";
 import { saveVoiceBusinessProfileAction } from "@/modules/voice/actions";
-import { voiceBusinessProfileSchema, voiceGoalOptions, voiceLanguageOptions, voiceFallbackContactOptions } from "@/modules/voice/schema";
+import { voiceBusinessProfileSchema, voiceGoalOptions, voiceFallbackContactOptions } from "@/modules/voice/schema";
 
 type VoiceBusinessProfileValues = z.input<typeof voiceBusinessProfileSchema>;
 
@@ -144,7 +145,7 @@ const inputClassName =
   "h-11 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white shadow-sm outline-none transition-all focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50";
 
 type Props = {
-  initialValues: VoiceBusinessProfileValues;
+  initialValues: Partial<VoiceBusinessProfileValues>;
   dashboardHref: string;
   isAuthenticated: boolean;
 };
@@ -260,7 +261,9 @@ export function SmartVoiceOnboardingForm({ initialValues, dashboardHref, isAuthe
   const businessName = useWatch({ control, name: "businessName" });
   const openingHours = useWatch({ control, name: "openingHours" });
   const industry = useWatch({ control, name: "industry" }) || "";
-  const preferredLanguage = useWatch({ control, name: "preferredLanguage" }) || "AUTO_DETECT";
+  const preferredCallingCountry = useWatch({ control, name: "preferredCallingCountry" }) || "PK";
+  const preferredLanguage = useWatch({ control, name: "preferredLanguage" }) || "ENGLISH";
+  const availableLanguageModes = getAllowedVoiceLanguageModesForCountry(preferredCallingCountry);
 
   const [greetingIndex, setGreetingIndex] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
@@ -274,11 +277,11 @@ export function SmartVoiceOnboardingForm({ initialValues, dashboardHref, isAuthe
     const name = businessName || "our business";
 
     let pool: string[] = [];
-    if (lang === "ENGLISH") {
+    if (lang === "ENGLISH" || lang === "ROMAN_ENGLISH") {
       pool = [...GREETING_POOL.ENGLISH[niche]];
     } else if (lang === "URDU") {
       pool = [...GREETING_POOL.URDU[niche]];
-    } else if (lang === "ROMAN_URDU") {
+    } else if (lang === "ROMAN_URDU" || lang === "MIXED_ROMAN_URDU_ENGLISH") {
       pool = [...GREETING_POOL.ROMAN_URDU[niche]];
     } else {
       // AUTO_DETECT - combine all
@@ -424,9 +427,8 @@ export function SmartVoiceOnboardingForm({ initialValues, dashboardHref, isAuthe
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Primary Calling Country</Label>
                     <select {...register("preferredCallingCountry")} className={selectClassName} disabled={isPending}>
-                      <option value="PK">Pakistan (+92) - Local SIP</option>
-                      <option value="US">USA (+1) - Twilio</option>
-                      <option value="GB">UK (+44) - Twilio</option>
+                      <option value="GB">United Kingdom (+44)</option>
+                      <option value="PK">Pakistan (+92)</option>
                     </select>
                     {errors.preferredCallingCountry && <p className="text-xs text-rose-400">{errors.preferredCallingCountry.message}</p>}
                   </div>
@@ -468,7 +470,7 @@ export function SmartVoiceOnboardingForm({ initialValues, dashboardHref, isAuthe
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Language</Label>
                     <select {...register("preferredLanguage")} className={selectClassName} disabled={isPending}>
-                      {voiceLanguageOptions.map(opt => <option key={opt} value={opt}>{opt.replace("_", " ")}</option>)}
+                      {availableLanguageModes.map(opt => <option key={opt} value={opt}>{opt.replaceAll("_", " ")}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">

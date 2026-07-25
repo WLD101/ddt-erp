@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { resolveExplicitTenantCountry } from "@/modules/countries/policy";
+import { resolveTenantMarketContextFromOrganization } from "@/modules/markets/tenant-market";
 import {
   getVapiAssistantTrackingName,
   getVoiceAgentBusinessSlug,
@@ -12,6 +14,11 @@ import {
   buildVoiceAssistantFirstMessage,
   validateBusinessSpecificReceptionistPrompt,
 } from "@/modules/voice/training/prompt-builder";
+import {
+  getDefaultVoiceLanguageModeForCountry,
+  validateVoiceLanguageModeForCountry,
+} from "@/modules/voice/country-policy";
+import { getDefaultApprovedVapiVoiceForCountry } from "@/modules/voice/vapi/voice-catalog";
 import { parseJsonArray } from "@/modules/voice/training/schema";
 import { getVapiEnvStatus, upsertVapiAssistant } from "@/modules/voice/vapi/service";
 
@@ -51,6 +58,7 @@ const DEFAULT_HANDOFF_TRIGGERS = [
 
 export async function getVoiceTrainingWorkspace(orgId: string, options?: { voiceAgentId?: string | null }) {
   const [
+    organization,
     businessProfile,
     receptionistSettings,
     trainingProfile,
@@ -63,6 +71,22 @@ export async function getVoiceTrainingWorkspace(orgId: string, options?: { voice
     knowledgeBaseItems,
     integrationSettings,
   ] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: {
+        id: true,
+        marketKey: true,
+        marketRequiresReview: true,
+        country: true,
+        currency: true,
+        locale: true,
+        timezone: true,
+        countryCode: true,
+        taxLabel: true,
+        pricingProfile: true,
+        complianceProfile: true,
+      },
+    }),
     prisma.voiceBusinessProfile.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceReceptionistSettings.findUnique({ where: { organizationId: orgId } }),
     prisma.voiceBusinessTrainingProfile.findUnique({ where: { organizationId: orgId } }),
@@ -84,6 +108,7 @@ export async function getVoiceTrainingWorkspace(orgId: string, options?: { voice
   ]);
 
   const runtime = buildVoiceTrainingRuntime({
+    organization,
     businessProfile,
     receptionistSettings,
     trainingProfile,
@@ -167,6 +192,19 @@ export async function getVoiceTrainingWorkspace(orgId: string, options?: { voice
 }
 
 export function buildVoiceTrainingRuntime(workspace: {
+  organization: {
+    id: string;
+    marketKey: string | null;
+    marketRequiresReview: boolean;
+    country: string | null;
+    currency: string;
+    locale: string | null;
+    timezone: string;
+    countryCode: string | null;
+    taxLabel: string | null;
+    pricingProfile: string | null;
+    complianceProfile: string | null;
+  } | null;
   businessProfile: Awaited<ReturnType<typeof prisma.voiceBusinessProfile.findUnique>>;
   receptionistSettings: Awaited<ReturnType<typeof prisma.voiceReceptionistSettings.findUnique>>;
   trainingProfile: Awaited<ReturnType<typeof prisma.voiceBusinessTrainingProfile.findUnique>>;
@@ -179,12 +217,33 @@ export function buildVoiceTrainingRuntime(workspace: {
   knowledgeBaseItems: Awaited<ReturnType<typeof prisma.voiceKnowledgeBaseItem.findMany>>;
   integrationSettings: Awaited<ReturnType<typeof prisma.voiceIntegrationSettings.findUnique>>;
 }) {
+  const marketContext = resolveTenantMarketContextFromOrganization({
+    id: workspace.organization?.id,
+    marketKey: workspace.organization?.marketKey,
+    marketRequiresReview: workspace.organization?.marketRequiresReview,
+    country: workspace.organization?.country,
+    currency: workspace.organization?.currency,
+    locale: workspace.organization?.locale,
+    timezone: workspace.organization?.timezone,
+    countryCode: workspace.organization?.countryCode,
+    taxLabel: workspace.organization?.taxLabel,
+    pricingProfile: workspace.organization?.pricingProfile,
+    complianceProfile: workspace.organization?.complianceProfile,
+  });
   const handoffTriggers = parseJsonArray(workspace.handoffRules?.handoffTriggers);
   const allowedActions = parseJsonArray(workspace.actionPolicy?.allowedActions);
   const blockedActions = parseJsonArray(workspace.actionPolicy?.blockedActions);
   const agentSupportedLanguages = parseJsonArray(workspace.voiceAgent?.supportedLanguages);
   const trainingSupportedLanguages = parseJsonArray(workspace.trainingProfile?.supportedLanguages);
   const allowedTools = parseJsonArray(workspace.voiceAgent?.allowedTools);
+  const tenantCountryCode =
+    resolveExplicitTenantCountry({
+      marketKey: workspace.organization?.marketKey,
+      country: workspace.organization?.country,
+      countryCode: workspace.organization?.countryCode,
+    }) || null;
+  const defaultLanguageMode = tenantCountryCode ? getDefaultVoiceLanguageModeForCountry(tenantCountryCode) : "AUTO_DETECT";
+  const defaultVoice = tenantCountryCode ? getDefaultApprovedVapiVoiceForCountry(tenantCountryCode) : null;
 
   return {
     businessIdentity: {
@@ -192,11 +251,11 @@ export function buildVoiceTrainingRuntime(workspace: {
       industry: workspace.businessProfile?.industry || "Service business",
       locationCity: workspace.trainingProfile?.locationCity || null,
       shortDescription: workspace.trainingProfile?.shortDescription || null,
-      primaryLanguage: workspace.trainingProfile?.primaryLanguage || workspace.businessProfile?.preferredLanguage || "AUTO_DETECT",
+      primaryLanguage: workspace.trainingProfile?.primaryLanguage || workspace.businessProfile?.preferredLanguage || defaultLanguageMode,
       supportedLanguages:
         trainingSupportedLanguages.length > 0
           ? trainingSupportedLanguages
-          : [workspace.businessProfile?.preferredLanguage || "AUTO_DETECT"],
+          : [workspace.businessProfile?.preferredLanguage || defaultLanguageMode],
       tone: workspace.trainingProfile?.tone || "PROFESSIONAL",
       greetingMessage: workspace.businessProfile?.greetingMessage || workspace.receptionistSettings?.greetingMessage || null,
       closingMessage: workspace.trainingProfile?.closingMessage || workspace.receptionistSettings?.fallbackMessage || null,
@@ -207,6 +266,18 @@ export function buildVoiceTrainingRuntime(workspace: {
       website: workspace.businessProfile?.website || null,
       mainGoal: workspace.businessProfile?.mainGoal || null,
     },
+    marketContext: marketContext.status === "resolved"
+      ? {
+          marketKey: marketContext.marketKey,
+          marketName: marketContext.marketName,
+          currency: marketContext.currency,
+          locale: marketContext.locale,
+          timezone: marketContext.timezone,
+          taxLabel: marketContext.taxLabel,
+          paymentMethods: marketContext.paymentMethods,
+          documentLabels: marketContext.documentLabels,
+        }
+      : null,
     agent: {
       id: workspace.voiceAgent?.id || null,
       name: workspace.voiceAgent?.name || workspace.receptionistSettings?.receptionistName || "WhatsQuery Receptionist",
@@ -222,15 +293,16 @@ export function buildVoiceTrainingRuntime(workspace: {
       agentSlug: workspace.voiceAgent?.agentSlug || getVoiceAgentSlug(workspace.voiceAgent?.displayName || workspace.voiceAgent?.name),
       environment: workspace.voiceAgent?.environment || getVoiceAgentEnvironment(),
       role: workspace.voiceAgent?.role || "AI_RECEPTIONIST",
-      languageMode: workspace.voiceAgent?.languageMode || workspace.trainingProfile?.primaryLanguage || workspace.businessProfile?.preferredLanguage || "AUTO_DETECT",
+      languageMode: workspace.voiceAgent?.languageMode || workspace.trainingProfile?.primaryLanguage || workspace.businessProfile?.preferredLanguage || defaultLanguageMode,
       supportedLanguages:
         agentSupportedLanguages.length > 0
           ? agentSupportedLanguages
           : trainingSupportedLanguages.length > 0
             ? trainingSupportedLanguages
-            : [workspace.businessProfile?.preferredLanguage || "AUTO_DETECT"],
+            : [workspace.businessProfile?.preferredLanguage || defaultLanguageMode],
       tone: workspace.voiceAgent?.tone || workspace.trainingProfile?.tone || "PROFESSIONAL",
       voicePersona: workspace.voiceAgent?.voicePersona || null,
+      voiceId: workspace.voiceAgent?.vapiVoiceId || defaultVoice?.voiceId || null,
       allowedTools: allowedTools.length > 0 ? allowedTools : [],
       assistantId: workspace.voiceAgent?.vapiAssistantId || null,
       assistantName:
@@ -295,6 +367,7 @@ export function buildVoiceTrainingRuntime(workspace: {
       lastPromptSyncedAt: workspace.voiceAgent?.lastPromptSyncedAt || workspace.trainingProfile?.lastPromptSyncedAt || null,
       callingEnabled: getVapiEnvStatus().callingEnabled,
     },
+    countryCode: tenantCountryCode,
   };
 }
 
@@ -364,6 +437,18 @@ export async function syncVoiceTrainingPromptToVapi(orgId: string, options?: { v
     throw new Error(workspace.promptValidation.errors.join(" "));
   }
 
+  if (!workspace.runtime.countryCode) {
+    throw new Error("Tenant country must be selected before syncing to Vapi.");
+  }
+
+  if (!validateVoiceLanguageModeForCountry(workspace.runtime.countryCode, workspace.runtime.agent.languageMode)) {
+    throw new Error(`Language mode ${workspace.runtime.agent.languageMode} is not supported for ${workspace.runtime.countryCode}.`);
+  }
+
+  if (!workspace.runtime.agent.voiceId) {
+    throw new Error("No approved Vapi voice is configured for this tenant country.");
+  }
+
   if (!webhookUrl) {
     throw new Error("Vapi webhook URL is missing. Configure VOICE_PUBLIC_APP_URL or VAPI_SERVER_URL before syncing.");
   }
@@ -429,6 +514,9 @@ export async function syncVoiceTrainingPromptToVapi(orgId: string, options?: { v
     recordingDisclosureText,
     transcriptionEnabled:
       workspace.receptionistSettings?.transcriptionEnabled ?? false,
+    countryCode: workspace.runtime.countryCode,
+    languageMode: workspace.runtime.agent.languageMode,
+    voiceId: workspace.runtime.agent.voiceId,
   });
   const resolvedAssistantId = syncResult?.id || voiceAgent.vapiAssistantId;
 

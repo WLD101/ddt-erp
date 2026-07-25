@@ -2,6 +2,11 @@
 
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { type TenantCountryCode } from "@/modules/countries/policy";
+import {
+  resolveVapiTranscriberLanguage,
+  validateVoiceSelectionForCountry,
+} from "@/modules/voice/country-policy";
 import { reconcileVoiceUsageMeterFromCallLogs } from "@/modules/voice/usage-reconciliation";
 
 function toNumberOrNull(value: unknown): number | null {
@@ -142,9 +147,21 @@ type UpsertVapiAssistantInput = {
   recordingDisclosureType: "verbal" | "stay-on-line";
   recordingDisclosureText?: string | null;
   transcriptionEnabled: boolean;
+  countryCode: TenantCountryCode;
+  languageMode: string;
+  voiceId: string;
 };
 
 export function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
+  const voiceValidation = validateVoiceSelectionForCountry({
+    countryCode: input.countryCode,
+    voiceId: input.voiceId,
+    languageMode: input.languageMode,
+  });
+  if (!voiceValidation.valid || !voiceValidation.voice) {
+    throw new Error(voiceValidation.reason);
+  }
+
   const credentialId = process.env.VAPI_SERVER_CREDENTIAL_ID?.trim();
   const compliancePlan =
     input.recordingEnabled && input.recordingDisclosureEnabled
@@ -181,7 +198,7 @@ export function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
     transcriber: {
       provider: "deepgram",
       model: "nova-2",
-      language: "en-US",
+      language: resolveVapiTranscriberLanguage(input.countryCode, input.languageMode),
     },
     model: {
       provider: "groq",
@@ -190,7 +207,7 @@ export function buildVapiAssistantPayload(input: UpsertVapiAssistantInput) {
     },
     voice: {
       provider: "cartesia",
-      voiceId: "79a125e8-cd45-4c13-8a67-188112f4dd22",
+      voiceId: voiceValidation.voice.voiceId,
     },
     tools: input.toolNames.map((toolName) => ({
       type: "function",

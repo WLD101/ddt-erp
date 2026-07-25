@@ -4,6 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
 import { requirePlatformAdmin } from "@/lib/security/guards";
+import { resolveExplicitTenantCountry } from "@/modules/countries/policy";
+import { getApprovedVapiVoicesForCountry } from "@/modules/voice/vapi/voice-catalog";
 
 export default async function AdminTenantWizardPage({ params }: { params: { id: string } }) {
   await requirePlatformAdmin();
@@ -16,6 +18,14 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
   });
 
   if (!org) return notFound();
+  const tenantCountryCode =
+    resolveExplicitTenantCountry({
+      country: org.country,
+      countryCode: org.countryCode,
+      marketKey: org.marketKey,
+    }) || null;
+  if (!tenantCountryCode) return notFound();
+  const approvedVoices = getApprovedVapiVoicesForCountry(tenantCountryCode);
 
   async function createAgentAction(fd: FormData) {
     "use server"
@@ -47,7 +57,7 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
         displayName: name || "AI Receptionist",
         internalName: (name || "agent").toLowerCase().replace(/\s+/g, '-'),
         role: role || "General Support",
-        vapiVoiceId: voiceId || "jennifer", // Fallback voice
+        vapiVoiceId: voiceId || approvedVoices[0]?.voiceId || null,
         isActive: true,
       }
     });
@@ -88,11 +98,11 @@ export default async function AdminTenantWizardPage({ params }: { params: { id: 
              <div className="space-y-2">
                <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Vapi Voice ID</label>
                <select name="voiceId" className="w-full rounded-xl border border-outline-variant/30 bg-surface-container-lowest px-4 py-2.5 text-sm outline-none focus:border-primary">
-                 <option value="jennifer">Jennifer (English)</option>
-                 <option value="paula">Paula (Multilingual/South Asian accent)</option>
-                 <option value="ryan">Ryan (Male English)</option>
+                 {approvedVoices.map((voice) => (
+                   <option key={voice.voiceId} value={voice.voiceId}>{voice.displayName} ({voice.locale})</option>
+                 ))}
                </select>
-               <p className="text-xs text-on-surface-variant">Use the most natural multilingual/South Asian voice available for testing.</p>
+               <p className="text-xs text-on-surface-variant">Only country-approved voices are available for this tenant.</p>
              </div>
            </div>
 

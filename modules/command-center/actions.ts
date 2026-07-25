@@ -8,10 +8,15 @@ import { z } from "zod";
 
 import { inferPlanIdFromPackage } from "@/lib/billing/catalog";
 import { PLANS } from "@/lib/billing/plans";
-import { getCurrencyForCountry } from "@/lib/country-currency";
 import { writePlatformAuditLog } from "@/lib/platform-audit";
 import { prisma } from "@/lib/prisma";
 import { requirePlatformAdmin } from "@/lib/security/guards";
+import {
+  buildCountryDerivedOrganizationPatch,
+  normalizeTenantCountryCode,
+  tenantCountryCodeSchema,
+  validateCountryChangeSafety,
+} from "@/modules/countries/policy";
 import {
   seedPermissions,
   initializeTenantBranches,
@@ -92,7 +97,10 @@ const createClientSchema = z
     organizationPhone: z.string().max(40).optional(),
     ownerName: z.string().max(120).optional(),
     ownerEmail: z.string().email("Owner email is required."),
-    country: z.string().min(2, "Country is required."),
+    country: z.preprocess(
+      (value) => normalizeTenantCountryCode(typeof value === "string" ? value : ""),
+      tenantCountryCodeSchema,
+    ),
     industry: z.enum(["wholesale", "ecommerce", "retail", "distribution", "manufacturing", "service_basic"]),
     packageId: planIdSchema,
     packageMode: packageModeSchema.default("standard"),
@@ -431,12 +439,35 @@ export async function updateOrganizationAdminAction(formData: FormData) {
   }
 
   const { organizationId, country, currency } = parsed.data;
-  const resolvedCurrency = currency || getCurrencyForCountry(country);
+  const nextCountryCode = normalizeTenantCountryCode(country);
+  if (!nextCountryCode) {
+    throw new Error("Country must be GB or PK.");
+  }
+
+  const existing = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { countryCode: true, activatedAt: true },
+  });
+  if (!existing) {
+    throw new Error("Organization not found.");
+  }
+
+  const safety = validateCountryChangeSafety({
+    existingCountryCode: existing.countryCode,
+    nextCountryCode,
+    activatedAt: existing.activatedAt,
+  });
+  if (!safety.allowed) {
+    throw new Error(safety.reason);
+  }
+
+  const patch = buildCountryDerivedOrganizationPatch(nextCountryCode);
+  const resolvedCurrency = currency || patch.currency;
 
   await prisma.organization.update({
     where: { id: organizationId },
     data: {
-      country,
+      ...patch,
       currency: resolvedCurrency,
     },
   });
@@ -446,7 +477,7 @@ export async function updateOrganizationAdminAction(formData: FormData) {
     action: "ORG_PROFILE_UPDATED",
     entityType: "Organization",
     entityId: organizationId,
-    details: `Updated organization locale settings to ${country || "unchanged"} / ${resolvedCurrency}.`,
+    details: `Updated organization locale settings to ${patch.country} / ${resolvedCurrency}.`,
   });
 
   revalidatePath("/wq-command-center");
@@ -847,7 +878,8 @@ export async function createClientFromCommandCenterAction(
     },
   });
   const organizationSlug = slugCount === 0 ? baseSlug : `${baseSlug}-${slugCount + 1}`;
-  const currency = getCurrencyForCountry(input.country);
+  const countryPatch = buildCountryDerivedOrganizationPatch(input.country);
+  const currency = countryPatch.currency;
   const now = new Date();
   const currentPeriodEnd = resolvePeriodEnd(now, input.billingCycle, input.renewalDate);
   const temporaryPassword = randomBytes(6).toString("base64url");
@@ -884,7 +916,7 @@ export async function createClientFromCommandCenterAction(
           slug: organizationSlug,
           email: ownerEmail,
           phone: input.organizationPhone?.trim() || null,
-          country: input.country,
+          ...countryPatch,
           currency,
           industry: input.industry,
           industryType: input.industry,
@@ -994,14 +1026,14 @@ export async function createClientFromCommandCenterAction(
       },
       update: {
         currentStep: 7,
-        completedSteps: "welcome,industry,profile,branch,product,customer,invite,complete",
+        completedSteps: "welcome,market,industry,profile,branch,product,customer,invite,complete",
         isCompleted: true,
         completedAt: now,
       },
       create: {
         organizationId: transaction.organization.id,
         currentStep: 7,
-        completedSteps: "welcome,industry,profile,branch,product,customer,invite,complete",
+        completedSteps: "welcome,market,industry,profile,branch,product,customer,invite,complete",
         isCompleted: true,
         completedAt: now,
       },

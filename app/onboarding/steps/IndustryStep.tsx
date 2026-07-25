@@ -42,9 +42,10 @@ const industryIcons: Record<string, any> = {
 export function IndustryStep({ stepId, onComplete, state }: IndustryStepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const parsedMarket = marketKeySchema.safeParse(state?.marketKey || state?.selectedMarketKey);
-  const marketKey = parsedMarket.success ? parsedMarket.data : "pk";
-  const market = getMarketProfile(marketKey);
-  const availableIndustryProfiles = getAvailableIndustryProfilesForMarket(marketKey);
+  const marketKey = parsedMarket.success ? parsedMarket.data : null;
+  const stateMarketKey = marketKey ?? "pk";
+  const market = getMarketProfile(stateMarketKey);
+  const availableIndustryProfiles = getAvailableIndustryProfilesForMarket(stateMarketKey);
   const initialIndustry = industryProfileKeySchema.safeParse(state?.industryProfileKey || state?.industry).success
     ? (state?.industryProfileKey || state?.industry)
     : market.featuredIndustryProfiles[0];
@@ -63,6 +64,17 @@ export function IndustryStep({ stepId, onComplete, state }: IndustryStepProps) {
   }, [selectedIndustry]);
 
   const recommendation = resolveIndustryProfileRecommendation(selectedIndustry, answers);
+
+  if (!marketKey) {
+    return (
+      <div className="space-y-6 rounded-[2rem] border border-amber-400/20 bg-amber-400/5 p-8">
+        <h2 className="text-2xl font-black text-on-surface">Market selection required</h2>
+        <p className="max-w-2xl text-sm leading-7 text-on-surface-variant">
+          Choose the tenant market first so WhatsQuery can keep UK and Pakistan industries, terminology, and integrations separated safely.
+        </p>
+      </div>
+    );
+  }
 
   const toggleModule = (moduleId: string) => {
     setSelectedModules((prev) =>

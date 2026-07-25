@@ -1,4 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import {
+  buildCountryDerivedOrganizationPatch,
+  resolveExplicitTenantCountry,
+} from "@/modules/countries/policy";
 import { z } from "zod";
 import {
   getDefaultEnabledModuleIds,
@@ -16,7 +20,6 @@ import {
   getMarketProfile,
   marketKeySchema,
   resolveMarketAwareRecommendation,
-  resolveMarketKeyFromSignals,
   type MarketKey,
 } from "./market-profiles";
 
@@ -161,20 +164,22 @@ export async function getOnboardingState(organizationId: string) {
     },
   });
 
-  const inferredMarketKey =
-    resolveMarketKeyFromSignals({
-      marketKey: organization?.marketKey,
-      country: organization?.country,
-      currency: organization?.currency,
-      timezone: organization?.timezone,
-      locale: organization?.locale,
-      countryCode: organization?.countryCode,
-    }) || "pk";
-  const market = getMarketProfile(inferredMarketKey);
-  const marketDefaults = getMarketDefaults(inferredMarketKey);
+  const explicitCountryCode = resolveExplicitTenantCountry({
+    marketKey: organization?.marketKey,
+    country: organization?.country,
+    countryCode: organization?.countryCode,
+  });
+  const resolvedMarketKey =
+    organization?.marketKey && marketKeySchema.safeParse(organization.marketKey).success
+      ? (organization.marketKey as MarketKey)
+      : explicitCountryCode
+        ? buildCountryDerivedOrganizationPatch(explicitCountryCode).marketKey
+        : null;
+  const market = resolvedMarketKey ? getMarketProfile(resolvedMarketKey) : null;
+  const marketDefaults = resolvedMarketKey ? getMarketDefaults(resolvedMarketKey) : null;
 
   const resolved = getResolvedIndustryProfile({
-    marketKey: inferredMarketKey,
+    marketKey: resolvedMarketKey,
     industry: organization?.industry,
     industryProfileKey: organization?.industryProfileKey,
     enabledModules: organization?.enabledModules,
@@ -187,26 +192,26 @@ export async function getOnboardingState(organizationId: string) {
         organizationId,
         currentStep: 0,
         completedSteps: "",
-        selectedMarketKey: organization?.marketKey || inferredMarketKey,
+        selectedMarketKey: organization?.marketKey || resolvedMarketKey,
       },
     });
 
     return {
       ...created,
-      selectedMarketKey: created.selectedMarketKey || inferredMarketKey,
-      marketKey: inferredMarketKey,
+      selectedMarketKey: created.selectedMarketKey || resolvedMarketKey,
+      marketKey: resolvedMarketKey,
       marketProfile: market,
-      marketRequiresReview: organization?.marketRequiresReview ?? organization?.marketKey == null,
-      locale: organization?.locale || marketDefaults.locale,
-      countryCode: organization?.countryCode || marketDefaults.countryCode,
-      currency: organization?.currency || marketDefaults.currency,
-      timezone: organization?.timezone || marketDefaults.timezone,
-      pricingProfile: organization?.pricingProfile || marketDefaults.pricingProfile,
-      complianceProfile: organization?.complianceProfile || marketDefaults.complianceProfile,
+      marketRequiresReview: organization?.marketRequiresReview ?? explicitCountryCode == null,
+      locale: organization?.locale || marketDefaults?.locale || null,
+      countryCode: organization?.countryCode || marketDefaults?.countryCode || explicitCountryCode,
+      currency: organization?.currency || marketDefaults?.currency || null,
+      timezone: organization?.timezone || marketDefaults?.timezone || null,
+      pricingProfile: organization?.pricingProfile || marketDefaults?.pricingProfile || null,
+      complianceProfile: organization?.complianceProfile || marketDefaults?.complianceProfile || null,
       profileDefaults: {
-        country: organization?.country || marketDefaults.country,
-        currency: organization?.currency || marketDefaults.currency,
-        timezone: organization?.timezone || marketDefaults.timezone,
+        country: organization?.country || null,
+        currency: organization?.currency || marketDefaults?.currency || null,
+        timezone: organization?.timezone || marketDefaults?.timezone || null,
       },
       completedSteps: [],
       skippedSteps: [],
@@ -223,29 +228,31 @@ export async function getOnboardingState(organizationId: string) {
   const skipped = steps.filter(s => s.startsWith("skipped:")).map(s => s.slice(8));
   const operationalAnswers = parseOnboardingAnswers(state.operationalAnswersJson);
   const recommendedProfileKey = state.recommendedProfileKey || resolved.profile.key;
-  const marketAwareRecommendation = resolveMarketAwareRecommendation(
-    inferredMarketKey,
-    recommendedProfileKey as any,
-    operationalAnswers
-  );
+  const marketAwareRecommendation = resolvedMarketKey
+    ? resolveMarketAwareRecommendation(
+        resolvedMarketKey,
+        recommendedProfileKey as any,
+        operationalAnswers
+      )
+    : null;
 
   // Cast for code compatibility elsewhere
   return {
     ...state,
-    selectedMarketKey: state.selectedMarketKey || inferredMarketKey,
-    marketKey: inferredMarketKey,
+    selectedMarketKey: state.selectedMarketKey || resolvedMarketKey,
+    marketKey: resolvedMarketKey,
     marketProfile: market,
-    marketRequiresReview: organization?.marketRequiresReview ?? organization?.marketKey == null,
-    locale: organization?.locale || marketDefaults.locale,
-    countryCode: organization?.countryCode || marketDefaults.countryCode,
-    currency: organization?.currency || marketDefaults.currency,
-    timezone: organization?.timezone || marketDefaults.timezone,
-    pricingProfile: organization?.pricingProfile || marketDefaults.pricingProfile,
-    complianceProfile: organization?.complianceProfile || marketDefaults.complianceProfile,
+    marketRequiresReview: organization?.marketRequiresReview ?? explicitCountryCode == null,
+    locale: organization?.locale || marketDefaults?.locale || null,
+    countryCode: organization?.countryCode || marketDefaults?.countryCode || explicitCountryCode,
+    currency: organization?.currency || marketDefaults?.currency || null,
+    timezone: organization?.timezone || marketDefaults?.timezone || null,
+    pricingProfile: organization?.pricingProfile || marketDefaults?.pricingProfile || null,
+    complianceProfile: organization?.complianceProfile || marketDefaults?.complianceProfile || null,
     profileDefaults: {
-      country: organization?.country || marketDefaults.country,
-      currency: organization?.currency || marketDefaults.currency,
-      timezone: organization?.timezone || marketDefaults.timezone,
+      country: organization?.country || null,
+      currency: organization?.currency || marketDefaults?.currency || null,
+      timezone: organization?.timezone || marketDefaults?.timezone || null,
     },
     completedSteps: completed,
     skippedSteps: skipped,

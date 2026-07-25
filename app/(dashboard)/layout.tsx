@@ -12,6 +12,8 @@ import { redirect } from "next/navigation";
 import { getOrganizationAccessState } from "@/lib/billing/access";
 import { SupportLauncher } from "@/components/support/SupportLauncher";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {

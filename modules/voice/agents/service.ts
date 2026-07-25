@@ -1,12 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import { resolveExplicitTenantCountry } from "@/modules/countries/policy";
+import {
+  getAllowedVoiceLanguageModesForCountry,
+  getDefaultVoiceLanguageModeForCountry,
+} from "@/modules/voice/country-policy";
+import { getDefaultApprovedVapiVoiceForCountry } from "@/modules/voice/vapi/voice-catalog";
 import { parseJsonArray, voiceAllowedActionOptions } from "@/modules/voice/training/schema";
 
 const DEFAULT_AGENT_NAME = "Main Receptionist";
 const DEFAULT_AGENT_ROLE = "CAFE_RESTAURANT_AI_RECEPTIONIST";
-const DEFAULT_AGENT_LANGUAGE_MODE = "AUTO_DETECT";
-const DEFAULT_AGENT_TONE = "PAKISTANI_POLITE";
-const DEFAULT_AGENT_VOICE_PERSONA = "Pakistani polite, professional";
-const DEFAULT_AGENT_SUPPORTED_LANGUAGES = ["ENGLISH", "URDU", "ROMAN_URDU"] as const;
 const DEFAULT_AGENT_ALLOWED_TOOLS = [
   "lookup_faq",
   "get_business_hours",
@@ -111,7 +113,7 @@ export async function getDefaultVoiceAgent(organizationId: string) {
 }
 
 export async function ensureDefaultVoiceAgent(organizationId: string) {
-  const [existingDefaultAgent, existingAnyAgent, businessProfile, trainingProfile, integrationSettings] = await Promise.all([
+  const [existingDefaultAgent, existingAnyAgent, businessProfile, trainingProfile, integrationSettings, organization] = await Promise.all([
     prisma.voiceAgent.findFirst({
       where: { organizationId, isDefault: true },
       orderBy: { createdAt: "asc" },
@@ -136,8 +138,28 @@ export async function ensureDefaultVoiceAgent(organizationId: string) {
         vapiPhoneNumberId: true,
       },
     }),
+    prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        country: true,
+        countryCode: true,
+        marketKey: true,
+      },
+    }),
   ]);
 
+  const tenantCountryCode =
+    resolveExplicitTenantCountry({
+      country: organization?.country,
+      countryCode: organization?.countryCode,
+      marketKey: organization?.marketKey,
+    }) || "PK";
+  const defaultLanguageMode = getDefaultVoiceLanguageModeForCountry(tenantCountryCode);
+  const defaultSupportedLanguages = getAllowedVoiceLanguageModesForCountry(tenantCountryCode);
+  const defaultVoice = getDefaultApprovedVapiVoiceForCountry(tenantCountryCode);
+  const defaultTone = tenantCountryCode === "GB" ? "PROFESSIONAL" : "PAKISTANI_POLITE";
+  const defaultVoicePersona =
+    tenantCountryCode === "GB" ? "British professional, clear UK pronunciation" : "Pakistani polite, professional";
   const bootstrapPhoneNumberId = getVoiceAgentBootstrapPhoneNumberId();
   const defaultAgentSource = existingDefaultAgent || existingAnyAgent;
   const businessAwareAgentName = getDefaultVoiceAgentName(businessProfile?.businessName);
@@ -175,11 +197,12 @@ export async function ensureDefaultVoiceAgent(organizationId: string) {
             environment: existingEnvironment,
           }),
         role: defaultAgentSource.role || DEFAULT_AGENT_ROLE,
-        languageMode: defaultAgentSource.languageMode || DEFAULT_AGENT_LANGUAGE_MODE,
+        languageMode: defaultAgentSource.languageMode || defaultLanguageMode,
         supportedLanguages:
-          defaultAgentSource.supportedLanguages || JSON.stringify([...DEFAULT_AGENT_SUPPORTED_LANGUAGES]),
-        tone: defaultAgentSource.tone || DEFAULT_AGENT_TONE,
-        voicePersona: defaultAgentSource.voicePersona || DEFAULT_AGENT_VOICE_PERSONA,
+          defaultAgentSource.supportedLanguages || JSON.stringify(defaultSupportedLanguages),
+        tone: defaultAgentSource.tone || defaultTone,
+        voicePersona: defaultAgentSource.voicePersona || defaultVoicePersona,
+        vapiVoiceId: defaultAgentSource.vapiVoiceId || defaultVoice?.voiceId || null,
         allowedTools: defaultAgentSource.allowedTools || JSON.stringify([...DEFAULT_AGENT_ALLOWED_TOOLS]),
         vapiAssistantId: defaultAgentSource.vapiAssistantId || integrationSettings?.vapiAssistantId || null,
         vapiAssistantName:
@@ -224,10 +247,11 @@ export async function ensureDefaultVoiceAgent(organizationId: string) {
       environment,
       internalName,
       role: DEFAULT_AGENT_ROLE,
-      languageMode: DEFAULT_AGENT_LANGUAGE_MODE,
-      supportedLanguages: JSON.stringify([...DEFAULT_AGENT_SUPPORTED_LANGUAGES]),
-      tone: DEFAULT_AGENT_TONE,
-      voicePersona: DEFAULT_AGENT_VOICE_PERSONA,
+      languageMode: defaultLanguageMode,
+      supportedLanguages: JSON.stringify(defaultSupportedLanguages),
+      tone: defaultTone,
+      voicePersona: defaultVoicePersona,
+      vapiVoiceId: defaultVoice?.voiceId || null,
       allowedTools: JSON.stringify([...DEFAULT_AGENT_ALLOWED_TOOLS]),
       vapiAssistantId: integrationSettings?.vapiAssistantId || null,
       vapiAssistantName: integrationSettings?.vapiAssistantName || vapiAssistantName,

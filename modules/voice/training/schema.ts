@@ -1,7 +1,14 @@
-import { z } from "zod";
 import { voiceFallbackContactOptions } from "@/modules/voice/schema";
+import { z } from "zod";
 
-export const voiceTrainingLanguageOptions = ["ENGLISH", "URDU", "ROMAN_URDU", "AUTO_DETECT"] as const;
+export const voiceTrainingLanguageOptions = [
+  "ENGLISH",
+  "URDU",
+  "ROMAN_URDU",
+  "ROMAN_ENGLISH",
+  "MIXED_ROMAN_URDU_ENGLISH",
+  "AUTO_DETECT",
+] as const;
 export const voiceTrainingToneOptions = ["PROFESSIONAL", "FRIENDLY", "PAKISTANI_POLITE", "LUXURY", "CASUAL"] as const;
 export const voiceAfterHoursBehaviorOptions = [
   "TAKE_MESSAGE",

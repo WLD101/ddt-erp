@@ -5,6 +5,8 @@ import { isPlatformAdminEmail } from "@/lib/security/access";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 import { AdminSidebar } from "./_components/admin-sidebar";
 
+export const dynamic = "force-dynamic";
+
 export default async function VoiceAdminLayout({
   children,
 }: Readonly<{

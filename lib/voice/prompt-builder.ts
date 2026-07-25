@@ -39,11 +39,29 @@ export function buildVoiceAgentPrompt(params: BuildVoicePromptParams): string {
   const industry = businessProfile?.industry || "business";
   const languageMode = agent.languageMode || "AUTO_DETECT";
   const tone = agent.tone || "PROFESSIONAL";
-  const greeting = businessProfile?.greetingMessage || `Assalam-o-Alaikum, you've reached ${businessName}. How can I help you today?`;
+  const seemsPakistanProfile =
+    businessProfile?.preferredLanguage === "URDU" ||
+    businessProfile?.preferredLanguage === "ROMAN_URDU" ||
+    businessProfile?.preferredLanguage === "AUTO_DETECT";
+  const callingMarket =
+    seemsPakistanProfile
+      ? {
+          label: "Pakistan",
+          greeting: `Assalam-o-Alaikum, you've reached ${businessName}. How can I help you today?`,
+          languageRule: "If Language Mode is AUTO_DETECT: Detect if the user is speaking English, Urdu, or Roman Urdu and respond in the same language.",
+          marketRules: "Use Pakistan phone, date, address, and sales-tax wording where configured. Do not mention UK VAT or company-number terminology.",
+        }
+      : {
+          label: "this tenant's configured market",
+          greeting: `Thanks for calling ${businessName}. How can I help you today?`,
+          languageRule: "If Language Mode is AUTO_DETECT: Detect the caller language from the configured tenant languages and reply naturally.",
+          marketRules: "Do not assume Pakistan or UK-specific payment methods, tax labels, or legal wording unless the tenant configuration explicitly supports them.",
+        };
+  const greeting = businessProfile?.greetingMessage || callingMarket.greeting;
   const openingHours = businessProfile?.openingHours || "Please ask staff for opening hours.";
   
   let prompt = `You are a voice AI receptionist for ${businessName}.
-You are an expert, ${tone.toLowerCase()}, and helpful AI answering calls for a ${industry} in Pakistan.
+You are an expert, ${tone.toLowerCase()}, and helpful AI answering calls for a ${industry} in ${callingMarket.label}.
 
 ## Identity & Role
 - Your role is: ${agent.role || "Receptionist"}.
@@ -53,9 +71,10 @@ You are an expert, ${tone.toLowerCase()}, and helpful AI answering calls for a $
 
 ## Language & Tone
 - Language Mode: ${languageMode}
-- If Language Mode is AUTO_DETECT: Detect if the user is speaking English, Urdu, or Roman Urdu and respond in the same language. 
+- ${callingMarket.languageRule}
 - Tone: ${tone}. Be polite, use "Aap" (respectful) instead of "Tum" in Urdu.
 - First message you must say: "${greeting}"
+- Market rules: ${callingMarket.marketRules}
 
 ## Business Information
 - Opening Hours: ${openingHours}

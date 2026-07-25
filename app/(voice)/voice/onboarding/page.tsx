@@ -5,7 +5,10 @@ import { getCurrentTenantContext, requireRole } from "@/lib/tenant";
 import { SmartVoiceOnboardingForm } from "@/components/voice/smart-voice-onboarding-form";
 import { VoiceMarketingShell } from "@/components/voice/voice-marketing-shell";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
+import { type TenantCountryCode } from "@/modules/countries/policy";
 import { getVoiceOnboardingData } from "@/modules/voice/service";
+
+export const dynamic = "force-dynamic";
 
 export default async function VoiceOnboardingPage() {
   const host = await getVoiceRequestHost();
@@ -48,13 +51,26 @@ export default async function VoiceOnboardingPage() {
             businessName: businessProfile?.businessName ?? organization?.name ?? "",
             industry: businessProfile?.industry ?? organization?.industryType ?? "",
             website: businessProfile?.website ?? "",
-            preferredCallingCountry:
-              (organization?.country as "PK" | "US" | "GB" | undefined) ?? "PK",
+            preferredCallingCountry: (organization?.countryCode as TenantCountryCode | undefined) ?? undefined,
             businessPhone: businessProfile?.businessPhone ?? organization?.phone ?? "",
             preferredLanguage:
-              (businessProfile?.preferredLanguage as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??
-              (receptionistSettings?.languageMode as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??
-              "AUTO_DETECT",
+              (businessProfile?.preferredLanguage as
+                | "ENGLISH"
+                | "URDU"
+                | "ROMAN_URDU"
+                | "ROMAN_ENGLISH"
+                | "MIXED_ROMAN_URDU_ENGLISH"
+                | "AUTO_DETECT"
+                | undefined) ??
+              (receptionistSettings?.languageMode as
+                | "ENGLISH"
+                | "URDU"
+                | "ROMAN_URDU"
+                | "ROMAN_ENGLISH"
+                | "MIXED_ROMAN_URDU_ENGLISH"
+                | "AUTO_DETECT"
+                | undefined) ??
+              "ENGLISH",
             openingHours: businessProfile?.openingHours ?? receptionistSettings?.businessHours ?? "",
             mainGoal:
               (businessProfile?.mainGoal as "ANSWER_FAQS" | "CAPTURE_LEADS" | "BOOK_APPOINTMENTS" | "ROUTE_CALLS" | undefined) ??

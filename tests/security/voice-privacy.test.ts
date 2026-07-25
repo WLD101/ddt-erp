@@ -124,6 +124,9 @@ test("Vapi assistant payload uses artifact and consent plans", () => {
       recordingDisclosureText:
         "This call may be recorded. Do you agree to continue?",
       transcriptionEnabled: true,
+      countryCode: "GB",
+      languageMode: "ENGLISH",
+      voiceId: "79a125e8-cd45-4c13-8a67-188112f4dd22",
     }) as {
       server: { credentialId?: string; secret?: string };
       artifactPlan: {

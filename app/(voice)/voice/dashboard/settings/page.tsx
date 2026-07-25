@@ -23,9 +23,23 @@ export default async function VoiceSettingsPage() {
             receptionistSettings?.fallbackMessage ??
             "Thanks for reaching out. We are unavailable right now, but our team will follow up soon.",
           languageMode:
-            (receptionistSettings?.languageMode as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??
-            (workspace.businessProfile?.preferredLanguage as "ENGLISH" | "URDU" | "ROMAN_URDU" | "AUTO_DETECT" | undefined) ??
-            "AUTO_DETECT",
+            (receptionistSettings?.languageMode as
+              | "ENGLISH"
+              | "URDU"
+              | "ROMAN_URDU"
+              | "ROMAN_ENGLISH"
+              | "MIXED_ROMAN_URDU_ENGLISH"
+              | "AUTO_DETECT"
+              | undefined) ??
+            (workspace.businessProfile?.preferredLanguage as
+              | "ENGLISH"
+              | "URDU"
+              | "ROMAN_URDU"
+              | "ROMAN_ENGLISH"
+              | "MIXED_ROMAN_URDU_ENGLISH"
+              | "AUTO_DETECT"
+              | undefined) ??
+            "ENGLISH",
           businessHours: receptionistSettings?.businessHours ?? workspace.businessProfile?.openingHours ?? "",
           afterHoursBehavior:
             (receptionistSettings?.afterHoursBehavior as "TAKE_MESSAGE" | "TEXT_FALLBACK" | "VOICEMAIL" | "ESCALATE" | undefined) ??

@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-export const voiceLanguageOptions = ["ENGLISH", "URDU", "ROMAN_URDU", "AUTO_DETECT"] as const;
+export const voiceCountryOptions = ["GB", "PK"] as const;
+export const voiceLanguageOptions = [
+  "ENGLISH",
+  "URDU",
+  "ROMAN_URDU",
+  "ROMAN_ENGLISH",
+  "MIXED_ROMAN_URDU_ENGLISH",
+  "AUTO_DETECT",
+] as const;
 export const voiceGoalOptions = ["ANSWER_FAQS", "CAPTURE_LEADS", "BOOK_APPOINTMENTS", "ROUTE_CALLS"] as const;
 export const voiceAfterHoursOptions = ["TAKE_MESSAGE", "TEXT_FALLBACK", "VOICEMAIL", "ESCALATE"] as const;
 export const voiceLeadCaptureFields = ["name", "phone", "email", "reason", "appointment_time"] as const;
@@ -17,7 +25,7 @@ export const voiceBusinessProfileSchema = z.object({
   businessName: z.string().trim().min(2, "Business name is required."),
   industry: z.string().trim().min(2, "Industry is required."),
   website: optionalUrl,
-  preferredCallingCountry: z.enum(["PK", "US", "GB"]).default("PK"),
+  preferredCallingCountry: z.enum(voiceCountryOptions),
   businessPhone: z.string().trim().min(5, "Business phone is required."),
   preferredLanguage: z.enum(voiceLanguageOptions),
   openingHours: z.string().trim().min(5, "Opening hours are required."),

@@ -8,6 +8,8 @@ import { isPlatformAdminEmail } from "@/lib/security/access";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function VoiceDashboardLayout({
   children,
 }: Readonly<{
