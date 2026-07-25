@@ -30,6 +30,8 @@ git merge --ff-only origin/main
 echo "Redis state is preserved; global flushes are not permitted."
 
 npm ci
+npm run migration:encoding-check
+npm run migration:audit
 npx prisma validate
 npx prisma generate
 npx prisma migrate status || true

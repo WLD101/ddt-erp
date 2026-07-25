@@ -37,6 +37,7 @@ auth-debug.log
 .env*
 prisma/*.db
 prisma/*.db-journal
+prisma/migrations/**/migration.sql.*backup*
 
 # vercel
 .vercel

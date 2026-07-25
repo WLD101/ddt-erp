@@ -40,6 +40,12 @@ jobs:
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
 
+      - name: Validate Prisma migration files
+        run: npm run migration:encoding-check
+
+      - name: Test migration validator
+        run: npm run test:migrations
+
       - name: Validate Prisma schema
         run: npx prisma validate
 

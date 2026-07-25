@@ -41,6 +41,9 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Validate Prisma migration files
+        run: npm run migration:encoding-check
+
       - name: Verify backup archive checksum
         shell: bash
         run: |
@@ -51,19 +54,7 @@ jobs:
           sha256sum --check "$(basename "${BACKUP_PATH}").sha256"
 
       - name: Audit migration SQL
-        shell: bash
-        run: |
-          set -euo pipefail
-          migrations=(
-            prisma/migrations/202607220001_industry_profile_onboarding/migration.sql
-            prisma/migrations/202607220002_shared_integration_foundation/migration.sql
-            prisma/migrations/202607220003_market_profile_foundation/migration.sql
-            prisma/migrations/202607220004_integration_runtime_hardening/migration.sql
-          )
-          if grep -Eiq 'DROP[[:space:]]+(TABLE|COLUMN)|TRUNCATE[[:space:]]+TABLE|DELETE[[:space:]]+FROM' "${migrations[@]}"; then
-            echo "Destructive SQL pattern detected."
-            exit 1
-          fi
+        run: npm run migration:audit
 
       - name: Validate and generate
         run: |

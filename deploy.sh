@@ -34,6 +34,7 @@ cd /var/www/whatsquery
 git fetch origin main
 git merge --ff-only origin/main
 npm ci
+npm run migration:encoding-check
 set -a
 source .env
 set +a

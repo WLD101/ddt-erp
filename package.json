@@ -15,6 +15,7 @@
     "voice:diagnose-vapi": "tsx scripts/diagnose-vapi-connection.ts",
     "voice:reconcile-vapi": "tsx scripts/reconcile-vapi-calls.ts",
     "voice:replay-vapi": "tsx scripts/replay-vapi-event.ts",
+    "migration:encoding-check": "node scripts/validate-prisma-migration-files.mjs",
     "migration:audit": "node scripts/audit-prisma-migrations.mjs",
     "migration:verify-target": "node scripts/verify-pre-migration-database.mjs",
     "pilot:verify-env": "node scripts/verify-pilot-environment.mjs",
@@ -22,6 +23,7 @@
     "test:onboarding": "tsx --test tests/onboarding/*.test.ts",
     "test:integrations": "tsx --test tests/integrations/*.test.ts",
     "test:telecom": "tsx --test tests/telecom/*.test.ts",
+    "test:migrations": "node --test tests/migrations/*.test.mjs",
     "monitor:benchmark": "tsx scripts/run-capacity-benchmarks.ts"
   },
   "dependencies": {

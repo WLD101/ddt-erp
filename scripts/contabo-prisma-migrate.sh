@@ -142,6 +142,7 @@ if grep -Eiq 'DROP[[:space:]]+(TABLE|COLUMN)|TRUNCATE[[:space:]]+TABLE|DELETE[[:
 fi
 echo "Migration destructive-pattern audit: passed"
 
+npm run migration:encoding-check
 npm run migration:audit
 npx prisma validate
 npx prisma generate
