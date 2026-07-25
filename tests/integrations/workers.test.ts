@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { canClaimQueuedWork, computeBackoffDelayMs, computeNextRetryAt, leaseExpired } from "@/modules/integrations/core/workers";
+import {
+  canClaimIntegrationEventWork,
+  canClaimQueuedWork,
+  computeBackoffDelayMs,
+  computeNextRetryAt,
+  leaseExpired,
+  shouldRetryIntegrationFailure,
+} from "@/modules/integrations/core/workers";
 
 test("backoff grows exponentially and caps", () => {
   assert.equal(computeBackoffDelayMs(1, 1000, 8000), 1000);
@@ -27,4 +34,27 @@ test("next retry uses current backoff schedule", () => {
   const now = new Date("2026-07-22T12:00:00.000Z");
   const next = computeNextRetryAt({ attemptCount: 3, now, baseMs: 1000, maxMs: 10_000 });
   assert.equal(next.toISOString(), "2026-07-22T12:00:04.000Z");
+});
+
+test("failed and received integration events can be claimed when due", () => {
+  const now = new Date("2026-07-22T12:00:00.000Z");
+  assert.equal(canClaimIntegrationEventWork({ status: "received", now }), true);
+  assert.equal(canClaimIntegrationEventWork({ status: "failed", nextAttemptAt: now, now }), true);
+  assert.equal(
+    canClaimIntegrationEventWork({
+      status: "processing",
+      leaseExpiresAt: new Date("2026-07-22T11:59:00.000Z"),
+      now,
+    }),
+    true,
+  );
+  assert.equal(canClaimIntegrationEventWork({ status: "processed", now }), false);
+});
+
+test("retry policy only retries safe transient integration failures", () => {
+  assert.equal(shouldRetryIntegrationFailure("RATE_LIMITED"), true);
+  assert.equal(shouldRetryIntegrationFailure("PROVIDER_UNAVAILABLE"), true);
+  assert.equal(shouldRetryIntegrationFailure("TIMEOUT"), true);
+  assert.equal(shouldRetryIntegrationFailure("ACTION_NOT_SUPPORTED"), false);
+  assert.equal(shouldRetryIntegrationFailure("VALIDATION_FAILED"), false);
 });

@@ -2,12 +2,15 @@
 
 ## Current worker foundation
 
-The current runtime pass adds worker primitives for:
+The current runtime now includes:
 
 - sync job leasing
+- sync job claiming and completion
 - retry scheduling
-- abandoned-job recovery decisions
-- event-processing lease expiry checks
+- abandoned sync-job recovery
+- event claiming and processing
+- event dead-letter handling
+- one-shot worker execution via `npm run integration:work-once`
 
 ## Schema additions
 
@@ -25,14 +28,22 @@ These fields support:
 - refresh leasing
 - dead-letter metadata
 
+## Runtime behavior now implemented
+
+- `modules/integrations/runtime-worker.ts` processes due `IntegrationSyncJob` rows using the provider adapter `sync()` contract.
+- Stored `IntegrationEvent` rows are claimed through the same worker module and dispatched through the provider adapter `handleEvent()` contract.
+- Stale `running` sync jobs are recovered to `abandoned` or `cancelled` based on current row state.
+- Stale `processing` events are recovered to `failed` and rescheduled.
+- Safe transient failures retry with exponential backoff; terminal event failures move to `dead_lettered`.
+
 ## What is still pending
 
-The repository still needs deployment-wired background loops that:
+The repository still does not have a full always-on integration operations plane for:
 
-- claim jobs continuously
-- heartbeat active work
-- recover stale leases
-- reschedule failures
-- move terminal failures to dead-letter state
+- scheduled health-check sweeps across all connected integrations
+- scheduled credential refresh loops
+- outbound webhook delivery workers
+- deployment-wired long-running worker supervision on the VPS
+- provider-specific live Google webhook subscriptions beyond sandbox adapter handling
 
-That work was not falsely marked complete in this pass.
+Those items should remain classified as partial until the VPS runner and live provider wiring are verified.

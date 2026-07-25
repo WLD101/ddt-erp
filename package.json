@@ -19,6 +19,7 @@
     "migration:audit": "node scripts/audit-prisma-migrations.mjs",
     "migration:verify-target": "node scripts/verify-pre-migration-database.mjs",
     "pilot:verify-env": "node scripts/verify-pilot-environment.mjs",
+    "integration:work-once": "tsx scripts/run-integration-worker.ts",
     "test:security": "tsx --test tests/security/*.test.ts",
     "test:onboarding": "tsx --test tests/onboarding/*.test.ts",
     "test:integrations": "tsx --test tests/integrations/*.test.ts",

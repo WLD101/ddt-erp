@@ -3,6 +3,8 @@ import type {
   CredentialRefreshResult,
   IntegrationActionRequest,
   IntegrationActionResult,
+  IntegrationEventRequest,
+  IntegrationEventResult,
   IntegrationExecutionContext,
   IntegrationSyncRequest,
   IntegrationSyncResult,
@@ -36,6 +38,11 @@ export interface IntegrationProviderAdapter {
     context: IntegrationExecutionContext,
     input: IntegrationSyncRequest
   ): Promise<IntegrationSyncResult>;
+
+  handleEvent?(
+    context: IntegrationExecutionContext,
+    input: IntegrationEventRequest
+  ): Promise<IntegrationEventResult>;
 
   refreshCredentials?(
     context: IntegrationExecutionContext

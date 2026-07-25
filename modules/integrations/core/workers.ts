@@ -43,3 +43,35 @@ export function canClaimQueuedWork(input: {
 
   return false;
 }
+
+export function canClaimIntegrationEventWork(input: {
+  status: string;
+  nextAttemptAt?: Date | null;
+  leaseExpiresAt?: Date | null;
+  now?: Date;
+}) {
+  const now = input.now || new Date();
+
+  if (["processed", "duplicate", "dead_lettered"].includes(input.status)) return false;
+  if (input.nextAttemptAt && input.nextAttemptAt.getTime() > now.getTime()) return false;
+
+  if (input.status === "received" || input.status === "failed") {
+    return true;
+  }
+
+  if (input.status === "processing") {
+    return leaseExpired(input.leaseExpiresAt, now);
+  }
+
+  return false;
+}
+
+export function shouldRetryIntegrationFailure(errorCode?: string | null) {
+  return [
+    "RATE_LIMITED",
+    "PROVIDER_UNAVAILABLE",
+    "TIMEOUT",
+    "SYNC_CONFLICT",
+    "RECONNECT_REQUIRED",
+  ].includes(errorCode || "");
+}

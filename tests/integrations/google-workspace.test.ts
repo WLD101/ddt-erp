@@ -55,6 +55,21 @@ test("google workspace sandbox adapter returns resources and executes supported 
     payload: { row: { customer: "Demo Buyer", phone: "+923001234567" } },
   });
   assert.equal(append.success, true);
+
+  const processedEvent = await adapter!.handleEvent!(baseContext, {
+    eventType: "calendar.event.updated",
+    deduplicationKey: "event_1",
+    payload: { eventId: "calendar-1" },
+  });
+  assert.equal(processedEvent.success, true);
+  assert.equal(processedEvent.status, "processed");
+
+  const duplicateEvent = await adapter!.handleEvent!(baseContext, {
+    eventType: "calendar.event.updated",
+    deduplicationKey: "event_1",
+    payload: { duplicate: true },
+  });
+  assert.equal(duplicateEvent.status, "duplicate");
 });
 
 test("industry recommendations map Google service suggestions to google workspace provider", () => {

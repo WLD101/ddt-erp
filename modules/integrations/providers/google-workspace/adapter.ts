@@ -4,6 +4,8 @@ import type {
   ConnectionTestResult,
   IntegrationActionRequest,
   IntegrationActionResult,
+  IntegrationEventRequest,
+  IntegrationEventResult,
   IntegrationExecutionContext,
   ResourceQuery,
   ResourceResult,
@@ -166,5 +168,34 @@ export const googleWorkspaceProviderAdapter: IntegrationProviderAdapter = {
       default:
         throw new IntegrationError("ACTION_NOT_SUPPORTED", `Unsupported Google Workspace action: ${input.actionKey}`);
     }
+  },
+
+  async handleEvent(
+    context: IntegrationExecutionContext,
+    input: IntegrationEventRequest
+  ): Promise<IntegrationEventResult> {
+    assertGoogleWorkspaceReady(context);
+
+    if (
+      input.eventType !== "calendar.event.updated" &&
+      input.eventType !== "gmail.message.updated" &&
+      input.eventType !== "sheets.row.changed"
+    ) {
+      throw new IntegrationError("ACTION_NOT_SUPPORTED", `Unsupported Google Workspace event: ${input.eventType}`);
+    }
+
+    if (input.payload.duplicate === true) {
+      return {
+        success: true,
+        status: "duplicate",
+        message: "Google Workspace sandbox event was safely deduplicated.",
+      };
+    }
+
+    return {
+      success: true,
+      status: "processed",
+      message: `Google Workspace sandbox event processed for ${input.eventType}.`,
+    };
   },
 };

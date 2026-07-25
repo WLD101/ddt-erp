@@ -4,6 +4,8 @@ import type {
   ConnectionTestResult,
   IntegrationActionRequest,
   IntegrationActionResult,
+  IntegrationEventRequest,
+  IntegrationEventResult,
   IntegrationExecutionContext,
   IntegrationSyncRequest,
   IntegrationSyncResult,
@@ -147,6 +149,31 @@ export const internalTestProviderAdapter: IntegrationProviderAdapter = {
       recordsProcessed: 2,
       recordsSucceeded: 2,
       recordsFailed: 0,
+    };
+  },
+
+  async handleEvent(
+    context: IntegrationExecutionContext,
+    input: IntegrationEventRequest
+  ): Promise<IntegrationEventResult> {
+    assertProviderAvailability(context);
+
+    if (input.eventType !== "internal_test.record.changed") {
+      throw new IntegrationError("ACTION_NOT_SUPPORTED", `Unsupported internal test event: ${input.eventType}`);
+    }
+
+    if (input.payload.duplicate === true) {
+      return {
+        success: true,
+        status: "duplicate",
+        message: "Internal test event was safely identified as a duplicate.",
+      };
+    }
+
+    return {
+      success: true,
+      status: "processed",
+      message: "Internal test event processed successfully.",
     };
   },
 

@@ -286,6 +286,23 @@ export const integrationSyncResultSchema = z.object({
 export type IntegrationSyncRequest = z.infer<typeof integrationSyncRequestSchema>;
 export type IntegrationSyncResult = z.infer<typeof integrationSyncResultSchema>;
 
+export const integrationEventRequestSchema = z.object({
+  eventType: z.string().min(1),
+  deduplicationKey: z.string().min(1),
+  externalEventId: z.string().min(1).optional(),
+  payload: z.record(z.string(), z.unknown()).default({}),
+});
+
+export const integrationEventResultSchema = z.object({
+  success: z.boolean(),
+  status: z.enum(["processed", "duplicate", "failed"]),
+  message: z.string().min(1),
+  errorCode: z.string().min(1).optional(),
+});
+
+export type IntegrationEventRequest = z.infer<typeof integrationEventRequestSchema>;
+export type IntegrationEventResult = z.infer<typeof integrationEventResultSchema>;
+
 export const credentialRefreshResultSchema = z.object({
   success: z.boolean(),
   accessToken: z.string().optional(),
