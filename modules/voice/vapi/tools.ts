@@ -1,6 +1,7 @@
 // modules/voice/vapi/tools.ts
 
 import { prisma } from "@/lib/prisma";
+import { ensureVoiceReviewItemFromSource } from "@/modules/voice/review/service";
 import { getVoiceTrainingRuntime } from "@/modules/voice/training/service";
 
 type VapiToolContext = {
@@ -332,6 +333,22 @@ async function captureLead(args: Record<string, unknown>, organizationId: string
     callStatus: "COMPLETED",
   });
 
+  await ensureVoiceReviewItemFromSource({
+    organizationId,
+    sourceType: "VoiceLead",
+    sourceId: lead.id,
+    providerCallId: context.providerCallId || null,
+    voiceAgentId: context.voiceAgentId || null,
+    customerSnapshot: {
+      name: lead.name,
+      phone: lead.phone,
+      email: lead.email,
+      reasonForCall: lead.reasonForCall,
+    },
+    unresolvedFields: !lead.name && !lead.phone && !lead.email ? ["customer_identity"] : [],
+    inferredFields: { source: lead.source },
+  });
+
   return {
     success: true,
     leadId: lead.id,
@@ -408,6 +425,26 @@ async function requestAppointment(args: Record<string, unknown>, organizationId:
     appointmentRequested: true,
     summary: `Booking request saved for ${name || phone || "caller"}${partySize ? `, party of ${partySize}` : ""}${date || time ? ` on ${[date, time].filter(Boolean).join(" at ")}` : ""}`,
     callStatus: "COMPLETED",
+  });
+
+  await ensureVoiceReviewItemFromSource({
+    organizationId,
+    sourceType: "VoiceReservationRequest",
+    sourceId: request.id,
+    providerCallId: context.providerCallId || null,
+    voiceAgentId: context.voiceAgentId || null,
+    customerSnapshot: {
+      customerName: request.customerName,
+      customerPhone: request.customerPhone,
+    },
+    confirmedFields: {
+      partySize: request.partySize,
+      requestedTime: request.requestedTime?.toISOString() || null,
+    },
+    inferredFields: {
+      specialRequests: request.specialRequests,
+    },
+    unresolvedFields: requestedTime ? [] : ["requested_time"],
   });
 
   return {
@@ -506,6 +543,27 @@ async function createOrderRequest(args: Record<string, unknown>, organizationId:
   await attachCallMetadata(organizationId, context, {
     summary: `Order request saved for ${name || phone || "caller"}${pickupOrDelivery ? ` (${pickupOrDelivery})` : ""}${preferredTime ? ` at ${preferredTime}` : ""}`,
     callStatus: "COMPLETED",
+  });
+
+  await ensureVoiceReviewItemFromSource({
+    organizationId,
+    sourceType: "VoiceOrderRequest",
+    sourceId: request.id,
+    providerCallId: context.providerCallId || null,
+    voiceAgentId: context.voiceAgentId || null,
+    customerSnapshot: {
+      customerName: request.customerName,
+      customerPhone: request.customerPhone,
+      customerAddress: request.customerAddress,
+    },
+    confirmedFields: {
+      orderDetailsText: request.orderDetailsText,
+    },
+    inferredFields: {
+      preferredTime,
+      pickupOrDelivery,
+    },
+    unresolvedFields: deliveryAddress ? [] : pickupOrDelivery?.toLowerCase() === "delivery" ? ["delivery_address"] : [],
   });
 
   return {
@@ -662,6 +720,25 @@ async function handoffToStaff(args: Record<string, unknown>, organizationId: str
   await attachCallMetadata(organizationId, context, {
     summary: `Human handoff request saved for ${name || phone || email || "caller"}`,
     callStatus: "COMPLETED",
+  });
+
+  await ensureVoiceReviewItemFromSource({
+    organizationId,
+    sourceType: "VoiceLead",
+    sourceId: lead.id,
+    providerCallId: context.providerCallId || null,
+    voiceAgentId: context.voiceAgentId || null,
+    customerSnapshot: {
+      name: lead.name,
+      phone: lead.phone,
+      email: lead.email,
+      reasonForCall: lead.reasonForCall,
+    },
+    inferredFields: {
+      handoffReason: reasonForCall,
+      source: lead.source,
+    },
+    unresolvedFields: [],
   });
 
   return {

@@ -305,6 +305,10 @@ model Organization {
   VoiceNotificationLog          VoiceNotificationLog[]
   VoiceReservationRequest       VoiceReservationRequest[]
   VoiceOrderRequest             VoiceOrderRequest[]
+  VoiceReviewItem               VoiceReviewItem[]
+  VoiceReviewTransition         VoiceReviewTransition[]
+  VoiceOutcomeLink              VoiceOutcomeLink[]
+  VoiceBooking                  VoiceBooking[]
   voiceWhatsappIntegrations     VoiceWhatsappIntegration[]
   voiceWhatsappConversations    VoiceWhatsappConversation[]
   voiceWhatsappMessages         VoiceWhatsappMessage[]
@@ -670,6 +674,108 @@ model VoiceOrderRequest {
   @@index([voiceAgentId])
   @@index([providerCallId])
   @@index([status])
+}
+
+model VoiceReviewItem {
+  id                   String       @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branchId             String
+  sourceType           String
+  sourceId             String
+  requestType          String
+  status               String       @default("captured")
+  version              Int          @default(1)
+  providerCallId       String?
+  voiceAgentId         String?
+  marketKey            String
+  currency             String
+  timezone             String
+  customerSnapshotJson String?
+  confirmedFieldsJson  String?
+  inferredFieldsJson   String?
+  unresolvedFieldsJson String?
+  validationErrorsJson String?
+  proposedActionJson   String?
+  lastReason           String?
+  assignedToUserId     String?
+  approvedByUserId     String?
+  idempotencyKey       String?      @unique
+  completedAt          DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@unique([organizationId, sourceType, sourceId])
+  @@index([organizationId, branchId, status, createdAt(sort: Desc)])
+  @@index([organizationId, requestType, status])
+}
+
+model VoiceReviewTransition {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reviewItemId   String
+  branchId       String
+  actorUserId    String?
+  actorRole      String?
+  previousStatus String?
+  newStatus      String
+  reason         String?
+  providerCallId String?
+  requestId      String
+  metadataJson   String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, reviewItemId, createdAt(sort: Desc)])
+  @@index([organizationId, branchId, createdAt(sort: Desc)])
+}
+
+model VoiceOutcomeLink {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branchId        String
+  reviewItemId    String?
+  sourceType      String
+  sourceId        String
+  outcomeType     String
+  outcomeId       String?
+  customerId      String?
+  providerCallId  String?
+  approvingUserId String?
+  idempotencyKey  String       @unique
+  metadataJson    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId, sourceType, sourceId])
+  @@index([organizationId, outcomeType, outcomeId])
+}
+
+model VoiceBooking {
+  id                    String       @id @default(cuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branchId              String
+  customerId            String?
+  sourceReviewItemId    String?
+  sourceRequestId       String?
+  providerCallId        String?
+  bookingType           String       @default("APPOINTMENT")
+  status                String       @default("CONFIRMED")
+  scheduledStartAt      DateTime
+  scheduledEndAt        DateTime?
+  timezone              String
+  customerNameSnapshot  String?
+  customerPhoneSnapshot String?
+  notes                 String?
+  idempotencyKey        String       @unique
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([organizationId, branchId, scheduledStartAt])
+  @@index([organizationId, sourceRequestId])
+  @@index([organizationId, status])
 }
 
 model VoiceCallLog {
