@@ -1,8 +1,10 @@
 import type { CountryCode } from "libphonenumber-js";
 import type { MetadataJson } from "libphonenumber-js/core";
 
-const phoneCore = eval("require")("libphonenumber-js/core") as typeof import("libphonenumber-js/core");
-const metadataModule = eval("require")("libphonenumber-js/metadata.max.json") as
+import * as phoneCore from "libphonenumber-js/core";
+import _metadataModule from "libphonenumber-js/metadata.max.json";
+
+const metadataModule = _metadataModule as unknown as
   | MetadataJson
   | { default: MetadataJson };
 const phoneMetadata = ("default" in metadataModule ? metadataModule.default : metadataModule) as MetadataJson;

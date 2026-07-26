@@ -87,6 +87,51 @@ PY
   fi
 }
 
+send_success_alert() {
+  local message="$1"
+  local alert_email resend_api_key email_from alert_webhook
+
+  alert_email="$(get_config "WHATSQUERY_BACKUP_ALERT_EMAIL")"
+  resend_api_key="$(get_config "RESEND_API_KEY")"
+  email_from="$(get_config "EMAIL_FROM")"
+  alert_webhook="$(get_config "WHATSQUERY_BACKUP_ALERT_WEBHOOK_URL")"
+
+  if [[ -n "${alert_email}" && -n "${resend_api_key}" && -n "${email_from}" ]]; then
+    curl -sS --fail https://api.resend.com/emails \
+      -H "Authorization: Bearer ${resend_api_key}" \
+      -H "Content-Type: application/json" \
+      -d "$(python3 - "${alert_email}" "${email_from}" "${message}" <<'PY'
+import json
+import sys
+
+to_email, from_email, body = sys.argv[1], sys.argv[2], sys.argv[3]
+payload = {
+    "from": f"WhatsQuery Backup Monitor <{from_email}>",
+    "to": [to_email],
+    "subject": "WhatsQuery PostgreSQL backup SUCCESS",
+    "html": (
+        "<p>The automated WhatsQuery PostgreSQL backup completed successfully.</p>"
+        f"<pre>{body}</pre>"
+    ),
+}
+print(json.dumps(payload))
+PY
+)" >/dev/null || true
+  fi
+
+  if [[ -n "${alert_webhook}" ]]; then
+    curl -sS --fail "${alert_webhook}" \
+      -H "Content-Type: application/json" \
+      -d "$(python3 - "${message}" <<'PY'
+import json
+import sys
+
+print(json.dumps({"text": f"WhatsQuery PostgreSQL backup SUCCESS:\n{sys.argv[1]}"}))
+PY
+)" >/dev/null || true
+  fi
+}
+
 handle_failure() {
   local exit_code="$1"
   local line_number="$2"
@@ -245,13 +290,34 @@ PY
 
 log "Starting PostgreSQL backup to ${BACKUP_FILE}."
 pg_dump "${BACKUP_DATABASE_URL}" | gzip -9 > "${BACKUP_FILE}"
+
+ENCRYPTION_PASSPHRASE="$(get_config "WHATSQUERY_BACKUP_PASSPHRASE")"
+if [[ -n "${ENCRYPTION_PASSPHRASE}" ]]; then
+  log "Encrypting backup archive with AES-256..."
+  gpg --batch --yes --passphrase "${ENCRYPTION_PASSPHRASE}" --symmetric --cipher-algo AES256 -o "${BACKUP_FILE}.gpg" "${BACKUP_FILE}"
+  rm "${BACKUP_FILE}"
+  BACKUP_FILE="${BACKUP_FILE}.gpg"
+  CHECKSUM_FILE="${BACKUP_FILE}.sha256"
+fi
+
 sha256sum "${BACKUP_FILE}" > "${CHECKSUM_FILE}"
-gzip -t "${BACKUP_FILE}"
+
+if [[ "${BACKUP_FILE}" == *.gpg ]]; then
+  log "Backup archive is encrypted. Verifying GPG decryptability and gzip integrity..."
+  gpg --batch --yes --passphrase "${ENCRYPTION_PASSPHRASE}" --decrypt "${BACKUP_FILE}" | gzip -t
+else
+  gzip -t "${BACKUP_FILE}"
+fi
 
 log "Backup archive created. Starting restore verification in temporary database ${RESTORE_DB}."
 cleanup_restore_db
 sudo -u postgres createdb "${RESTORE_DB}"
-gunzip -c "${BACKUP_FILE}" | sudo -u postgres psql --single-transaction --set ON_ERROR_STOP=1 "${RESTORE_DB}" >/dev/null
+
+if [[ "${BACKUP_FILE}" == *.gpg ]]; then
+  gpg --batch --yes --passphrase "${ENCRYPTION_PASSPHRASE}" --decrypt "${BACKUP_FILE}" | gunzip -c | sudo -u postgres psql --single-transaction --set ON_ERROR_STOP=1 "${RESTORE_DB}" >/dev/null
+else
+  gunzip -c "${BACKUP_FILE}" | sudo -u postgres psql --single-transaction --set ON_ERROR_STOP=1 "${RESTORE_DB}" >/dev/null
+fi
 
 RESTORED_TABLE_COUNT="$(sudo -u postgres psql -d "${RESTORE_DB}" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';")"
 if [[ "${RESTORED_TABLE_COUNT}" -le 0 ]]; then
@@ -261,11 +327,15 @@ fi
 
 cleanup_restore_db
 
-ln -sfn "${BACKUP_FILE}" "${BACKUP_ROOT}/latest.sql.gz"
-ln -sfn "${CHECKSUM_FILE}" "${BACKUP_ROOT}/latest.sql.gz.sha256"
+if [[ "${BACKUP_FILE}" == *.gpg ]]; then
+  ln -sfn "${BACKUP_FILE}" "${BACKUP_ROOT}/latest.sql.gz.gpg"
+  ln -sfn "${CHECKSUM_FILE}" "${BACKUP_ROOT}/latest.sql.gz.gpg.sha256"
+else
+  ln -sfn "${BACKUP_FILE}" "${BACKUP_ROOT}/latest.sql.gz"
+  ln -sfn "${CHECKSUM_FILE}" "${BACKUP_ROOT}/latest.sql.gz.sha256"
+fi
 
-find "${BACKUP_ROOT}" -maxdepth 1 -type f -name 'whatsquery_*.sql.gz' -mtime +"${RETENTION_DAYS}" -delete
-find "${BACKUP_ROOT}" -maxdepth 1 -type f -name 'whatsquery_*.sql.gz.sha256' -mtime +"${RETENTION_DAYS}" -delete
+find "${BACKUP_ROOT}" -maxdepth 1 -type f -name 'whatsquery_*.sql.gz*' -mtime +"${RETENTION_DAYS}" -delete
 
 log "Backup verified successfully. Public tables restored: ${RESTORED_TABLE_COUNT}."
 log "Latest backup symlink updated at ${BACKUP_ROOT}/latest.sql.gz."
@@ -282,3 +352,5 @@ elif [[ -n "${OFFSITE_SYNC_COMMAND}" ]]; then
 else
   log "Ready for off-server sync from ${BACKUP_ROOT}."
 fi
+
+send_success_alert "Verified ${RESTORED_TABLE_COUNT} tables. Archive stored at ${BACKUP_FILE}."

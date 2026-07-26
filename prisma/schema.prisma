@@ -326,6 +326,11 @@ model Organization {
   telecomAllowedDestinations    TelecomAllowedDestination[]
   onboardingTasks               OnboardingTask[]
   supportRequests               SupportRequest[]
+
+  // Phase 4 Commercial Foundation
+  tenantQuota  TenantQuota?
+  usageRecords UsageRecord[]
+  featureFlags FeatureFlag[]
 }
 
 model OrganizationUser {
@@ -3367,4 +3372,52 @@ model OnboardingTask {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   taskName       String // "Assign Phone Number", "Upload Knowledge", "Deploy Agent"
   status         String // "pending", "completed"
+}
+
+// -----------------------------------------------------------------------------
+// Phase 4: Commercial Readiness Models
+// -----------------------------------------------------------------------------
+
+model TenantQuota {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  maxUsers            Int @default(5)
+  maxBranches         Int @default(1)
+  maxStorageMB        Int @default(1024)
+  monthlyApiRequests  Int @default(10000)
+  monthlyVoiceMinutes Int @default(100)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UsageRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  metricType     String // "api_request", "voice_minute", "storage_mb"
+  quantity       Int      @default(1)
+  idempotencyKey String?  @unique
+  billed         Boolean  @default(false)
+  timestamp      DateTime @default(now())
+
+  @@index([organizationId, metricType, timestamp])
+}
+
+model FeatureFlag {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  key      String // "advanced_reporting", "custom_branding"
+  enabled  Boolean @default(false)
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, key])
 }
