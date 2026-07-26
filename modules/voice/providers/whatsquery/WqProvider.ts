@@ -1,5 +1,4 @@
 import { VoiceProvider, ProviderResponse, CallStatus } from "../VoiceProvider.interface";
-import { logger } from "@/lib/observability/logger";
 
 /**
  * WqProvider implements the VoiceProvider interface for the proprietary WhatsQuery Voice Engine.
@@ -16,7 +15,7 @@ export class WqProvider implements VoiceProvider {
     this.ariPass = process.env.ASTERISK_ARI_PASSWORD || "";
 
     if (!this.ariUrl || !this.ariUser || !this.ariPass) {
-      logger.error("[WqProvider] Initialization failed: Asterisk ARI credentials missing from environment. Voice calls will fail.");
+      console.error("[WqProvider] Initialization failed: Asterisk ARI credentials missing from environment. Voice calls will fail.");
     }
   }
 
@@ -47,23 +46,23 @@ export class WqProvider implements VoiceProvider {
       return await response.json();
     } catch (err: any) {
       clearTimeout(timeoutId);
-      logger.error(`[WqProvider] ARI request to ${endpoint} failed: ${err.message}`);
+      console.error(`[WqProvider] ARI request to ${endpoint} failed: ${err.message}`);
       throw err;
     }
   }
 
   async syncAgent(internalAgentId: string, payload: any): Promise<ProviderResponse> {
-    logger.info(`[WqProvider] Syncing agent configuration to database`, { internalAgentId });
+    console.info(`[WqProvider] Syncing agent configuration to database`, { internalAgentId });
     // In the WQ architecture, agent configurations are stored locally for the Rust backend to consume
     return { success: true, externalId: `wq-engine-assistant-${internalAgentId}` };
   }
 
   async deleteAgent(externalAgentId: string): Promise<void> {
-    logger.info(`[WqProvider] Deleting agent ${externalAgentId}`);
+    console.info(`[WqProvider] Deleting agent ${externalAgentId}`);
   }
 
   async startCall(destinationNumber: string, externalAgentId: string, context?: any): Promise<ProviderResponse> {
-    logger.info(`[WqProvider] Instructing Asterisk to start outbound call to ${destinationNumber}`);
+    console.info(`[WqProvider] Instructing Asterisk to start outbound call to ${destinationNumber}`);
     const channelId = `wq-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     try {
       await this.fetchAri(`/channels?endpoint=PJSIP/${destinationNumber}&app=wq-voice-app&channelId=${channelId}`, {
@@ -71,35 +70,35 @@ export class WqProvider implements VoiceProvider {
       });
       return { success: true, externalId: channelId };
     } catch (err: any) {
-      logger.error(`[WqProvider] Outbound call failed`, { error: err.message });
+      console.error(`[WqProvider] Outbound call failed`, { error: err.message });
       throw err;
     }
   }
 
   async endCall(externalCallId: string): Promise<void> {
-    logger.info(`[WqProvider] Hanging up Asterisk channel ${externalCallId}`);
+    console.info(`[WqProvider] Hanging up Asterisk channel ${externalCallId}`);
     try {
       await this.fetchAri(`/channels/${externalCallId}`, { method: "DELETE" });
     } catch (err: any) {
-      logger.error(`[WqProvider] Failed to hang up ${externalCallId}`, { error: err.message });
+      console.error(`[WqProvider] Failed to hang up ${externalCallId}`, { error: err.message });
     }
   }
 
   async transferCall(externalCallId: string, transferDestination: string): Promise<void> {
-    logger.info(`[WqProvider] Transferring Asterisk channel ${externalCallId} to ${transferDestination}`);
+    console.info(`[WqProvider] Transferring Asterisk channel ${externalCallId} to ${transferDestination}`);
     try {
       // Transfer using ARI redirect or bridge manipulation
       await this.fetchAri(`/channels/${externalCallId}/redirect?endpoint=${transferDestination}`, {
         method: "POST"
       });
     } catch (err: any) {
-      logger.error(`[WqProvider] Failed to transfer ${externalCallId}`, { error: err.message });
+      console.error(`[WqProvider] Failed to transfer ${externalCallId}`, { error: err.message });
       throw err;
     }
   }
 
   async getCallStatus(externalCallId: string): Promise<CallStatus> {
-    logger.info(`[WqProvider] Getting status for Asterisk channel ${externalCallId}`);
+    console.info(`[WqProvider] Getting status for Asterisk channel ${externalCallId}`);
     try {
       const channel = await this.fetchAri(`/channels/${externalCallId}`, { method: "GET" });
       if (channel.state === "Up") return "in-progress";
@@ -111,7 +110,7 @@ export class WqProvider implements VoiceProvider {
   }
 
   async syncKnowledgeBase(documentId: string, fileUrlOrBuffer: string | Buffer): Promise<ProviderResponse> {
-    logger.info(`[WqProvider] Syncing knowledge base doc ${documentId}`);
+    console.info(`[WqProvider] Syncing knowledge base doc ${documentId}`);
     return { success: true, externalId: `wq-engine-kb-${documentId}` };
   }
 }
