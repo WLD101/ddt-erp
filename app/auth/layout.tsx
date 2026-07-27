@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BrandLogo } from "@/components/ui/brand-logo";
+import { Logo } from "@/components/ui/logo";
 import "@/styles/marketing.css";
 
 export default function AuthLayout({
@@ -19,7 +19,7 @@ export default function AuthLayout({
       <header className="glass-nav fixed top-0 z-30 w-full">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <BrandLogo size="lg" dark={true} />
+            <Logo variant="vertical" size="lg" dark={true} subtitle="ERP PLATFORM" />
           </Link>
 
           <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-400">

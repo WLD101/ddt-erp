@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import "@/styles/marketing.css";
-import { BrandLogo } from "@/components/ui/brand-logo";
+import { Logo } from "@/components/ui/logo";
 
 import { ReferralTracker } from "@/components/marketing/referral-tracker";
 import { Suspense } from "react";
@@ -38,7 +38,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <header className="glass-nav fixed w-full top-0 z-50 transition-all duration-300">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <BrandLogo size="sm" dark={true} />
+            <Logo variant="horizontal" size="sm" dark={true} subtitle="ERP PLATFORM" />
           </Link>
 
           <div className="hidden lg:flex gap-8 font-medium text-slate-400 text-sm">
@@ -63,7 +63,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div className="space-y-6">
               <Link href="/" className="block">
-                <BrandLogo size="sm" dark={true} />
+                <Logo variant="horizontal" size="sm" dark={true} subtitle="ERP PLATFORM" />
               </Link>
               <p className="text-slate-400 text-sm leading-relaxed">
                 WhatsQuery is an AI-ready Enterprise platform tailored for fast-growing SME trading, wholesale, and distribution operations.

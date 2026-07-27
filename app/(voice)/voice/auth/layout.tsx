@@ -1,4 +1,5 @@
 import React from "react";
+import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { getVoiceRequestHost, toVoiceExternalPath } from "@/lib/voice/routing";
 
@@ -21,10 +22,7 @@ export default async function VoiceAuthLayout({
       <header className="fixed top-0 z-30 w-full border-b border-white/5 bg-[#0A0A0B]/80 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href={homeHref} className="hover:opacity-80 transition-opacity flex items-center gap-3">
-            <div className="bg-white p-1.5 rounded-xl border border-white/20 flex items-center justify-center">
-              <img src="/logo-emblem.png" alt="WhatsQuery Logo" className="w-6 h-6 object-contain" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-white">WhatsQuery <span className="text-cyan-400">Voice</span></span>
+            <Logo variant="horizontal" size="md" subtitle="VOICE AI" dark={true} />
           </Link>
 
           <Link

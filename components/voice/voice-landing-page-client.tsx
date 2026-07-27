@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { LocalizedVoicePrice, VoiceLocalizedPricingNote } from "@/components/voice/voice-localized-pricing";
+import { Logo } from "@/components/ui/logo";
 import { 
   Phone, 
   Play, 
@@ -82,13 +83,8 @@ export function VoiceLandingPageClient({
         }`}
       >
         <div className="mx-auto max-w-7xl flex items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="bg-white p-1.5 rounded-xl border border-white/20 flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-white/10">
-              <img src="/logo-emblem.png" alt="WhatsQuery Logo" className="w-6 h-6 object-contain" />
-            </div>
-            <span className="text-lg font-black tracking-tight bg-gradient-to-r from-white to-[#A7B0C0] bg-clip-text text-transparent group-hover:text-white transition-all">
-              WhatsQuery Voice
-            </span>
+          <Link href="/" className="group hover:opacity-90 transition-opacity">
+            <Logo variant="horizontal" size="sm" dark={true} subtitle="VOICE AI" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#A7B0C0]">
@@ -839,11 +835,8 @@ export function VoiceLandingPageClient({
       {/* Footer */}
       <footer className="py-12 border-t border-white/5 bg-[#050816] text-[#A7B0C0] text-sm px-6">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="bg-white p-1 rounded-md border border-white/20 flex items-center justify-center">
-              <img src="/logo-emblem.png" alt="WhatsQuery Logo" className="w-4 h-4 object-contain" />
-            </div>
-            <span className="font-bold text-white">WhatsQuery Voice</span>
+          <div>
+            <Logo variant="compact" size="xs" dark={true} subtitle="VOICE AI" />
           </div>
           <p className="text-xs">© {new Date().getFullYear()} WhatsQuery. All rights reserved.</p>
         </div>
