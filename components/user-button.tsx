@@ -6,7 +6,7 @@ import {
   LogOut, 
   User, 
   ShieldCheck,
-  LayoutDashboard
+  BookOpen
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +26,7 @@ interface UserButtonProps {
     email?: string | null;
     image?: string | null;
     role?: string;
+    countryCode?: string;
   };
 }
 
@@ -66,24 +67,35 @@ export function UserButton({ user }: UserButtonProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem
             className="focus:bg-surface-container-low cursor-pointer"
-            onClick={() => window.location.assign("/")}
-          >
-            <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
-            <span className="font-body-md">Dashboard</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="focus:bg-surface-container-low cursor-pointer"
-            onClick={() => window.location.assign("/settings")}
+            onClick={() => {
+              const isVoice = typeof window !== "undefined" && window.location.hostname.startsWith("voice.");
+              window.location.assign(isVoice ? "/dashboard/settings" : "/settings");
+            }}
           >
             <ShieldCheck className="mr-2 h-4 w-4 text-primary" />
             <span className="font-body-md">Org Settings</span>
           </DropdownMenuItem>
           <DropdownMenuItem 
             className="focus:bg-surface-container-low cursor-pointer"
-            onClick={() => window.location.assign("/settings/security")}
+            onClick={() => {
+              const isVoice = typeof window !== "undefined" && window.location.hostname.startsWith("voice.");
+              window.location.assign(isVoice ? "/dashboard/settings" : "/settings/security");
+            }}
           >
             <User className="mr-2 h-4 w-4 text-primary" />
             <span className="font-body-md">My Profile</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            className="focus:bg-surface-container-low cursor-pointer"
+            onClick={() => {
+              const url = user.countryCode === "PK" 
+                ? "https://docs.whatsquery.com/pk" 
+                : "https://docs.whatsquery.com/uk";
+              window.open(url, "_blank");
+            }}
+          >
+            <BookOpen className="mr-2 h-4 w-4 text-primary" />
+            <span className="font-body-md">Docs & Manuals</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator className="bg-outline-variant" />

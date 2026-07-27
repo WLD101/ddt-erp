@@ -13,12 +13,24 @@ export async function Navbar() {
   let role = "USER";
   let activeBranchId = "";
   let branches: any[] = [];
+  let countryCode = "GB"; // Default to UK
 
   try {
     const ctx = await getCurrentTenantContext();
     role = ctx.role;
     activeBranchId = ctx.branchId;
     branches = await getBranches();
+    
+    // Dynamically require prisma to avoid issues in edge if any, though Navbar is server component
+    const { prisma } = await import("@/lib/prisma");
+    const org = await prisma.organization.findUnique({
+      where: { id: ctx.organizationId },
+      select: { countryCode: true, country: true }
+    });
+    // Fuzzy matching for Pakistan
+    if (org?.countryCode?.toUpperCase() === "PK" || org?.country?.toLowerCase().includes("pakistan")) {
+      countryCode = "PK";
+    }
   } catch (e) {
     // Context may fail on first visit or unlinked users
   }
@@ -59,7 +71,8 @@ export async function Navbar() {
               name: session?.user?.name,
               email: session?.user?.email,
               image: session?.user?.image,
-              role: role
+              role: role,
+              countryCode: countryCode
             }} />
           </div>
         </div>
