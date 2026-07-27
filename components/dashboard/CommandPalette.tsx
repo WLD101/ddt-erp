@@ -194,8 +194,8 @@ export function CommandPalette() {
             )}
           </div>
 
-          <div className="bg-surface-container-low/50 border-t border-outline-variant/20 p-3 px-4 flex items-center justify-between">
-             <div className="flex items-center gap-4">
+          <div className="bg-surface-container-low/50 border-t border-outline-variant/20 p-3 px-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+             <div className="flex items-center gap-4 shrink-0">
                 <div className="flex items-center gap-1">
                    <kbd className="h-4 px-1 rounded bg-muted text-[9px] font-black">↑↓</kbd>
                    <span className="text-[9px] font-black uppercase text-muted-foreground">Navigate</span>
@@ -205,7 +205,7 @@ export function CommandPalette() {
                    <span className="text-[9px] font-black uppercase text-muted-foreground">Select</span>
                 </div>
              </div>
-             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Powered by WhatsQuery AI Engine</p>
+             <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 whitespace-nowrap text-right hidden sm:block">Powered by WhatsQuery AI Engine</p>
           </div>
         </DialogContent>
       </Dialog>

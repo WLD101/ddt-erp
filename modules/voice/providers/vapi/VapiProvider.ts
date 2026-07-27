@@ -1,3 +1,4 @@
+import { logger } from "@/lib/observability/logger";
 import { VoiceProvider, ProviderResponse, CallStatus } from "../VoiceProvider.interface";
 
 export class VapiProvider implements VoiceProvider {
@@ -7,7 +8,7 @@ export class VapiProvider implements VoiceProvider {
   constructor() {
     this.apiKey = process.env.VAPI_API_KEY || "";
     if (!this.apiKey) {
-      console.error("[VapiProvider] Initialization failed: VAPI_API_KEY environment variable is not configured. Voice calls will fail.");
+      logger.error("[VapiProvider] Initialization failed: VAPI_API_KEY environment variable is not configured. Voice calls will fail.");
     }
   }
 
@@ -43,19 +44,19 @@ export class VapiProvider implements VoiceProvider {
         return await response.json();
       } catch (err: any) {
         lastError = err;
-        console.warn(`[VapiProvider] API request failed (Attempt ${attempt}/${retries}): ${err.message}`);
+        logger.warn(`[VapiProvider] API request failed (Attempt ${attempt}/${retries}): ${err.message}`);
         if (attempt < retries) {
           await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
         }
       }
     }
     
-    console.error(`[VapiProvider] Request to ${endpoint} exhausted retries.`);
+    logger.error(`[VapiProvider] Request to ${endpoint} exhausted retries.`);
     throw lastError;
   }
 
   async syncAgent(internalAgentId: string, payload: any): Promise<ProviderResponse> {
-    console.info(`[VapiProvider] Syncing agent ${internalAgentId}`, { internalAgentId });
+    logger.info(`[VapiProvider] Syncing agent ${internalAgentId}`, { internalAgentId });
     try {
       const result = await this.fetchWithRetry("/assistant", {
         method: "POST",
@@ -63,23 +64,23 @@ export class VapiProvider implements VoiceProvider {
       });
       return { success: true, externalId: result.id };
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to sync agent ${internalAgentId}`, { error: err.message });
+      logger.error(`[VapiProvider] Failed to sync agent ${internalAgentId}`, { error: err.message });
       throw err;
     }
   }
 
   async deleteAgent(externalAgentId: string): Promise<void> {
-    console.info(`[VapiProvider] Deleting agent ${externalAgentId}`);
+    logger.info(`[VapiProvider] Deleting agent ${externalAgentId}`);
     try {
       await this.fetchWithRetry(`/assistant/${externalAgentId}`, { method: "DELETE" });
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to delete agent ${externalAgentId}`, { error: err.message });
+      logger.error(`[VapiProvider] Failed to delete agent ${externalAgentId}`, { error: err.message });
       throw err;
     }
   }
 
   async startCall(destinationNumber: string, externalAgentId: string, context?: any): Promise<ProviderResponse> {
-    console.info(`[VapiProvider] Starting outbound call to ${destinationNumber}`);
+    logger.info(`[VapiProvider] Starting outbound call to ${destinationNumber}`);
     try {
       const result = await this.fetchWithRetry("/call", {
         method: "POST",
@@ -92,39 +93,39 @@ export class VapiProvider implements VoiceProvider {
       });
       return { success: true, externalId: result.id };
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to start call`, { destinationNumber, error: err.message });
+      logger.error(`[VapiProvider] Failed to start call`, { destinationNumber, error: err.message });
       throw err;
     }
   }
 
   async endCall(externalCallId: string): Promise<void> {
-    console.info(`[VapiProvider] Ending call ${externalCallId}`);
+    logger.info(`[VapiProvider] Ending call ${externalCallId}`);
     try {
       await this.fetchWithRetry(`/call/${externalCallId}`, {
         method: "PATCH",
         body: JSON.stringify({ status: "ended" })
       });
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to end call ${externalCallId}`, { error: err.message });
+      logger.error(`[VapiProvider] Failed to end call ${externalCallId}`, { error: err.message });
       throw err;
     }
   }
 
   async transferCall(externalCallId: string, transferDestination: string): Promise<void> {
-    console.info(`[VapiProvider] Transferring call ${externalCallId} to ${transferDestination}`);
+    logger.info(`[VapiProvider] Transferring call ${externalCallId} to ${transferDestination}`);
     try {
       await this.fetchWithRetry(`/call/${externalCallId}/transfer`, {
         method: "POST",
         body: JSON.stringify({ destination: transferDestination })
       });
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to transfer call ${externalCallId}`, { error: err.message });
+      logger.error(`[VapiProvider] Failed to transfer call ${externalCallId}`, { error: err.message });
       throw err;
     }
   }
 
   async getCallStatus(externalCallId: string): Promise<CallStatus> {
-    console.info(`[VapiProvider] Getting status for call ${externalCallId}`);
+    logger.info(`[VapiProvider] Getting status for call ${externalCallId}`);
     try {
       const result = await this.fetchWithRetry(`/call/${externalCallId}`, { method: "GET" });
       
@@ -137,13 +138,13 @@ export class VapiProvider implements VoiceProvider {
         default: return "in-progress";
       }
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to get call status ${externalCallId}`, { error: err.message });
+      logger.error(`[VapiProvider] Failed to get call status ${externalCallId}`, { error: err.message });
       throw err;
     }
   }
 
   async syncKnowledgeBase(documentId: string, fileUrlOrBuffer: string | Buffer): Promise<ProviderResponse> {
-    console.info(`[VapiProvider] Syncing knowledge base doc ${documentId}`);
+    logger.info(`[VapiProvider] Syncing knowledge base doc ${documentId}`);
     try {
       const result = await this.fetchWithRetry("/file", {
         method: "POST",
@@ -151,8 +152,9 @@ export class VapiProvider implements VoiceProvider {
       });
       return { success: true, externalId: result.id };
     } catch (err: any) {
-      console.error(`[VapiProvider] Failed to sync KB doc ${documentId}`, { error: err.message });
+      logger.error(`[VapiProvider] Failed to sync KB doc ${documentId}`, { error: err.message });
       throw err;
     }
   }
 }
+

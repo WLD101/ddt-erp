@@ -21,18 +21,7 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   async redirects() {
-    return [
-      {
-        source: "/wq-command-center",
-        destination: "/voice/admin/command-center",
-        permanent: true,
-      },
-      {
-        source: "/wq-command-center/:path*",
-        destination: "/voice/admin/:path*",
-        permanent: true,
-      },
-    ];
+    return [];
   },
   async headers() {
     return [
