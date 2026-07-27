@@ -9,13 +9,11 @@ export function VoiceSidebar({ isAdmin }: { isAdmin?: boolean }) {
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-[260px] flex-col justify-between border-r border-outline-variant/30 bg-white shadow-soft md:flex">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-7 py-8">
-          <div className="flex justify-center w-full">
-            <Logo variant="vertical" size="sm" subtitle="VOICE AI" />
+          <div className="flex items-start">
+            <Logo variant="compact" size="sm" subtitle="VOICE AI" />
           </div>
         </div>
-        <div className="mt-4 px-4">
-          <CommandPalette />
-        </div>
+
 
         <nav className="mt-6 space-y-1 px-4">
           <SidebarActiveLink href="/dashboard" icon="dashboard" label="Dashboard" />
