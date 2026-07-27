@@ -243,6 +243,10 @@ export async function getVoiceIntegrationsOverview(orgId: string) {
     twilio: !!process.env.VOICE_TWILIO_ACCOUNT_SID && !!process.env.VOICE_TWILIO_AUTH_TOKEN,
     googleCalendar: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
     whatsapp: !!process.env.VOICE_PUBLIC_APP_URL || !!process.env.VOICE_WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+    stripe: !!process.env.STRIPE_SECRET_KEY,
+    slack: !!process.env.SLACK_BOT_TOKEN,
+    make: !!process.env.MAKE_WEBHOOK_URL,
+    hubspot: !!process.env.HUBSPOT_ACCESS_TOKEN,
   };
 
   return {

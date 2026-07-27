@@ -29,6 +29,30 @@ const integrationCards = [
     description: "Connect WhatsApp Business Platform for tenant-scoped AI replies, lead capture, order requests, and handoffs.",
     envs: ["VOICE_PUBLIC_APP_URL", "VOICE_WHATSAPP_WEBHOOK_VERIFY_TOKEN", "VOICE_WHATSAPP_SEND_ENABLED"],
   },
+  {
+    key: "stripe",
+    title: "Stripe Payments",
+    description: "Accept secure credit card payments over the phone for reservations or orders.",
+    envs: ["STRIPE_SECRET_KEY"],
+  },
+  {
+    key: "slack",
+    title: "Slack Notifications",
+    description: "Send automated alerts to Slack channels for missed calls, leads, and orders.",
+    envs: ["SLACK_BOT_TOKEN", "SLACK_CHANNEL_ID"],
+  },
+  {
+    key: "make",
+    title: "Make.com Automations",
+    description: "Trigger powerful multi-step automations across 1000+ apps via webhooks.",
+    envs: ["MAKE_WEBHOOK_URL"],
+  },
+  {
+    key: "hubspot",
+    title: "HubSpot CRM",
+    description: "Synchronize incoming callers, call summaries, and leads directly into HubSpot.",
+    envs: ["HUBSPOT_ACCESS_TOKEN"],
+  },
 ] as const;
 
 export default async function VoiceIntegrationsPage() {
@@ -41,7 +65,11 @@ export default async function VoiceIntegrationsPage() {
     twilio: settings?.twilioStatus ?? "NOT_CONNECTED",
     googleCalendar: settings?.googleCalendarStatus ?? "NOT_CONNECTED",
     whatsapp: settings?.whatsappFollowUpStatus ?? "NOT_CONNECTED",
-  } as const;
+    stripe: "NOT_CONNECTED",
+    slack: "NOT_CONNECTED",
+    make: "NOT_CONNECTED",
+    hubspot: "NOT_CONNECTED",
+  } as Record<string, string>;
 
   const vapiStatus = getVapiEnvStatus();
   const defaultAgent = voiceAgents.find((agent) => agent.isDefault) || voiceAgents[0] || null;
@@ -179,6 +207,18 @@ export default async function VoiceIntegrationsPage() {
                     <li className="flex justify-between"><span>Live sending</span><span className="font-semibold text-on-surface">{process.env.VOICE_WHATSAPP_SEND_ENABLED === "true" ? "Enabled" : "Disabled"}</span></li>
                     <li className="flex justify-between"><span>ERP writes</span><span className="font-semibold text-on-surface">Disabled</span></li>
                   </ul>
+                </div>
+              ) : null}
+
+              {["stripe", "slack", "make", "hubspot"].includes(card.key) ? (
+                <div className="mt-5 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">Setup required</div>
+                    <Link href={`/voice/dashboard/integrations/${card.key}`} className="text-xs font-bold text-primary hover:underline">
+                      Manage setup →
+                    </Link>
+                  </div>
+                  <p className="text-xs text-on-surface-variant">This is a one-click integration placeholder for {card.title}. Production enablement will be available once the foundation phase is complete.</p>
                 </div>
               ) : null}
             </div>
