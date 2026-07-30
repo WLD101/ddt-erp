@@ -14,7 +14,9 @@ import {
   FileText,
   Building2,
   ListTodo,
-  MessageCircle
+  MessageCircle,
+  Server,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/modules/auth/actions";
@@ -30,6 +32,13 @@ const navigation = [
     items: [
       { name: "Lead Pipeline", href: "/voice/admin/sales", icon: ListTodo },
       { name: "Demo Accounts", href: "/voice/admin/sales/demos", icon: Users },
+    ]
+  },
+  {
+    name: "Control Rooms",
+    items: [
+      { name: "SOC Dashboard", href: "/voice/admin/soc", icon: ShieldCheck },
+      { name: "NOC Dashboard", href: "/voice/admin/noc", icon: Server },
     ]
   },
   {
